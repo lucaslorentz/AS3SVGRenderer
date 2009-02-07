@@ -95,10 +95,11 @@
 				case 'g':
 				obj = visitG(elt); break;
 				
+				/*
 				case 'clipPath':
 				obj = visitClipPath(elt); break;
 				
-				/*case 'defs':
+				case 'defs':
 				obj = visitDefs(elt); break;
 				
 				case 'use':
@@ -117,6 +118,21 @@
 					
 				if(elt.styleenv["display"]=="none" || elt.styleenv["visibility"]=="hidden")
 					obj.visible = false;
+					
+				//Testing
+				if(elt.clipPath!=null){
+					var id:String = StringUtil.rtrim(String(elt.clipPath).split("(")[1], ")");
+					id = StringUtil.ltrim(id, "#");
+
+					var mask = visitClipPath(svg_object.clipPaths[id]);
+
+					var newGroup:Sprite = new Sprite();
+					newGroup.addChild(obj);
+					newGroup.addChild(mask);
+					obj.mask = mask;
+					
+					obj = newGroup;
+				}
 					
 				//Testing
 				currentFontSize = oldFontSize;
@@ -340,9 +356,19 @@
 		
 		private function visitClipPath(elt:Object):Sprite {
 			var s:Sprite = new Sprite();
-			s.name = "clipPath";
+			s.name = elt.id != null ? elt.id : "clipPath";
 			
-			notImplemented("clipPath");
+	        if( elt.x != null )
+                s.x = getUserUnit(elt.x, currentFontSize, currentViewBox.width);
+            if( elt.y != null )
+                s.y =  getUserUnit(elt.y, currentFontSize, currentViewBox.height);
+			
+			if(elt.transform)
+				s.transform.matrix = elt.transform;
+				
+			for each(var childElt:Object in elt.children) {
+				s.addChild(visit(childElt));
+			}
 			return s;
 		}
 		

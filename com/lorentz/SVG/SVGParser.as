@@ -17,6 +17,7 @@
 		private var svg:XML;
 		private var svg_object:Object;
 		private var defs:Object = new Object();
+		private var clipPaths:Object = new Object();
 		
 		public function SVGParser(svg:XML){
 			this.svg = svg;
@@ -26,6 +27,7 @@
 			svg_object = visit(svg);
 			svg_object.svg = svg;
 			svg_object.defs = defs;
+			svg_object.clipPaths = clipPaths;
 			
 			parseGradients();
 			
@@ -104,6 +106,9 @@
 			
 			if("@transform" in elt)
 				obj.transform = parseTransformation(elt.@transform);
+				
+			if("@clip-path" in elt)
+				obj.clipPath = String(elt["@clip-path"]);
 			
 			return obj;
 		}
@@ -139,15 +144,6 @@
 		private function visitRect(elt:XML):Object {
 			var obj:Object = new Object();
 			
-			/*
-			obj.x = Number(elt.@x);
-			obj.y =  Number(elt.@y);
-			obj.width =  Number(elt.@width);
-			obj.height =  Number(elt.@height);
-			obj.rx =  Number(elt.@rx);
-			obj.ry =  Number(elt.@ry);
-			*/
-			
 			obj.x = elt.@x;
 			obj.y =  elt.@y;
 			obj.width =  elt.@width;
@@ -155,7 +151,6 @@
 			obj.rx =  elt.@rx;
 			obj.ry =  elt.@ry;
 
-//			obj.isRound = obj.rx != 0 || obj.ry != 0;
 			obj.isRound = (obj.rx != null || obj.ry != null);
 			if (obj.isRound) {
 				obj.rx = (obj.ry != 0 && obj.rx == 0)?obj.ry:obj.rx;
@@ -242,7 +237,20 @@
 			return null;
 		}
 		
-		private function visitClipPath(elt:XML):Sprite {
+		private function visitClipPath(elt:XML):Object {
+			var obj:Object = new Object();
+			
+			obj.children = new Array();
+			for each(var childElt:XML in elt.*) {
+				var child:Object = visit(childElt);
+				if(child){
+					child.parent = obj;
+					obj.children.push(child);
+				}
+			}
+
+			clipPaths[elt.@id] = obj;
+			
 			return null;
 		}
 
