@@ -57,6 +57,8 @@
 				obj["fill"] = elt.@fill;
 			if("@fill-opacity" in elt)
 				obj["fill-opacity"] = elt.@["fill-opacity"];
+			if("@fill-rule" in elt)
+				obj["fill-rule"] = elt.@["fill-rule"];
 
 			if("@stroke" in elt)
 				obj["stroke"] = elt.@stroke;
@@ -69,11 +71,16 @@
 			if("@stroke-linejoin" in elt)
 				obj["stroke-linejoin"] = elt.@["stroke-linejoin"];
 				
-			if("@fill-rule" in elt)
-				obj["fill-rule"] = elt.@["fill-rule"];
-				
 			if("@font-size" in elt)
 				obj["font-size"] = elt.@["font-size"];
+			if("@font-family" in elt)
+				obj["font-family"] = elt.@["font-family"];
+			if("@font-weight" in elt)
+				obj["font-weight"] = elt.@["font-weight"];
+			if("@text-anchor" in elt)
+				obj["text-anchor"] = elt.@["text-anchor"];
+			if("@dominant-baseline" in elt)
+				obj["dominant-baseline"] = elt.@["dominant-baseline"];
 				
 			return obj;
 		}

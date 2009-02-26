@@ -6,17 +6,28 @@
 	import flash.display.JointStyle;
 	import flash.display.GradientType;
 	import flash.display.SpreadMethod;
-	
 	import flash.display.DisplayObject;
+	
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
+	import flash.text.TextFieldAutoSize;
+	import flash.text.AntiAliasType;
+	import flash.text.TextLineMetrics;
+	
 	import flash.geom.Rectangle;
 	import flash.geom.Matrix;
-	
 	import flash.geom.Point;
+	
 	import com.lorentz.SVG.PathCommand;
 	import com.lorentz.SVG.Bezier;
 	import com.lorentz.SVG.SVGColor;
 	
 	public class SVGRenderer extends Sprite{
+		private const WIDTH:String = "width";
+		private const HEIGHT:String = "height";
+		private const WIDTH_HEIGHT:String = "width_height";
+		
 		private var svg_object:Object;
 		
 		//Testing
@@ -39,28 +50,28 @@
 			var obj:Sprite;
 			
 			if(elt.parent){
-				elt.styleenv = elt.parent.styleenv; //inherits parent style
+				elt.styleenv = elt.parent.styleenv; //Inherits parent style
 			} else {
 				elt.styleenv = new Object();
 			}
 
-			if(svg_object.styles[elt.type]!=null){
+			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
 				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles[elt.type]);
 			}
 			
-			if(elt["class"]){
+			if(elt["class"]){ //Merge with classes styles
 				for each(var className:String in String(elt["class"]).split(" "))
 					elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles["."+className]);
 			}
 
-			if(elt.style)
+			if(elt.style) //Merge all styles with the style attribute
 				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, elt.style);
 				
 			//Testing
 			var oldFontSize = currentFontSize;
 			var oldViewBox = currentViewBox;
 			if(elt.styleenv["font-size"]!=null){
-				currentFontSize = getUserUnit(elt.styleenv["font-size"] , currentFontSize, currentViewBox.height);
+				currentFontSize = getUserUnit(elt.styleenv["font-size"], HEIGHT);
 			}
 			if(elt.viewBox!=null){
 				currentViewBox = elt.viewBox;
@@ -95,21 +106,11 @@
 				case 'g':
 				obj = visitG(elt); break;
 				
-				/*
-				case 'clipPath':
-				obj = visitClipPath(elt); break;
-				
-				case 'defs':
-				obj = visitDefs(elt); break;
-				
-				case 'use':
-				obj = visitUse(elt); break;
-				
-				case 'notSupported':
-				obj = new Sprite(); break;
+				case 'text':
+				obj = visitText(elt); break;
 				
 				default:
-				throw new Error("Unknown tag type " + elt.localName());*/
+				throw new Error("Unknown tag type " + elt.localName());
 			}
 			
 			if(obj!=null){
@@ -185,8 +186,8 @@
 				var activeAreaWidth = elt.viewBox.width || activeArea.width;
 				var activeAreaHeight = elt.viewBox.height || activeArea.height;
 				
-				activeArea.scaleX = getUserUnit(elt.width, currentFontSize, currentViewBox.width)/activeAreaWidth;
-				activeArea.scaleY = getUserUnit(elt.height, currentFontSize, currentViewBox.height)/activeAreaHeight;
+				activeArea.scaleX = getUserUnit(elt.width, WIDTH)/activeAreaWidth;
+				activeArea.scaleY = getUserUnit(elt.height, HEIGHT)/activeAreaHeight;
 				
 				activeArea.scaleX = Math.min(activeArea.scaleX, activeArea.scaleY);
 				activeArea.scaleY = Math.min(activeArea.scaleX, activeArea.scaleY);
@@ -200,17 +201,17 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "rectangle";
 			
-			var x:Number = getUserUnit(elt.x, currentFontSize, currentViewBox.width);
-			var y:Number = getUserUnit(elt.y, currentFontSize, currentViewBox.height);
-			var width:Number = getUserUnit(elt.width, currentFontSize, currentViewBox.width);
-			var height:Number = getUserUnit(elt.height, currentFontSize, currentViewBox.height);
+			var x:Number = getUserUnit(elt.x, WIDTH);
+			var y:Number = getUserUnit(elt.y, HEIGHT);
+			var width:Number = getUserUnit(elt.width, WIDTH);
+			var height:Number = getUserUnit(elt.height, HEIGHT);
 						
 			beginFill(s, elt);
 			lineStyle(s, elt);
 			
 			if(elt.isRound) {
-				var rx:Number = getUserUnit(elt.rx, currentFontSize, currentViewBox.width);
-				var ry:Number = getUserUnit(elt.ry, currentFontSize, currentViewBox.height);
+				var rx:Number = getUserUnit(elt.rx, WIDTH);
+				var ry:Number = getUserUnit(elt.ry, HEIGHT);
 				s.graphics.drawRoundRect(x, y, width, height, rx, ry);
 			} else {
 				s.graphics.drawRect(x, y, width, height);
@@ -292,10 +293,10 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "line";
 			
-			var x1:Number = getUserUnit(elt.x1, currentFontSize, currentViewBox.width);
-			var y1:Number = getUserUnit(elt.y1, currentFontSize, currentViewBox.height);
-			var x2:Number = getUserUnit(elt.x2, currentFontSize, currentViewBox.width);
-			var y2:Number = getUserUnit(elt.y2, currentFontSize, currentViewBox.height);
+			var x1:Number = getUserUnit(elt.x1, WIDTH);
+			var y1:Number = getUserUnit(elt.y1, HEIGHT);
+			var x2:Number = getUserUnit(elt.x2, WIDTH);
+			var y2:Number = getUserUnit(elt.y2, HEIGHT);
 			
 			lineStyle(s, elt);
 			s.graphics.moveTo(x1, y1);
@@ -307,9 +308,9 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "circle";
 			
-			var cx:Number = getUserUnit(elt.cx, currentFontSize, currentViewBox.width);
-			var cy:Number = getUserUnit(elt.cy, currentFontSize, currentViewBox.height);
-			var r:Number = getUserUnit(elt.r, currentFontSize, currentViewBox.width); //Its based on width?
+			var cx:Number = getUserUnit(elt.cx, WIDTH);
+			var cy:Number = getUserUnit(elt.cy, HEIGHT);
+			var r:Number = getUserUnit(elt.r, WIDTH); //Its based on width?
 			
 			beginFill(s, elt);
 			lineStyle(s, elt);
@@ -323,10 +324,10 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "ellipse";
 			
-			var cx:Number = getUserUnit(elt.cx, currentFontSize, currentViewBox.width);
-			var cy:Number = getUserUnit(elt.cy, currentFontSize, currentViewBox.height);
-			var rx:Number = getUserUnit(elt.rx, currentFontSize, currentViewBox.width);
-			var ry:Number = getUserUnit(elt.ry, currentFontSize, currentViewBox.height);
+			var cx:Number = getUserUnit(elt.cx, WIDTH);
+			var cy:Number = getUserUnit(elt.cy, HEIGHT);
+			var rx:Number = getUserUnit(elt.rx, WIDTH);
+			var ry:Number = getUserUnit(elt.ry, HEIGHT);
 			
 			beginFill(s, elt);
 			lineStyle(s, elt);
@@ -341,9 +342,9 @@
 			s.name = elt.id != null ? elt.id : "g";
 			
 	        if( elt.x != null )
-                s.x = getUserUnit(elt.x, currentFontSize, currentViewBox.width);
+                s.x = getUserUnit(elt.x, WIDTH);
             if( elt.y != null )
-                s.y =  getUserUnit(elt.y, currentFontSize, currentViewBox.height);
+                s.y =  getUserUnit(elt.y, HEIGHT);
 			
 			if(elt.transform)
 				s.transform.matrix = elt.transform;
@@ -359,9 +360,9 @@
 			s.name = elt.id != null ? elt.id : "clipPath";
 			
 	        if( elt.x != null )
-                s.x = getUserUnit(elt.x, currentFontSize, currentViewBox.width);
+                s.x = getUserUnit(elt.x, WIDTH);
             if( elt.y != null )
-                s.y =  getUserUnit(elt.y, currentFontSize, currentViewBox.height);
+                s.y =  getUserUnit(elt.y, HEIGHT);
 			
 			if(elt.transform)
 				s.transform.matrix = elt.transform;
@@ -372,24 +373,69 @@
 			return s;
 		}
 		
-		/*
-		private function visitDefs(elt:Object):Sprite {
+		private function visitText(elt:Object):Sprite {
 			var s:Sprite = new Sprite();
-			s.name = "defs";
+			s.name = elt.id != null ? elt.id : "text";
+
+			var textX:Number = getUserUnit(elt.x, WIDTH);
+			var textY:Number = getUserUnit(elt.y, HEIGHT);
+
+			var textAnchor:String = elt.styleenv["text-anchor"];
 			
-			notImplemented("defs");
+			var fill:uint = SVGColor.parseToInt(elt.styleenv["fill"])
+			var textHeight:uint = getUserUnit(elt.styleenv["font-size"], WIDTH);
+			var svgFont:String = elt.styleenv["font-family"] == undefined? "Arial" : elt.styleenv["font-family"];
+			var textWeight:Boolean = elt.styleenv["font-weight"] != undefined ? true : false;
+			var textValue:String = elt.textValue;
+			
+			var sText:TextField = new TextField();
+			var sFormat:TextFormat = new TextFormat();
+			
+			/*if(textAnchor == "middle"){
+				sFormat.align = TextFormatAlign.CENTER;
+			}
+			else if(textAnchor == "end"){
+				sFormat.align = TextFormatAlign.RIGHT;
+			}
+			else{
+				sFormat.align = TextFormatAlign.LEFT
+			}*/
+			sFormat.font = svgFont;
+			sFormat.bold = textWeight.valueOf();
+			sFormat.size = textHeight;
+			sFormat.color = fill;
+			
+			//sText.border = true;
+			//sText.borderColor = 0x000000;
+			sText.defaultTextFormat = sFormat;
+			sText.antiAliasType = AntiAliasType.ADVANCED;
+			sText.multiline = false;
+			sText.background = false;
+			sText.backgroundColor = 0xFF0000;
+			sText.htmlText = textValue;
+			s.x = textX;
+//			s.y = textY;
+			s.y = textY-textHeight;
+			sText.width = 100;
+			sText.setTextFormat(sFormat);
+			s.addChild(sText);
+
+			if(textAnchor == "middle"){
+				sText.autoSize = TextFieldAutoSize.CENTER;
+				s.x -= (s.width/2);
+				s.y -= (s.height/2);
+			}
+			else if(textAnchor == "end"){
+				sText.autoSize = TextFieldAutoSize.RIGHT;
+				s.x -= s.width;
+				s.y -= s.height;
+			}
+			else{
+				sText.autoSize = TextFieldAutoSize.LEFT
+			}
+			
 			return s;
 		}
-		*/
-		
-		/*private function visitUse(elt:Object):Sprite {
-			var s:Sprite = new Sprite();
-			s.name = "use";
-			
-			notImplemented("use");
-			return s;
-		}*/
-		
 		
 		private function beginFill(s:Sprite, elt:Object):void {
 			var color:uint = SVGColor.parseToInt(elt.styleenv.fill);
@@ -406,10 +452,10 @@
 				
 				switch(grad.type){
 					case GradientType.LINEAR: {
-						var x1:Number = getUserUnit(grad.x1, currentFontSize, currentViewBox.width);
-						var y1:Number = getUserUnit(grad.y1, currentFontSize, currentViewBox.height);
-						var x2:Number = getUserUnit(grad.x2, currentFontSize, currentViewBox.width);
-						var y2:Number = getUserUnit(grad.y2, currentFontSize, currentViewBox.height);
+						var x1:Number = getUserUnit(grad.x1, WIDTH);
+						var y1:Number = getUserUnit(grad.y1, HEIGHT);
+						var x2:Number = getUserUnit(grad.x2, WIDTH);
+						var y2:Number = getUserUnit(grad.y2, HEIGHT);
 						
 						grad.mat = flashLinearGradient(x1, y1, x2, y2);
 						
@@ -417,11 +463,11 @@
 						break;
 					}
 					case GradientType.RADIAL: {
-						var cx:Number = getUserUnit(grad.cx, currentFontSize, currentViewBox.width);
-						var cy:Number = getUserUnit(grad.cy, currentFontSize, currentViewBox.height);
-						var r:Number = getUserUnit(grad.r, currentFontSize, currentViewBox.width);
-						var fx:Number = getUserUnit(grad.fx, currentFontSize, currentViewBox.width);
-						var fy:Number = getUserUnit(grad.fy, currentFontSize, currentViewBox.height);
+						var cx:Number = getUserUnit(grad.cx, WIDTH);
+						var cy:Number = getUserUnit(grad.cy, HEIGHT);
+						var r:Number = getUserUnit(grad.r, WIDTH);
+						var fx:Number = getUserUnit(grad.fx, WIDTH);
+						var fy:Number = getUserUnit(grad.fy, HEIGHT);
 
 						grad.mat = flashRadialGradient(cx, cy, r, fx, fy);  
 						
@@ -482,7 +528,7 @@
 						
 			var w:Number = 1;
 			if(elt.styleenv["stroke-width"])
-				w = getUserUnit(elt.styleenv["stroke-width"], currentFontSize, Math.sqrt(Math.pow(currentViewBox.width,2)+Math.pow(currentViewBox.height,2))/Math.sqrt(2));
+				w = getUserUnit(elt.styleenv["stroke-width"], WIDTH_HEIGHT);
 
 			var stroke_linecap:String = CapsStyle.NONE;
 
@@ -513,7 +559,7 @@
 			trace("renderer has not implemented " + s);
 		}
 		
-		public function getUserUnit(s:String, relativeReference:Number = 1, percentageReference:Number = 1):Number {
+		public function getUserUnit(s:String, viewBoxReference:String):Number {
 			var value:Number;
 			
 			if(s.indexOf("pt")!=-1){
@@ -538,13 +584,20 @@
 			//Relative
 			} else if(s.indexOf("em")!=-1){
 				value = Number(StringUtil.remove(s, "em"));
-				return value*relativeReference;
+				return value*currentFontSize;
 				
 			//Percentage
 			} else if(s.indexOf("%")!=-1){
 				value = Number(StringUtil.remove(s, "%"));
-				return value/100*percentageReference;
 				
+				switch(viewBoxReference){
+					case WIDTH : return value/100 * currentViewBox.width;
+							break;
+					case HEIGHT : return value/100 * currentViewBox.height;
+							break;
+					default : return value/100 * Math.sqrt(Math.pow(currentViewBox.width,2)+Math.pow(currentViewBox.height,2))/Math.sqrt(2)
+							break;
+				}
 			} else {
 				return Number(s);
 			}

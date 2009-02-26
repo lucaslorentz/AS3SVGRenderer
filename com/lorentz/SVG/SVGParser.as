@@ -14,24 +14,43 @@
 	import com.lorentz.SVG.PathCommand;
 	
 	public class SVGParser {
+		private var svg_original:XML;
 		private var svg:XML;
 		private var svg_object:Object;
 		private var defs:Object = new Object();
 		private var clipPaths:Object = new Object();
 		
 		public function SVGParser(svg:XML){
-			this.svg = svg;
+			this.svg_original = svg;
 		}
 		
 		public function parse(){
+			processUses();
 			svg_object = visit(svg);
-			svg_object.svg = svg;
-			svg_object.defs = defs;
+			//svg_object.svg = svg_original;
+			//svg_object.defs = defs;
 			svg_object.clipPaths = clipPaths;
 			
 			parseGradients();
 			
 			return svg_object;
+		}
+		
+		private function processUses(){
+			this.svg = svg_original.copy();
+			
+			//Finish to implement, http://www.w3.org/TR/SVG/struct.html#UseElement
+			for each(var useNode:XML in this.svg..*.(localName()=="use")){
+				var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
+				var link:String = useNode.@xlink::href;
+				link = StringUtil.ltrim(link, "#");
+
+				var targetNode:XML = svg..*.(attribute("id")==link)[0];
+
+				useNode.setLocalName("g");
+				useNode.@xlink::href = null;
+				useNode.appendChild(targetNode.copy());
+			}
 		}
 		
 		private function visit(elt:XML):Object {
@@ -74,16 +93,23 @@
 				obj = visitG(elt);
 				break;
 				
+				/*
 				case 'defs':
 				obj = visitDefs(elt);
-				break;
+				break;*/
 				
 				case 'clipPath':
 				obj = visitClipPath(elt);
 				break;
 				
+				/*
 				case 'use':
 				obj = visitUse(elt);
+				break;
+				*/
+				
+				case 'text':
+				obj = visitText(elt);
 				break;
 			}
 			
@@ -112,13 +138,10 @@
 			
 			return obj;
 		}
-		private var currentViewBox:Object;
-		
+
 		private function visitSvg(elt:XML):Object {
 			var obj:Object = new Object();
 			obj.viewBox = parseViewBox(elt.@viewBox);
-
-			currentViewBox = obj.viewBox;
 			
 			obj.styles = parseStyles(elt);
 			
@@ -226,6 +249,7 @@
 			return obj;
 		}
 		
+		/*
 		private function visitDefs(elt:XML):Object {
 			for each(var childElt:XML in elt.*) {
 				var child:Object = visit(childElt);
@@ -236,6 +260,7 @@
 			
 			return null;
 		}
+		*/
 		
 		private function visitClipPath(elt:XML):Object {
 			var obj:Object = new Object();
@@ -254,11 +279,23 @@
 			return null;
 		}
 
+		/*
 		private function visitUse(elt:XML):Object {
 			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
 			var link:String = elt.@xlink::href;
 			link = StringUtil.ltrim(link, "#");
 			return defs[link];
+		}
+		*/
+		
+		private function visitText(elt:XML):Object {
+			var obj:Object = new Object();
+
+			obj.x = elt.@x;
+			obj.y = elt.@y;
+			obj.textValue = elt.text();
+
+			return obj;
 		}
 		
 		public function parsePathData(input:String):Array { 

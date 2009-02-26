@@ -1,6 +1,6 @@
 ﻿package {
 	import flash.display.Sprite;
-	import flash.display.MovieClip;
+	import flash.display.DisplayObject;
 	import flash.text.TextField;
 
 	import com.lorentz.SVG.*;
@@ -20,6 +20,8 @@
 		
 		public function tests() {
 			var array_itens:Array = new Array(
+				"text01.svg",
+				"tspan01.svg",
 				"Units.svg",
 				"lingrad01.svg",
 				"arcs01.svg",
@@ -88,7 +90,9 @@
 			stage.addEventListener(MouseEvent.CLICK, traceClick);
 		}
 		function traceClick(e:MouseEvent):void {
-			trace(e.target.name);
+			if(shp.contains(e.target as DisplayObject)){
+				trace(e.target.name);
+			}
 		}
 	}
 }
