@@ -1,23 +1,14 @@
 ﻿package com.lorentz.SVG {
-	import flash.display.Sprite;
-	import flash.display.Graphics;
-	import flash.display.Shape;
 	import flash.display.GradientType;
 	import flash.display.SpreadMethod;
-	
-	import com.lorentz.SVG.StringUtil;
-	
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import flash.geom.Point;
-	
-	import com.lorentz.SVG.PathCommand;
 	
 	public class SVGParser {
 		private var svg_original:XML;
 		private var svg:XML;
 		private var svg_object:Object;
-		private var defs:Object = new Object();
+		//private var defs:Object = new Object();
 		private var clipPaths:Object = new Object();
 		
 		public function SVGParser(svg:XML){
@@ -110,6 +101,10 @@
 				
 				case 'text':
 				obj = visitText(elt);
+				break;
+				
+				case 'tspan':
+				obj = visitTspan(elt);
 				break;
 			}
 			
@@ -293,8 +288,22 @@
 
 			obj.x = elt.@x;
 			obj.y = elt.@y;
-			obj.textValue = elt.text();
+			
+			obj.children = new Array();
+//			elt.ignoreWhitespace = false;
+			for each(var childElt:XML in elt.*) {
+				if(childElt.nodeKind() == "text"){
+					obj.children.push(childElt.toString());
+				} else if(childElt.nodeKind() == "element"){
+					obj.children.push(visit(childElt));
+				}
+			}
 
+			return obj;
+		}
+		private function visitTspan(elt:XML):Object {
+			var obj:Object = new Object();
+			obj.text = elt.text().toString();
 			return obj;
 		}
 		
@@ -402,12 +411,11 @@
 					return new Matrix(args[0], args[1], args[2], args[3], Number(args[4]), Number(args[5]));
 				}
 
-				import fl.motion.MatrixTransformer;
 				switch(name){
 					case "translate": mat.translate(Number(args[0]), args[1]!=null? Number(args[1]) : Number(args[0])); break;
-					case "scale" 	: MatrixTransformer.setScaleX(mat, Number(args[0])); MatrixTransformer.setScaleY(mat, args[1]!=null ? Number(args[1]):Number(args[0])); break;
+					case "scale" 	: mat.scale(Number(args[0]),args[1]!=null ? Number(args[1]):Number(args[0])); break;
 					case "rotate"	: MatrixTransformer.rotateAroundInternalPoint(mat, args[1]!=null?Number(args[1]):0 ,args[2]!=null?Number(args[2]):0, Number(args[0])); break;
-					case "skewx" 	: MatrixTransformer.setSkewX(mat, -args[0]); break;
+					case "skewx" 	: MatrixTransformer.setSkewX(mat, args[0]); break;
 					case "skewy" 	: MatrixTransformer.setSkewY(mat, args[0]); break;
 				}
 			}

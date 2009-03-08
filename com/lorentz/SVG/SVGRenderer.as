@@ -412,7 +412,16 @@
 			sText.multiline = false;
 			sText.background = false;
 			sText.backgroundColor = 0xFF0000;
-			sText.htmlText = textValue;
+//			sText.htmlText = textValue;
+
+			for each(var childElt:Object in elt.children) {
+				if(childElt is String){
+					sText.htmlText += childElt;
+				} else {
+					sText.htmlText += childElt.text;
+				}
+			}
+			
 			s.x = textX;
 //			s.y = textY;
 			s.y = textY-textHeight;
