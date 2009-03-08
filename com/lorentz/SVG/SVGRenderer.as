@@ -1,27 +1,16 @@
 ﻿package com.lorentz.SVG {
-	import flash.display.Sprite;
-	import flash.display.Graphics;
-	import flash.display.Shape;
 	import flash.display.CapsStyle;
-	import flash.display.JointStyle;
-	import flash.display.GradientType;
-	import flash.display.SpreadMethod;
 	import flash.display.DisplayObject;
-	
-	import flash.text.TextField;
-	import flash.text.TextFormat;
-	import flash.text.TextFormatAlign;
-	import flash.text.TextFieldAutoSize;
-	import flash.text.AntiAliasType;
-	import flash.text.TextLineMetrics;
-	
-	import flash.geom.Rectangle;
+	import flash.display.GradientType;
+	import flash.display.JointStyle;
+	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
-	
-	import com.lorentz.SVG.PathCommand;
-	import com.lorentz.SVG.Bezier;
-	import com.lorentz.SVG.SVGColor;
+	import flash.geom.Rectangle;
+	import flash.text.AntiAliasType;
+	import flash.text.TextField;
+	import flash.text.TextFieldAutoSize;
+	import flash.text.TextFormat;
 	
 	public class SVGRenderer extends Sprite{
 		private const WIDTH:String = "width";
@@ -68,8 +57,8 @@
 				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, elt.style);
 				
 			//Testing
-			var oldFontSize = currentFontSize;
-			var oldViewBox = currentViewBox;
+			var oldFontSize:Number = currentFontSize;
+			var oldViewBox:* = currentViewBox;
 			if(elt.styleenv["font-size"]!=null){
 				currentFontSize = getUserUnit(elt.styleenv["font-size"], HEIGHT);
 			}
@@ -125,7 +114,7 @@
 					var id:String = StringUtil.rtrim(String(elt.clipPath).split("(")[1], ")");
 					id = StringUtil.ltrim(id, "#");
 
-					var mask = visitClipPath(svg_object.clipPaths[id]);
+					var mask:* = visitClipPath(svg_object.clipPaths[id]);
 
 					var newGroup:Sprite = new Sprite();
 					newGroup.addChild(obj);
@@ -183,8 +172,8 @@
 
 			//Testing
 			if(elt.width!=null && elt.height!=null){
-				var activeAreaWidth = elt.viewBox.width || activeArea.width;
-				var activeAreaHeight = elt.viewBox.height || activeArea.height;
+				var activeAreaWidth:int = elt.viewBox.width || activeArea.width;
+				var activeAreaHeight:int = elt.viewBox.height || activeArea.height;
 				
 				activeArea.scaleX = getUserUnit(elt.width, WIDTH)/activeAreaWidth;
 				activeArea.scaleY = getUserUnit(elt.height, HEIGHT)/activeAreaHeight;
@@ -480,7 +469,7 @@
 
 						grad.mat = flashRadialGradient(cx, cy, r, fx, fy);  
 						
-						var f = { x:fx-cx, y:fy-cy };
+						var f:* = { x:fx-cx, y:fy-cy };
 						grad.focalRatio = Math.sqrt( (f.x*f.x)+(f.y*f.y) )/r;
 					
 						if(grad.r==0)
@@ -498,12 +487,12 @@
 		
 		
 		private function flashLinearGradient( x1:Number, y1:Number, x2:Number, y2:Number ):Matrix { 
-                 var w = x2-x1;
-				 var h = y2-y1; 
-                 var a = Math.atan2(h,w); 
-                 var vl = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) ); 
+                 var w:Number = x2-x1;
+				 var h:Number = y2-y1; 
+                 var a:Number = Math.atan2(h,w); 
+                 var vl:Number = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) ); 
                   
-                 var matr = new flash.geom.Matrix(); 
+                 var matr:Matrix = new flash.geom.Matrix(); 
                  matr.createGradientBox( 1, 1, 0, 0., 0. ); 
   
                  matr.rotate( a ); 
@@ -514,18 +503,18 @@
          } 
 		 
 		private function flashRadialGradient( cx:Number, cy:Number, r:Number, fx:Number, fy:Number ):Matrix { 
-                 var d = r*2; 
-                 var matr = new flash.geom.Matrix(); 
-                 matr.createGradientBox( d, d, 0, 0., 0. ); 
+                 var d:Number = r*2; 
+                 var mat:Matrix = new flash.geom.Matrix(); 
+                 mat.createGradientBox( d, d, 0, 0., 0. ); 
   
-                 var a = Math.atan2(fy-cy,fx-cx); 
-                 matr.translate( -cx, -cy ); 
-                 matr.rotate( -a );
-                 matr.translate( cx, cy ); 
+                 var a:Number = Math.atan2(fy-cy,fx-cx); 
+                 mat.translate( -cx, -cy ); 
+                 mat.rotate( -a );
+                 mat.translate( cx, cy ); 
 				 
-				 matr.translate( cx-r, cy-r ); 
+				 mat.translate( cx-r, cy-r ); 
 
-                 return matr; 
+                 return mat; 
          } 
 		
 		

@@ -15,7 +15,7 @@
 			this.svg_original = svg;
 		}
 		
-		public function parse(){
+		public function parse():Object{
 			processUses();
 			svg_object = visit(svg);
 			//svg_object.svg = svg_original;
@@ -27,7 +27,7 @@
 			return svg_object;
 		}
 		
-		private function processUses(){
+		private function processUses():void{
 			this.svg = svg_original.copy();
 			
 			//Finish to implement, http://www.w3.org/TR/SVG/struct.html#UseElement

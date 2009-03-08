@@ -24,7 +24,7 @@ package com.lorentz.SVG {
 			return _args;
 		}
 		
-		public function set args(value){
+		public function set args(value:*):void{
 			_args = value;
 		}
 	}

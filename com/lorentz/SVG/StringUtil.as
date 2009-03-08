@@ -155,10 +155,10 @@
 		* @returns (String) string with sequences shrunk
 		*/
 		public static function shrinkSequencesOf(s:String, ch:String):String {
-			var len = s.length;
-			var idx = 0;
-			var idx2 = 0;
-			var rs = "";
+			var len:int = s.length;
+			var idx:int = 0;
+			var idx2:int = 0;
+			var rs:String = "";
 			
 			while ((idx2 = s.indexOf(ch, idx) + 1) != 0) {
 				// include string up to first character in sequence

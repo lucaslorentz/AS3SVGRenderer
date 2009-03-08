@@ -23,13 +23,13 @@ package com.lorentz.SVG{
 			subPaths = extractSubPaths(commands);
 		}
 
-		public function render(target:Sprite) {
+		public function render(target:Sprite):void{
 			for(var i:int = 0;i<numSubPaths; i++){
 				renderSubPath(target, i);
 			}
 		}
 		
-		public function renderSubPath(target:Sprite, index:int) {
+		public function renderSubPath(target:Sprite, index:int):void{
 			this.target = target;
 			var subPath:Array = subPaths[index];
 			
@@ -108,7 +108,7 @@ package com.lorentz.SVG{
 		}
 
 	
-		public function closePath() {
+		public function closePath():void{
 			target.graphics.lineTo(first.x, first.y);
 			penX = first.x;
 			penY = first.y;
@@ -174,7 +174,7 @@ package com.lorentz.SVG{
 				curveToQuadraticAbs(quadP.c.x, quadP.c.y, quadP.p.x, quadP.p.y);
 			}
 		}
-		public function cubicCurveToAbs(x1:Number, y1:Number, x2:Number, y2:Number, x:Number, y:Number) {
+		public function cubicCurveToAbs(x1:Number, y1:Number, x2:Number, y2:Number, x:Number, y:Number):void{
 			var anchor1:Point = new Point(penX, penY);
 			var control1:Point = new Point(x1, y1);
 			var control2:Point = new Point(x2, y2);
@@ -186,7 +186,7 @@ package com.lorentz.SVG{
 			cubeToBezier(bezier);
 			lastC = control2;
 		}
-		public function cubicCurveToRel(x1:Number, y1:Number, x2:Number, y2:Number, x:Number, y:Number) {
+		public function cubicCurveToRel(x1:Number, y1:Number, x2:Number, y2:Number, x:Number, y:Number):void{
 			cubicCurveToAbs(x1+penX, y1+penY, x2+penX, y2+penY, x+penX, y+penY);
 		}
 		
@@ -314,8 +314,8 @@ package com.lorentz.SVG{
 			if (segs>0) 
 			{				
 				var beta:Number = degressToRadius(xAxisRotation);
-				var sinbeta = Math.sin(beta);
-				var cosbeta = Math.cos(beta);
+				var sinbeta:Number = Math.sin(beta);
+				var cosbeta:Number = Math.cos(beta);
 			
 				var cx:Number;
 				var cy:Number;
@@ -327,8 +327,8 @@ package com.lorentz.SVG{
 				{
 					angle += theta;
 
-					var sinangle = Math.sin(angle-(theta/2));
-					var cosangle = Math.cos(angle-(theta/2));
+					var sinangle:Number = Math.sin(angle-(theta/2));
+					var cosangle:Number = Math.cos(angle-(theta/2));
 					
 					var div:Number = Math.cos(theta/2);
 					cx= x + (radius * cosangle * cosbeta - yRadius * sinangle * sinbeta)/div; //Why divide by Math.cos(theta/2)?
