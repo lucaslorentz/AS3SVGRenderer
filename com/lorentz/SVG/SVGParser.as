@@ -142,9 +142,13 @@
 			
 			if("@width" in elt)
 				obj.width =  elt.@width;
+			else
+				obj.width = "100%";
 			
 			if("@height" in elt)
 				obj.height = elt.@height;
+			else
+				obj.height = "100%";
 			
 			obj.children = new Array();
 
