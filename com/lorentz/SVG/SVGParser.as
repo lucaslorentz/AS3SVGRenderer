@@ -290,8 +290,8 @@
 		private function visitText(elt:XML):Object {
 			var obj:Object = new Object();
 
-			obj.x = elt.@x;
-			obj.y = elt.@y;
+			obj.x = ("@x" in elt) ? elt.@x : 0;
+			obj.y = ("@y" in elt) ? elt.@y : 0;
 			
 			obj.children = new Array();
 //			elt.ignoreWhitespace = false;
@@ -299,7 +299,9 @@
 				if(childElt.nodeKind() == "text"){
 					obj.children.push(childElt.toString());
 				} else if(childElt.nodeKind() == "element"){
-					obj.children.push(visit(childElt));
+					var child:Object = visit(childElt);
+					child.parent = obj;
+					obj.children.push(child);
 				}
 			}
 
@@ -308,6 +310,10 @@
 		private function visitTspan(elt:XML):Object {
 			var obj:Object = new Object();
 			obj.text = elt.text().toString();
+			
+			obj.x = ("@x" in elt) ? elt.@x : 0;
+			obj.y = ("@y" in elt) ? elt.@y : 0;
+			
 			return obj;
 		}
 		
