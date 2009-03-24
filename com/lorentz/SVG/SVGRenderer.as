@@ -38,23 +38,7 @@
 		private function visit(elt:Object):Sprite {
 			var obj:Sprite;
 			
-			if(elt.parent){
-				elt.styleenv = elt.parent.styleenv; //Inherits parent style
-			} else {
-				elt.styleenv = new Object();
-			}
-
-			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
-				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles[elt.type]);
-			}
-			
-			if(elt["class"]){ //Merge with classes styles
-				for each(var className:String in String(elt["class"]).split(" "))
-					elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles["."+className]);
-			}
-
-			if(elt.style) //Merge all styles with the style attribute
-				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, elt.style);
+			inheritStyles(elt);
 				
 			//Testing
 			var oldFontSize:Number = currentFontSize;
@@ -133,11 +117,31 @@
 			return obj;
 		}
 		
+		private function inheritStyles(elt:Object):void {
+			if(elt.parent){
+				elt.styleenv = elt.parent.styleenv; //Inherits parent style
+			} else {
+				elt.styleenv = new Object();
+			}
+
+			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
+				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles[elt.type]);
+			}
+			
+			if(elt["class"]){ //Merge with classes styles
+				for each(var className:String in String(elt["class"]).split(" "))
+					elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles["."+className]);
+			}
+
+			if(elt.style) //Merge all styles with the style attribute
+				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, elt.style);
+		}
+		
 		private function visitSvg(elt:Object):Sprite {
 			// the view box
 			var viewBox:Sprite = new Sprite();
 			viewBox.name = "viewBox";
-			viewBox.graphics.drawRect(0,0,elt.viewBox.width, elt.viewBox.height);
+			//viewBox.graphics.drawRect(0,0,elt.viewBox.width, elt.viewBox.height);
 			
 			var activeArea:Sprite = new Sprite();
 			activeArea.name = "activeArea";
@@ -148,6 +152,7 @@
 				activeArea.addChild(visit(childElt));
 			}
 			
+			/*
 			// find the minimum point in the active area.
 		    var min:Point = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
 		    var r:Rectangle;
@@ -169,6 +174,7 @@
 				c.x -= min.x;
 				c.y -= min.y;
 			}
+			*/
 
 			//Testing
 			if(elt.width!=null && elt.height!=null){
@@ -365,74 +371,93 @@
 		private function visitText(elt:Object):Sprite {
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "text";
+			
+			var subSprite:Sprite = new Sprite();
 
 			var textX:Number = getUserUnit(elt.x, WIDTH);
 			var textY:Number = getUserUnit(elt.y, HEIGHT);
 
 			var textAnchor:String = elt.styleenv["text-anchor"];
 			
-			var fill:uint = SVGColor.parseToInt(elt.styleenv["fill"])
-			var textHeight:uint = getUserUnit(elt.styleenv["font-size"], WIDTH);
-			var svgFont:String = elt.styleenv["font-family"] == undefined? "Arial" : elt.styleenv["font-family"];
-			var textWeight:Boolean = elt.styleenv["font-weight"] != undefined ? true : false;
-			var textValue:String = elt.textValue;
-			
-			var sText:TextField = new TextField();
-			var sFormat:TextFormat = new TextFormat();
-			
-			/*if(textAnchor == "middle"){
-				sFormat.align = TextFormatAlign.CENTER;
-			}
-			else if(textAnchor == "end"){
-				sFormat.align = TextFormatAlign.RIGHT;
-			}
-			else{
-				sFormat.align = TextFormatAlign.LEFT
-			}*/
-			sFormat.font = svgFont;
-			sFormat.bold = textWeight.valueOf();
-			sFormat.size = textHeight;
-			sFormat.color = fill;
-			
-			//sText.border = true;
-			//sText.borderColor = 0x000000;
-			sText.defaultTextFormat = sFormat;
-			sText.antiAliasType = AntiAliasType.ADVANCED;
-			sText.multiline = false;
-			sText.background = false;
-			sText.backgroundColor = 0xFF0000;
-//			sText.htmlText = textValue;
+			var dTFormat:TextFormat = styleToTextFormat(elt.styleenv);
 
+			var tField:TextField;
+			var tFormat:TextFormat;
+			var tx:Number = 0;
 			for each(var childElt:Object in elt.children) {
-				if(childElt is String){
-					sText.htmlText += childElt;
-				} else {
-					sText.htmlText += childElt.text;
-				}
-			}
-			
-			s.x = textX;
-//			s.y = textY;
-			s.y = textY-textHeight;
-			sText.width = 100;
-			sText.setTextFormat(sFormat);
-			s.addChild(sText);
+				tField = new TextField();
+				
+				tField.autoSize = TextFieldAutoSize.LEFT;
+				//tField.embedFonts = true;
+				tField.antiAliasType = AntiAliasType.ADVANCED;
+				tField.multiline = false;
+				tField.background = false;
+				tField.selectable = false;
+				tField.x = tx;
 
+				if(childElt is String){
+					tField.appendText(childElt as String);
+					tFormat = dTFormat;
+				} else {
+					tField.appendText(childElt.text);
+					inheritStyles(childElt);
+					tFormat = styleToTextFormat(childElt.styleenv);
+					tField.x += getUserUnit(childElt.x, WIDTH);
+					tField.y += getUserUnit(childElt.y, HEIGHT);
+				}
+				
+				tField.setTextFormat(tFormat);
+				
+				subSprite.addChild(tField);
+				
+				tField.y -= 2; //Top margin of the textField
+				tField.y-=tField.textHeight;
+				tField.x -= 2; //Left margin of the textField
+				tx+=tField.textWidth;
+			}
+
+			subSprite.x = textX;
+			subSprite.y = textY+2;
+			
 			if(textAnchor == "middle"){
-				sText.autoSize = TextFieldAutoSize.CENTER;
-				s.x -= (s.width/2);
-				s.y -= (s.height/2);
+				subSprite.x -= (subSprite.width/2);
+				subSprite.y -= (subSprite.height/2);
 			}
 			else if(textAnchor == "end"){
-				sText.autoSize = TextFieldAutoSize.RIGHT;
-				s.x -= s.width;
-				s.y -= s.height;
+				subSprite.x -= subSprite.width;
+				subSprite.y -= subSprite.height;
 			}
-			else{
-				sText.autoSize = TextFieldAutoSize.LEFT
-			}
+			
+			s.addChild(subSprite);
 			
 			return s;
+		}
+		
+		private function styleToTextFormat(style:Object):TextFormat {
+			var sFontSize:String = style["font-size"];
+			var sFont:String = style["font-family"];
+
+			var tFormat:TextFormat = new TextFormat();
+			tFormat.font = sFont == null? "Arial" : sFont;
+			//tFormat.font = "Arial";
+			tFormat.bold = style["font-weight"] != undefined ? true : false;
+			tFormat.size = getFontSize(sFontSize==null ? "medium" : sFontSize);
+			tFormat.color = SVGColor.parseToInt(style["fill"])
+			
+			return tFormat;
+		}
+		
+		private function getFontSize(s:String):Number{
+			switch(s){
+				case "xx-small" : s = "6.94pt"; break;
+				case "x-small" : s = "8.33pt"; break;
+				case "small" : s = "10pt"; break;
+				case "medium" : s = "12pt"; break;
+				case "large" : s = "14.4pt"; break;
+				case "x-large" : s = "17.28pt"; break;
+				case "xx-large" : s = "20.736pt"; break;
+			}
+			return getUserUnit(s, WIDTH);
 		}
 		
 		private function beginFill(s:Sprite, elt:Object):void {
