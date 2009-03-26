@@ -410,14 +410,14 @@
 				
 				subSprite.addChild(tField);
 				
-				tField.y -= 2; //Top margin of the textField
+				tField.y -= 2; //Top margin
 				tField.y-=tField.textHeight;
-				tField.x -= 2; //Left margin of the textField
+				tField.x -= 2; //Left margin
 				tx+=tField.textWidth;
 			}
 
 			subSprite.x = textX;
-			subSprite.y = textY+2;
+			subSprite.y = textY+2; //Bottom margin
 			
 			if(textAnchor == "middle"){
 				subSprite.x -= (subSprite.width/2);
