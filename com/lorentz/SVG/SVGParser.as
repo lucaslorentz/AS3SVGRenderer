@@ -348,21 +348,30 @@
 		}
 		
 		public static function parseArgsData(input:String):Array { 
-			var returnData:Array=new Array(); 
-			
-			var inputString:String = StringUtil.replace(input,"-",",-");
-			inputString = StringUtil.replace(inputString," ",",");
-			inputString = StringUtil.shrinkSequencesOf(inputString,",");
-			
-			inputString = StringUtil.trim(inputString, ",");
-			
+			var returnData:Array=new Array();
 
-			var argsArray:Array = inputString.split(",");
-			
-			for (var i:int=0; i<argsArray.length; i++) { 
-				if(argsArray[i].length>0)
-					returnData.push(Number(argsArray[i]));
+			var last_char:String = null;
+			var cur_char:String = null;
+			var cur_arg:String = "";
+			var i:int = 0;
+			while(i<input.length){
+				cur_char = input.charAt(i);
+				if(cur_char=="-" && last_char!="e"){
+					if(cur_arg!="")
+						returnData.push(cur_arg);
+					cur_arg = cur_char;
+				} else if(cur_char=="," || cur_char==" "){
+					if(cur_arg!="")
+						returnData.push(cur_arg);
+					cur_arg = "";
+				} else {
+					cur_arg+=cur_char;
+				}
+				last_char = cur_char;
+				i++;
 			}
+			if(cur_arg!=="")
+				returnData.push(cur_arg);
 
 			return (returnData); 
 		}
@@ -418,7 +427,7 @@
 				var args:Array = SVGParser.parseArgsData(att.split("(")[1]);
 				
 				if(name=="matrix"){
-					return new Matrix(args[0], args[1], args[2], args[3], Number(args[4]), Number(args[5]));
+					return new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]));
 				}
 
 				switch(name){
