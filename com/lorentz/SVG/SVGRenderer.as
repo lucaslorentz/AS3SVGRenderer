@@ -475,27 +475,13 @@
 				
 				switch(grad.type){
 					case GradientType.LINEAR: {
-						var x1:Number = getUserUnit(grad.x1, WIDTH);
-						var y1:Number = getUserUnit(grad.y1, HEIGHT);
-						var x2:Number = getUserUnit(grad.x2, WIDTH);
-						var y2:Number = getUserUnit(grad.y2, HEIGHT);
-						
-						grad.mat = flashLinearGradient(x1, y1, x2, y2);
+						calculateLinearGradient(grad);
 						
 						s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
 						break;
 					}
 					case GradientType.RADIAL: {
-						var cx:Number = getUserUnit(grad.cx, WIDTH);
-						var cy:Number = getUserUnit(grad.cy, HEIGHT);
-						var r:Number = getUserUnit(grad.r, WIDTH);
-						var fx:Number = getUserUnit(grad.fx, WIDTH);
-						var fy:Number = getUserUnit(grad.fy, HEIGHT);
-
-						grad.mat = flashRadialGradient(cx, cy, r, fx, fy);  
-						
-						var f:* = { x:fx-cx, y:fy-cy };
-						grad.focalRatio = Math.sqrt( (f.x*f.x)+(f.y*f.y) )/r;
+						calculateRadialGradient(grad);
 					
 						if(grad.r==0)
 							s.graphics.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
@@ -510,39 +496,59 @@
 			s.graphics.beginFill(color, noFill?0:fill_opacity);
 		}
 		
+		private function calculateLinearGradient(grad:Object):void {
+			var x1:Number = getUserUnit(grad.x1, WIDTH);
+			var y1:Number = getUserUnit(grad.y1, HEIGHT);
+			var x2:Number = getUserUnit(grad.x2, WIDTH);
+			var y2:Number = getUserUnit(grad.y2, HEIGHT);
+			
+			grad.mat = flashLinearGradientMatrix(x1, y1, x2, y2);
+		}
 		
-		private function flashLinearGradient( x1:Number, y1:Number, x2:Number, y2:Number ):Matrix { 
-                 var w:Number = x2-x1;
-				 var h:Number = y2-y1; 
-                 var a:Number = Math.atan2(h,w); 
-                 var vl:Number = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) ); 
-                  
-                 var matr:Matrix = new flash.geom.Matrix(); 
-                 matr.createGradientBox( 1, 1, 0, 0., 0. ); 
-  
-                 matr.rotate( a ); 
-                 matr.scale( vl, vl ); 
-                 matr.translate( x1, y1 ); 
-                  
-                 return matr; 
-         } 
+		private function flashLinearGradientMatrix( x1:Number, y1:Number, x2:Number, y2:Number ):Matrix { 
+			var w:Number = x2-x1;
+			var h:Number = y2-y1; 
+			var a:Number = Math.atan2(h,w); 
+			var vl:Number = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) ); 
+			
+			var matr:Matrix = new flash.geom.Matrix(); 
+			matr.createGradientBox( 1, 1, 0, 0., 0. ); 
+			
+			matr.rotate( a ); 
+			matr.scale( vl, vl ); 
+			matr.translate( x1, y1 ); 
+			
+			return matr; 
+        } 
+		
+		private function calculateRadialGradient(grad:Object):void {
+			var cx:Number = getUserUnit(grad.cx, WIDTH);
+			var cy:Number = getUserUnit(grad.cy, HEIGHT);
+			var r:Number = getUserUnit(grad.r, WIDTH);
+			var fx:Number = getUserUnit(grad.fx, WIDTH);
+			var fy:Number = getUserUnit(grad.fy, HEIGHT);
+	
+			grad.mat = flashRadialGradientMatrix(cx, cy, r, fx, fy);  
+			
+			var f:* = { x:fx-cx, y:fy-cy };
+			grad.focalRatio = Math.sqrt( (f.x*f.x)+(f.y*f.y) )/r;
+		}
 		 
-		private function flashRadialGradient( cx:Number, cy:Number, r:Number, fx:Number, fy:Number ):Matrix { 
-                 var d:Number = r*2; 
-                 var mat:Matrix = new flash.geom.Matrix(); 
-                 mat.createGradientBox( d, d, 0, 0., 0. ); 
-  
-                 var a:Number = Math.atan2(fy-cy,fx-cx); 
-                 mat.translate( -cx, -cy ); 
-                 mat.rotate( -a );
-                 mat.translate( cx, cy ); 
-				 
-				 mat.translate( cx-r, cy-r ); 
-
-                 return mat; 
-         } 
-		
-		
+		private function flashRadialGradientMatrix( cx:Number, cy:Number, r:Number, fx:Number, fy:Number ):Matrix { 
+			var d:Number = r*2; 
+			var mat:Matrix = new flash.geom.Matrix(); 
+			mat.createGradientBox( d, d, 0, 0., 0. ); 
+			
+			var a:Number = Math.atan2(fy-cy,fx-cx); 
+			mat.translate( -cx, -cy ); 
+			mat.rotate( -a );
+			mat.translate( cx, cy ); 
+			
+			mat.translate( cx-r, cy-r ); 
+			
+			return mat; 
+        }
+		 
 		private function lineStyle(s:Sprite, elt:Object):void {
 			var color:uint = SVGColor.parseToInt(elt.styleenv.stroke);
 			var noStroke:Boolean = elt.styleenv.stroke==null || elt.styleenv.stroke == '' || elt.styleenv.stroke=="none";
@@ -572,7 +578,33 @@
 				else if(linejoin=="bevel")
 					stroke_linejoin = JointStyle.BEVEL;
 			}
-			if(noStroke)
+			
+			if(!noStroke && elt.styleenv.stroke.indexOf("url")>-1){
+				var id:String = StringUtil.rtrim(String(elt.styleenv.stroke).split("(")[1], ")");
+				id = StringUtil.ltrim(id, "#");
+
+				var grad:Object = svg_object.gradients[id];
+				
+				switch(grad.type){
+					case GradientType.LINEAR: {
+						calculateLinearGradient(grad);
+
+						s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
+						break;
+					}
+					case GradientType.RADIAL: {
+						calculateRadialGradient(grad);
+						
+						if(grad.r==0)
+							s.graphics.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "normal", stroke_linecap, stroke_linejoin);
+						else
+							s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+							
+						break;
+					}
+				}
+				return;
+			} else if(noStroke)
 				s.graphics.lineStyle();
 			else
 				s.graphics.lineStyle(w, color, stroke_opacity, true, "normal", stroke_linecap, stroke_linejoin);
