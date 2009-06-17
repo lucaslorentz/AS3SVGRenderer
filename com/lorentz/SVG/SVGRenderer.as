@@ -461,39 +461,46 @@
 		}
 		
 		private function beginFill(s:Sprite, elt:Object):void {
-			var color:uint = SVGColor.parseToInt(elt.styleenv.fill);
+			var fill_str:String = elt.styleenv.fill;
 			
-			var noFill:Boolean = elt.styleenv.fill==null || elt.styleenv.fill == '' || elt.styleenv.fill=="none";
+			if(fill_str == "" || fill_str=="none"){
+				s.graphics.beginFill(0xFFFFFF, 0);
+			} else {
+				var fill_opacity:Number = Number(elt.styleenv["opacity"]?elt.styleenv["opacity"]: (elt.styleenv["fill-opacity"]? elt.styleenv["fill-opacity"] : 1));
 
-			var fill_opacity:Number = Number(elt.styleenv["opacity"]?elt.styleenv["opacity"]: (elt.styleenv["fill-opacity"]? elt.styleenv["fill-opacity"] : 1));
-
-			if(!noFill && elt.styleenv.fill.indexOf("url")>-1){
-				var id:String = StringUtil.rtrim(String(elt.styleenv.fill).split("(")[1], ")");
-				id = StringUtil.ltrim(id, "#");
-
-				var grad:Object = svg_object.gradients[id];
-				
-				switch(grad.type){
-					case GradientType.LINEAR: {
-						calculateLinearGradient(grad);
-						
-						s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
-						break;
-					}
-					case GradientType.RADIAL: {
-						calculateRadialGradient(grad);
+				if(fill_str==null){
+					s.graphics.beginFill(0x000000, fill_opacity); //Initial value to fill is black
 					
-						if(grad.r==0)
-							s.graphics.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
-						else
-							s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+				} else if(fill_str.indexOf("url")>-1){
+					var id:String = StringUtil.rtrim(fill_str.split("(")[1], ")");
+					id = StringUtil.ltrim(id, "#");
+	
+					var grad:Object = svg_object.gradients[id];
+					
+					switch(grad.type){
+						case GradientType.LINEAR: {
+							calculateLinearGradient(grad);
 							
-						break;
+							s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
+							
+							return;
+						}
+						case GradientType.RADIAL: {
+							calculateRadialGradient(grad);
+						
+							if(grad.r==0)
+								s.graphics.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
+							else
+								s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+								
+							return;
+						}
 					}
+				} else {
+					var color:uint = SVGColor.parseToInt(fill_str);
+					s.graphics.beginFill(color, fill_opacity);
 				}
-				return;
 			}
-			s.graphics.beginFill(color, noFill?0:fill_opacity);
 		}
 		
 		private function calculateLinearGradient(grad:Object):void {
