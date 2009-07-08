@@ -360,7 +360,7 @@
 					if(cur_arg!="")
 						returnData.push(cur_arg);
 					cur_arg = cur_char;
-				} else if(cur_char=="," || cur_char==" "){
+				} else if(cur_char=="," || cur_char==" " || cur_char=="\t" || cur_char=="\r" || cur_char=="\n"){
 					if(cur_arg!="")
 						returnData.push(cur_arg);
 					cur_arg = "";

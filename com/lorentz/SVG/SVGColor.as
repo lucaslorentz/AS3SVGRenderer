@@ -169,12 +169,12 @@ package com.lorentz.SVG{
 				s = s.substring(1);
 				if(s.length<6)
 					s = s.charAt(0)+s.charAt(0)+s.charAt(1)+s.charAt(1)+s.charAt(2)+s.charAt(2);
-				return new Number("0x" + s);
+				return new uint("0x" + s);
 			} else if(s.indexOf("(")>-1){
 				s = StringUtil.rtrim(s,")");
 				s = s.split("(")[1];
 				var args:Array = SVGParser.parseArgsData(s);
-				return Number(args[0])*256*256 + Number(args[1])*256 + Number(args[2]);
+				return uint(args[0])*256*256 + Number(args[1])*256 + Number(args[2]);
 			} else {
 				return parseToInt(getColorByName(s));
 			}
