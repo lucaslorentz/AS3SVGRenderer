@@ -8,29 +8,47 @@ package com.lorentz.SVG{
 	import flash.net.URLRequest;
 	
 	import flash.events.Event;
+	
+	import flash.events.IOErrorEvent;
 
 	public class SVGLoader extends Sprite {
-		protected static  var version:String='1.1';
+		protected static var version:String='1.1';
 
-		private var _svgXML:XML=null;
+		protected var _svgXML:XML;
+		protected var _svgSprite:Sprite;
+		protected var _render:Boolean = true;
 
 		public function SVGLoader() {
 		}
 
-		public function load(url:URLRequest) {
+		public function load(url:URLRequest, render:Boolean = true) {
+			_render = render;
+			
 			var loader:URLLoader = new URLLoader();
-			loader.addEventListener(Event.COMPLETE, svgLoadComplete);
+			loader.addEventListener(Event.COMPLETE, fileLoadCompleteHandler);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, fileLoadErrorHandler);
 			loader.load( url);
 		}
 		
-		private function svgLoadComplete(e:Event) {
+		private function fileLoadCompleteHandler(e:Event) {
 			_svgXML = new XML(e.target.data);
-			var shp:Sprite = new SVGRenderer(_svgXML);
-			shp.scaleX = 0.1;
-			shp.scaleY = 0.1;
-
-			this.addChild(shp);
-			dispatchEvent(new Event(Event.COMPLETE));
+			dispatchEvent(new SVGEvent(SVGEvent.LOAD_COMPLETE));
+			if(_render)
+				render();
+		}
+		
+		public function render():void {
+			if(_svgSprite!=null)
+				this.removeChild(_svgSprite);
+				
+			_svgSprite = new SVGRenderer(_svgXML);
+			this.addChild(_svgSprite);
+			
+			dispatchEvent(new SVGEvent(SVGEvent.RENDER_COMPLETE));
+		}
+		
+		private function fileLoadErrorHandler(e:IOErrorEvent):void {
+			dispatchEvent(e);
 		}
 	}
 }
