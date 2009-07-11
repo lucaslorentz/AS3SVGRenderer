@@ -2,6 +2,8 @@
 */
 
 package com.lorentz.SVG{
+	import flash.display.GraphicsPathCommand;
+	import flash.display.GraphicsPathWinding;
 	import flash.display.Sprite;
 	import flash.geom.Point;
 
@@ -15,6 +17,9 @@ package com.lorentz.SVG{
 		private var lastC:Point;//Last control point
 		
 		private var subPaths:Array;
+		private var commands:Vector.<int>;
+		private var pathData:Vector.<Number>;
+		
 		public function get numSubPaths():int{
 			return subPaths.length;
 		}
@@ -23,16 +28,31 @@ package com.lorentz.SVG{
 			subPaths = extractSubPaths(commands);
 		}
 
-		public function render(target:Sprite):void{
+		public function render(target:Sprite, winding:String) {
+			this.target = target;
+			
+			commands = new Vector.<int>();
+			pathData = new Vector.<Number>();
+
 			for(var i:int = 0;i<numSubPaths; i++){
-				renderSubPath(target, i);
+				renderSubPath(subPaths[i]);
 			}
+			
+			switch (winding.toUpperCase())
+			{
+				case GraphicsPathWinding.EVEN_ODD.toUpperCase():
+					winding = GraphicsPathWinding.EVEN_ODD;
+					break;
+					
+				case GraphicsPathWinding.NON_ZERO.toUpperCase():
+					winding = GraphicsPathWinding.NON_ZERO;
+					break;
+			}
+			
+			target.graphics.drawPath(commands, pathData, winding);
 		}
 		
-		public function renderSubPath(target:Sprite, index:int):void{
-			this.target = target;
-			var subPath:Array = subPaths[index];
-			
+		private function renderSubPath(subPath:Array):void{
 			for (var c:int = 0; c < subPath.length; c++) {
 				var command:PathCommand = subPath[c];
 				
@@ -46,26 +66,10 @@ package com.lorentz.SVG{
 				var a:int = 0;
 				while (a<args.length){
 					switch (command.type) {
-						case "M" : 
-							if(a==0){
-								moveToAbs(Number(args[a++]), Number(args[a++]));
-							} else {
-								lineToAbs(Number(args[a++]), Number(args[a++]));
-							}
-							
-							break;
-						case "m" : 
-							if(a==0){
-								moveToRel(Number(args[a++]), Number(args[a++]));
-							}else {
-								lineToRel(Number(args[a++]), Number(args[a++]));
-							}
-								
-							
-							break;
-								
-						case "L" : lineToAbs(Number(args[a++]), Number(args[a++]));  break;
-						case "l" : lineToRel(Number(args[a++]), Number(args[a++]));  break;
+						case "M" : moveToAbs(Number(args[a++]), Number(args[a++])); break;
+						case "m" : moveToRel(Number(args[a++]), Number(args[a++])); break;
+						case "L" : lineToAbs(Number(args[a++]), Number(args[a++])); break;
+						case "l" : lineToRel(Number(args[a++]), Number(args[a++])); break;
 						case "H" : lineToHorizontalAbs(Number(args[a++]));break;
 						case "h" : lineToHorizontalRel(Number(args[a++])); break;
 						case "V" : lineToVerticalAbs(Number(args[a++])); break;
@@ -108,13 +112,15 @@ package com.lorentz.SVG{
 		}
 
 	
-		public function closePath():void{
-			target.graphics.lineTo(first.x, first.y);
+		public function closePath() {
+			commands.push(GraphicsPathCommand.LINE_TO);
+			pathData.push(first.x, first.y);
 			penX = first.x;
 			penY = first.y;
 		}
 		public function moveToAbs(x:Number, y:Number):void {
-			target.graphics.moveTo(x, y);
+			commands.push(GraphicsPathCommand.MOVE_TO);
+			pathData.push(x, y);
 			penX = x;
 			penY = y;
 			first = new Point(x, y);
@@ -123,7 +129,8 @@ package com.lorentz.SVG{
 			moveToAbs(x+penX, y+penY);
 		}
 		public function lineToAbs(x:Number, y:Number):void {
-			target.graphics.lineTo(x, y);
+			commands.push(GraphicsPathCommand.LINE_TO);
+			pathData.push(x, y);
 			penX = x;
 			penY = y;
 		}
@@ -143,7 +150,8 @@ package com.lorentz.SVG{
 			lineToVerticalAbs(y+penY);
 		}
 		public function curveToQuadraticAbs(x1:Number, y1:Number, x:Number, y:Number):void {
-			target.graphics.curveTo(x1, y1, x, y);
+			commands.push(GraphicsPathCommand.CURVE_TO);
+			pathData.push(x1, y1, x, y);
 			penX = x;
 			penY = y;
 			lastC = new Point(x1, y1);

@@ -221,25 +221,14 @@
         	var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "path";
 			
+			var winding:String = elt.styleenv["fill-rule"] == null ? "nonzero" : elt.styleenv["fill-rule"];
+			
 			var renderer:PathRenderer = new PathRenderer(elt.d);
-
-			var evenodd:Boolean = elt.styleenv["fill-rule"]=="evenodd";
-
-			if(evenodd){
-				for(var i:int = 0;i<renderer.numSubPaths; i++){
-					beginFill(s, elt);
-					lineStyle(s, elt);
-					renderer.renderSubPath(s, i);
-					s.graphics.lineStyle();
-					s.graphics.endFill();
-				}
-			} else {
-				beginFill(s, elt);
-				lineStyle(s, elt);
-				renderer.render(s);
-				s.graphics.lineStyle();
-				s.graphics.endFill();
-			}
+			
+			beginFill(s, elt);
+			lineStyle(s, elt);
+			renderer.render(s, winding);
+			s.graphics.endFill();
 			
 			return s;
 		}
