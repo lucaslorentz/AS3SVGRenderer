@@ -292,27 +292,25 @@
 
 			obj.x = ("@x" in elt) ? elt.@x : 0;
 			obj.y = ("@y" in elt) ? elt.@y : 0;
-			
 			obj.children = new Array();
-//			elt.ignoreWhitespace = false;
 			for each(var childElt:XML in elt.*) {
 				if(childElt.nodeKind() == "text"){
-					obj.children.push(childElt.toString());
+					obj.children.push(CleanUp(childElt.toString()));
 				} else if(childElt.nodeKind() == "element"){
 					var child:Object = visit(childElt);
 					child.parent = obj;
 					obj.children.push(child);
 				}
 			}
-
 			return obj;
 		}
 		private function visitTspan(elt:XML):Object {
 			var obj:Object = new Object();
-			obj.text = elt.text().toString();
-			
-			obj.x = ("@x" in elt) ? elt.@x : 0;
-			obj.y = ("@y" in elt) ? elt.@y : 0;
+			obj.text = CleanUp(elt.text().toString());
+			obj.x = ("@x" in elt) ? elt.@x : null;
+			obj.y = ("@y" in elt) ? elt.@y : null;
+			obj.dx = ("@dx" in elt) ? elt.@dx : 0;
+			obj.dy = ("@dy" in elt) ? elt.@dy : 0;
 			
 			return obj;
 		}
@@ -403,11 +401,12 @@
 		
 		private function CleanUp(s:String):String
         {
-            var temp:String = StringUtil.replace(s,"\r", "");
-            temp = StringUtil.replace(temp,"\t", "");
-            temp = StringUtil.replace(temp,"\n", "");
+            var temp:String = StringUtil.replace(s,"\r", " ");
+            temp = StringUtil.replace(temp,"\t", " ");
+            temp = StringUtil.replace(temp,"\n", " ");
 			temp = StringUtil.replace(temp, "&#xA", "");
 			temp = StringUtil.replace(temp, "&nbsp;", " ");
+			temp = StringUtil.shrinkSequencesOf(temp, " ");
             return temp;
         }
 		

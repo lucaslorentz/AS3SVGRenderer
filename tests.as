@@ -13,6 +13,8 @@
 	import fl.data.DataProvider;
 	
 	import flash.events.MouseEvent;
+	
+	import flash.utils.getTimer;
 
 	public class tests extends Sprite {
 		import flash.net.URLLoader;
@@ -20,35 +22,36 @@
 		
 		public function tests() {
 			var array_itens:Array = new Array(
-				"text01.svg",
-				"tspan01.svg",
-				"Units.svg",
-				"lingrad01.svg",
-				"arcs01.svg",
-				"arcs02.svg",
-				"butterfly.svg",
-				"circles1.svg",
-				"ellipse1.svg",
-				"ellipse2.svg",
-				"gradiente.svg",
-				"gradiente_linear.svg",
-				"gradients1.svg",
-				"gradients2.svg",
-				"line1.svg",
-				"lion.svg",
-				"path1.svg",
-				"path2.svg",
-				"paths1.svg",
-				"paths2.svg",
-				"paths3.svg",
-				"polygons1.svg",
-				"quadbezier1.svg",
-				"rect1.svg",
-				"rect2.svg",
-				"rect4.svg",
-				"skew1.svg",
-				"tiger.svg",
-				"toucan.svg"
+				"tests/text01.svg",
+				"tests/tspan01.svg",
+				"tests/tspan02.svg",
+				"tests/Units.svg",
+				"tests/lingrad01.svg",
+				"tests/arcs01.svg",
+				"tests/arcs02.svg",
+				"tests/butterfly.svg",
+				"tests/circles1.svg",
+				"tests/ellipse1.svg",
+				"tests/ellipse2.svg",
+				"tests/gradiente.svg",
+				"tests/gradiente_linear.svg",
+				"tests/gradients1.svg",
+				"tests/gradients2.svg",
+				"tests/line1.svg",
+				"tests/lion.svg",
+				"tests/path1.svg",
+				"tests/path2.svg",
+				"tests/paths1.svg",
+				"tests/paths2.svg",
+				"tests/paths3.svg",
+				"tests/polygons1.svg",
+				"tests/quadbezier1.svg",
+				"tests/rect1.svg",
+				"tests/rect2.svg",
+				"tests/rect4.svg",
+				"tests/skew1.svg",
+				"tests/tiger.svg",
+				"tests/toucan.svg"
 				);
 
 			lista.dataProvider = new DataProvider(array_itens);
@@ -59,7 +62,7 @@
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, xmlComplete);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
-			loader.load( new URLRequest("tests/"+e.item.data));
+			loader.load( new URLRequest(e.item.data));
 			
 			information.text = "";
 			if(shp!=null && shp.parent!=null)
@@ -76,8 +79,11 @@
 		private var shp:Sprite;
 		private function xmlComplete(e:Event) {
 			information.text = "Rendering";
+			
+			XML.ignoreWhitespace = false;
 			var svg:XML = new XML(e.target.data);
-			import flash.utils.getTimer;
+			XML.ignoreWhitespace = true;
+			
 			var i:Number = getTimer();
 			shp = new SVGRenderer(svg);
 			var f:Number = getTimer();

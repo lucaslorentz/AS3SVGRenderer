@@ -31,7 +31,9 @@ package com.lorentz.SVG{
 		}
 		
 		private function fileLoadCompleteHandler(e:Event) {
+			XML.ignoreWhitespace = false;
 			_svgXML = new XML(e.target.data);
+			XML.ignoreWhitespace = true;
 			dispatchEvent(new SVGEvent(SVGEvent.LOAD_COMPLETE));
 			if(_render)
 				render();

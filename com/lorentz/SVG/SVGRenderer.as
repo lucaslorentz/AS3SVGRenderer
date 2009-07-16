@@ -391,8 +391,12 @@
 					tField.appendText(childElt.text);
 					inheritStyles(childElt);
 					tFormat = styleToTextFormat(childElt.styleenv);
-					tField.x += getUserUnit(childElt.x, WIDTH);
-					tField.y += getUserUnit(childElt.y, HEIGHT);
+					tField.x += getUserUnit(childElt.dx, WIDTH);
+					tField.y += getUserUnit(childElt.dy, HEIGHT);
+					if(childElt.x!=null)
+						tField.x = childElt.x;
+					if(childElt.y!=null)
+						tField.y = childElt.y;
 				}
 				
 				tField.setTextFormat(tFormat);
