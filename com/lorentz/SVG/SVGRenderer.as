@@ -98,7 +98,7 @@
 					var id:String = StringUtil.rtrim(String(elt.clipPath).split("(")[1], ")");
 					id = StringUtil.ltrim(id, "#");
 
-					var mask:* = visitClipPath(svg_object.clipPaths[id]);
+					var mask:* = visitClipPath(svg_object.defs[id]);
 
 					var newGroup:Sprite = new Sprite();
 					newGroup.addChild(obj);

@@ -8,8 +8,7 @@
 		private var svg_original:XML;
 		private var svg:XML;
 		private var svg_object:Object;
-		//private var defs:Object = new Object();
-		private var clipPaths:Object = new Object();
+		private var defs:Object = new Object();
 		
 		public function SVGParser(svg:XML){
 			this.svg_original = svg;
@@ -19,8 +18,7 @@
 			processUses();
 			svg_object = visit(svg);
 			//svg_object.svg = svg_original;
-			//svg_object.defs = defs;
-			svg_object.clipPaths = clipPaths;
+			svg_object.defs = defs;
 			
 			parseGradients();
 			
@@ -84,10 +82,9 @@
 				obj = visitG(elt);
 				break;
 				
-				/*
 				case 'defs':
 				obj = visitDefs(elt);
-				break;*/
+				break;
 				
 				case 'clipPath':
 				obj = visitClipPath(elt);
@@ -248,7 +245,6 @@
 			return obj;
 		}
 		
-		/*
 		private function visitDefs(elt:XML):Object {
 			for each(var childElt:XML in elt.*) {
 				var child:Object = visit(childElt);
@@ -259,7 +255,6 @@
 			
 			return null;
 		}
-		*/
 		
 		private function visitClipPath(elt:XML):Object {
 			var obj:Object = new Object();
@@ -272,10 +267,8 @@
 					obj.children.push(child);
 				}
 			}
-
-			clipPaths[elt.@id] = obj;
 			
-			return null;
+			return obj;
 		}
 
 		/*
