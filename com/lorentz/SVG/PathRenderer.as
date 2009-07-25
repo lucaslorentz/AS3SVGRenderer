@@ -31,7 +31,7 @@ package com.lorentz.SVG{
 			subPaths = extractSubPaths(commands);
 		}
 
-		public function render(target:Sprite, winding:String) {
+		public function render(target:Sprite, winding:String):void {
 			this.target = target;
 			
 			commands = new Vector.<int>();
@@ -115,7 +115,7 @@ package com.lorentz.SVG{
 		}
 
 	
-		public function closePath() {
+		public function closePath():void {
 			commands.push(GraphicsPathCommand.LINE_TO);
 			pathData.push(first.x, first.y);
 			penX = first.x;
