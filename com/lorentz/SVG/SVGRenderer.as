@@ -394,9 +394,9 @@
 					tField.x += getUserUnit(childElt.dx, WIDTH);
 					tField.y += getUserUnit(childElt.dy, HEIGHT);
 					if(childElt.x!=null)
-						tField.x = childElt.x;
+						tField.x = childElt.x-textX;
 					if(childElt.y!=null)
-						tField.y = childElt.y;
+						tField.y = childElt.y-textY;
 				}
 				
 				tField.setTextFormat(tFormat);
