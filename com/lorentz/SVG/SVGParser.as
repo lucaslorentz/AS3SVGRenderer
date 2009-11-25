@@ -291,8 +291,10 @@
 					obj.children.push(CleanUp(childElt.toString()));
 				} else if(childElt.nodeKind() == "element"){
 					var child:Object = visit(childElt);
-					child.parent = obj;
-					obj.children.push(child);
+					if(child!=null){
+						child.parent = obj;
+						obj.children.push(child);
+					}
 				}
 			}
 			return obj;

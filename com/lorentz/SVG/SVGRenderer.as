@@ -470,23 +470,25 @@
 	
 					var grad:Object = svg_object.gradients[id];
 					
-					switch(grad.type){
-						case GradientType.LINEAR: {
-							calculateLinearGradient(grad);
-							
-							s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
-							
-							return;
-						}
-						case GradientType.RADIAL: {
-							calculateRadialGradient(grad);
-						
-							if(grad.r==0)
-								s.graphics.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
-							else
-								s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+					if(grad!=null){
+						switch(grad.type){
+							case GradientType.LINEAR: {
+								calculateLinearGradient(grad);
 								
-							return;
+								s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
+								
+								return;
+							}
+							case GradientType.RADIAL: {
+								calculateRadialGradient(grad);
+							
+								if(grad.r==0)
+									s.graphics.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
+								else
+									s.graphics.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+									
+								return;
+							}
 						}
 					}
 				} else {
@@ -585,22 +587,24 @@
 
 				var grad:Object = svg_object.gradients[id];
 				
-				switch(grad.type){
-					case GradientType.LINEAR: {
-						calculateLinearGradient(grad);
-
-						s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
-						break;
-					}
-					case GradientType.RADIAL: {
-						calculateRadialGradient(grad);
-						
-						if(grad.r==0)
-							s.graphics.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "normal", stroke_linecap, stroke_linejoin);
-						else
-							s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+				if(grad!=null){
+					switch(grad.type){
+						case GradientType.LINEAR: {
+							calculateLinearGradient(grad);
+	
+							s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
+							break;
+						}
+						case GradientType.RADIAL: {
+							calculateRadialGradient(grad);
 							
-						break;
+							if(grad.r==0)
+								s.graphics.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "normal", stroke_linecap, stroke_linejoin);
+							else
+								s.graphics.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
+								
+							break;
+						}
 					}
 				}
 				return;

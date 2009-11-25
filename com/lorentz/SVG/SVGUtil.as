@@ -52,6 +52,9 @@
 				obj["display"] = elt.@display;
 			if("@visibility" in elt)
 				obj["visibility"] = elt.@visibility;
+				
+			if("@opacity" in elt)
+				obj["opacity"] = elt.@opacity;
 			
 			if("@fill" in elt)
 				obj["fill"] = elt.@fill;
