@@ -45,46 +45,21 @@
 			return style;
 		}*/
 		
+		protected static const presentationStyles = ["display", "visibility", "opacity", "fill",
+													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
+													 "stroke-width", "stroke-linecap", "stroke-linejoin",
+													 "font-size", "font-family", "font-weight", "text-anchor",
+													 "dominant-baseline"];
+		
 		public static function presentationStyleToObject(elt:XML):Object{
 			var obj:Object = new Object();
 			
-			if("@display" in elt)
-				obj["display"] = elt.@display;
-			if("@visibility" in elt)
-				obj["visibility"] = elt.@visibility;
-				
-			if("@opacity" in elt)
-				obj["opacity"] = elt.@opacity;
+			for each(var styleName:String in presentationStyles){
+				if("@"+styleName in elt){
+					obj[styleName] = elt["@"+styleName];
+				}
+			}
 			
-			if("@fill" in elt)
-				obj["fill"] = elt.@fill;
-			if("@fill-opacity" in elt)
-				obj["fill-opacity"] = elt.@["fill-opacity"];
-			if("@fill-rule" in elt)
-				obj["fill-rule"] = elt.@["fill-rule"];
-
-			if("@stroke" in elt)
-				obj["stroke"] = elt.@stroke;
-			if("@stroke-opacity" in elt)
-				obj["stroke-opacity"] = elt.@["stroke-opacity"];
-			if("@stroke-width" in elt)
-				obj["stroke-width"] = elt.@["stroke-width"];
-			if("@stroke-linecap" in elt)
-				obj["stroke-linecap"] = elt.@["stroke-linecap"];
-			if("@stroke-linejoin" in elt)
-				obj["stroke-linejoin"] = elt.@["stroke-linejoin"];
-				
-			if("@font-size" in elt)
-				obj["font-size"] = elt.@["font-size"];
-			if("@font-family" in elt)
-				obj["font-family"] = elt.@["font-family"];
-			if("@font-weight" in elt)
-				obj["font-weight"] = elt.@["font-weight"];
-			if("@text-anchor" in elt)
-				obj["text-anchor"] = elt.@["text-anchor"];
-			if("@dominant-baseline" in elt)
-				obj["dominant-baseline"] = elt.@["dominant-baseline"];
-				
 			return obj;
 		}
 	}

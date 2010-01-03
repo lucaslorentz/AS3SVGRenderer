@@ -13,18 +13,16 @@
 	import flash.text.TextFormat;
 	
 	public class SVGRenderer extends Sprite{
-		private const WIDTH:String = "width";
-		private const HEIGHT:String = "height";
-		private const WIDTH_HEIGHT:String = "width_height";
+		protected const WIDTH:String = "width";
+		protected const HEIGHT:String = "height";
+		protected const WIDTH_HEIGHT:String = "width_height";
 		
-		private var svg_object:Object;
+		protected var svg_object:Object;
+		protected var renderedItem:DisplayObject;
+		protected var currentFontSize:Number;
+		protected var currentViewBox:Object;
 		
-		//Testing
-		private var currentFontSize:Number;
-		private var currentViewBox:Object;
-		//
-		
-		public function SVGRenderer(svg:Object){
+		public function SVGRenderer(svg:Object, renderNow:Boolean = true){
 			if(svg is XML){
 				var parser:SVGParser = new SVGParser(svg as XML);
 				this.svg_object = parser.parse();
@@ -32,19 +30,30 @@
 				this.svg_object = svg;
 			}
 
-			this.addChild(visit(svg_object));
+			if(renderNow)
+				render();
+		}
+		
+		public function render():void {
+			if(renderedItem!=null)
+				this.removeChild(renderedItem);
+				
+			renderedItem = visit(svg_object);
+			this.addChild(renderedItem);
 		}
 		
 		private function visit(elt:Object):Sprite {
 			var obj:Sprite;
 			
 			inheritStyles(elt);
+			
+			dispatchEvent(new SVGEvent(SVGEvent.PRE_RENDER_OBJECT, elt));
 				
-			//Testing
+			//Save current fontSize and viewBoxSize, and set the new one
 			var oldFontSize:Number = currentFontSize;
 			var oldViewBox:* = currentViewBox;
-			if(elt.styleenv["font-size"]!=null){
-				currentFontSize = getUserUnit(elt.styleenv["font-size"], HEIGHT);
+			if(elt.finalStyle["font-size"]!=null){
+				currentFontSize = getUserUnit(elt.finalStyle["font-size"], HEIGHT);
 			}
 			if(elt.viewBox!=null){
 				currentViewBox = elt.viewBox;
@@ -90,7 +99,7 @@
 				if(elt.transform)
 					obj.transform.matrix = elt.transform;
 					
-				if(elt.styleenv["display"]=="none" || elt.styleenv["visibility"]=="hidden")
+				if(elt.finalStyle["display"]=="none" || elt.finalStyle["visibility"]=="hidden")
 					obj.visible = false;
 					
 				//Testing
@@ -108,7 +117,7 @@
 					obj = newGroup;
 				}
 					
-				//Testing
+				//Restore the old fontSize and viewBoxSize
 				currentFontSize = oldFontSize;
 				currentViewBox = oldViewBox;
 				//
@@ -119,22 +128,22 @@
 		
 		private function inheritStyles(elt:Object):void {
 			if(elt.parent){
-				elt.styleenv = elt.parent.styleenv; //Inherits parent style
+				elt.finalStyle = elt.parent.finalStyle; //Inherits parent style
 			} else {
-				elt.styleenv = new Object();
+				elt.finalStyle = new Object();
 			}
 
 			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
-				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles[elt.type]);
+				elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, svg_object.styles[elt.type]);
 			}
 			
 			if(elt["class"]){ //Merge with classes styles
 				for each(var className:String in String(elt["class"]).split(" "))
-					elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, svg_object.styles["."+className]);
+					elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, svg_object.styles["."+className]);
 			}
 
 			if(elt.style) //Merge all styles with the style attribute
-				elt.styleenv = SVGUtil.mergeObjectStyles(elt.styleenv, elt.style);
+				elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, elt.style);
 		}
 		
 		private function visitSvg(elt:Object):Sprite {
@@ -221,7 +230,7 @@
         	var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "path";
 			
-			var winding:String = elt.styleenv["fill-rule"] == null ? "nonzero" : elt.styleenv["fill-rule"];
+			var winding:String = elt.finalStyle["fill-rule"] == null ? "nonzero" : elt.finalStyle["fill-rule"];
 			
 			var renderer:PathRenderer = new PathRenderer(elt.d);
 			
@@ -366,9 +375,9 @@
 			var textX:Number = getUserUnit(elt.x, WIDTH);
 			var textY:Number = getUserUnit(elt.y, HEIGHT);
 
-			var textAnchor:String = elt.styleenv["text-anchor"];
+			var textAnchor:String = elt.finalStyle["text-anchor"];
 			
-			var dTFormat:TextFormat = styleToTextFormat(elt.styleenv);
+			var dTFormat:TextFormat = styleToTextFormat(elt.finalStyle);
 
 			var tField:TextField;
 			var tFormat:TextFormat;
@@ -390,7 +399,7 @@
 				} else {
 					tField.appendText(childElt.text);
 					inheritStyles(childElt);
-					tFormat = styleToTextFormat(childElt.styleenv);
+					tFormat = styleToTextFormat(childElt.finalStyle);
 					tField.x += getUserUnit(childElt.dx, WIDTH);
 					tField.y += getUserUnit(childElt.dy, HEIGHT);
 					if(childElt.x!=null)
@@ -454,12 +463,12 @@
 		}
 		
 		private function beginFill(s:Sprite, elt:Object):void {
-			var fill_str:String = elt.styleenv.fill;
+			var fill_str:String = elt.finalStyle.fill;
 			
 			if(fill_str == "" || fill_str=="none"){
 				s.graphics.beginFill(0xFFFFFF, 0);
 			} else {
-				var fill_opacity:Number = Number(elt.styleenv["opacity"]?elt.styleenv["opacity"]: (elt.styleenv["fill-opacity"]? elt.styleenv["fill-opacity"] : 1));
+				var fill_opacity:Number = Number(elt.finalStyle["opacity"]?elt.finalStyle["opacity"]: (elt.finalStyle["fill-opacity"]? elt.finalStyle["fill-opacity"] : 1));
 
 				if(fill_str==null){
 					s.graphics.beginFill(0x000000, fill_opacity); //Initial value to fill is black
@@ -552,19 +561,19 @@
         }
 		 
 		private function lineStyle(s:Sprite, elt:Object):void {
-			var color:uint = SVGColor.parseToInt(elt.styleenv.stroke);
-			var noStroke:Boolean = elt.styleenv.stroke==null || elt.styleenv.stroke == '' || elt.styleenv.stroke=="none";
+			var color:uint = SVGColor.parseToInt(elt.finalStyle.stroke);
+			var noStroke:Boolean = elt.finalStyle.stroke==null || elt.finalStyle.stroke == '' || elt.finalStyle.stroke=="none";
 
-			var stroke_opacity:Number = Number(elt.styleenv["opacity"]?elt.styleenv["opacity"]: (elt.styleenv["stroke-opacity"]? elt.styleenv["stroke-opacity"] : 1));
+			var stroke_opacity:Number = Number(elt.finalStyle["opacity"]?elt.finalStyle["opacity"]: (elt.finalStyle["stroke-opacity"]? elt.finalStyle["stroke-opacity"] : 1));
 						
 			var w:Number = 1;
-			if(elt.styleenv["stroke-width"])
-				w = getUserUnit(elt.styleenv["stroke-width"], WIDTH_HEIGHT);
+			if(elt.finalStyle["stroke-width"])
+				w = getUserUnit(elt.finalStyle["stroke-width"], WIDTH_HEIGHT);
 
 			var stroke_linecap:String = CapsStyle.NONE;
 
-			if(elt.styleenv["stroke-linecap"]){
-				var linecap:String = StringUtil.trim(elt.styleenv["stroke-linecap"]).toLowerCase(); 
+			if(elt.finalStyle["stroke-linecap"]){
+				var linecap:String = StringUtil.trim(elt.finalStyle["stroke-linecap"]).toLowerCase(); 
 				if(linecap=="round")
 					stroke_linecap = CapsStyle.ROUND;
 				else if(linecap=="square")
@@ -573,16 +582,16 @@
 				
 			var stroke_linejoin:String = JointStyle.MITER;
 			
-			if(elt.styleenv["stroke-linejoin"]){
-				var linejoin:String = StringUtil.trim(elt.styleenv["stroke-linejoin"]).toLowerCase(); 
+			if(elt.finalStyle["stroke-linejoin"]){
+				var linejoin:String = StringUtil.trim(elt.finalStyle["stroke-linejoin"]).toLowerCase(); 
 				if(linejoin=="round")
 					stroke_linejoin = JointStyle.ROUND;
 				else if(linejoin=="bevel")
 					stroke_linejoin = JointStyle.BEVEL;
 			}
 			
-			if(!noStroke && elt.styleenv.stroke.indexOf("url")>-1){
-				var id:String = StringUtil.rtrim(String(elt.styleenv.stroke).split("(")[1], ")");
+			if(!noStroke && elt.finalStyle.stroke.indexOf("url")>-1){
+				var id:String = StringUtil.rtrim(String(elt.finalStyle.stroke).split("(")[1], ")");
 				id = StringUtil.ltrim(id, "#");
 
 				var grad:Object = svg_object.gradients[id];
@@ -612,10 +621,6 @@
 				s.graphics.lineStyle();
 			else
 				s.graphics.lineStyle(w, color, stroke_opacity, true, "normal", stroke_linecap, stroke_linejoin);
-		}
-		
-		private static function notImplemented(s:String):void {
-			trace("renderer has not implemented " + s);
 		}
 		
 		public function getUserUnit(s:String, viewBoxReference:String):Number {

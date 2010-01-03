@@ -17,7 +17,6 @@
 		public function parse():Object{
 			processUses();
 			svg_object = visit(svg);
-			//svg_object.svg = svg_original;
 			svg_object.defs = defs;
 			
 			parseGradients();
@@ -89,12 +88,6 @@
 				case 'clipPath':
 				obj = visitClipPath(elt);
 				break;
-				
-				/*
-				case 'use':
-				obj = visitUse(elt);
-				break;
-				*/
 				
 				case 'text':
 				obj = visitText(elt);
@@ -270,15 +263,6 @@
 			
 			return obj;
 		}
-
-		/*
-		private function visitUse(elt:XML):Object {
-			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
-			var link:String = elt.@xlink::href;
-			link = StringUtil.ltrim(link, "#");
-			return defs[link];
-		}
-		*/
 		
 		private function visitText(elt:XML):Object {
 			var obj:Object = new Object();
