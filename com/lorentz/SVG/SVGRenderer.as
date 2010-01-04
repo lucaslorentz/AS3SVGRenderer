@@ -116,12 +116,11 @@
 					
 					obj = newGroup;
 				}
-					
-				//Restore the old fontSize and viewBoxSize
-				currentFontSize = oldFontSize;
-				currentViewBox = oldViewBox;
-				//
 			}
+			//Restore the old fontSize and viewBoxSize
+			currentFontSize = oldFontSize;
+			currentViewBox = oldViewBox;
+			//
 			
 			return obj;
 		}
