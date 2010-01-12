@@ -34,6 +34,10 @@
 				render();
 		}
 		
+		public function get svgObject():Object {
+			return svg_object;
+		}
+		
 		public function render():void {
 			if(renderedItem!=null)
 				this.removeChild(renderedItem);
@@ -47,7 +51,7 @@
 			
 			inheritStyles(elt);
 			
-			dispatchEvent(new SVGEvent(SVGEvent.PRE_RENDER_OBJECT, elt));
+			dispatchEvent(new SVGEvent(SVGEvent.PRE_RENDER_ELEMENT, elt));
 				
 			//Save current fontSize and viewBoxSize, and set the new one
 			var oldFontSize:Number = currentFontSize;
@@ -116,6 +120,8 @@
 					
 					obj = newGroup;
 				}
+				
+				dispatchEvent(new SVGEvent(SVGEvent.POS_RENDER_ELEMENT, elt, obj));
 			}
 			//Restore the old fontSize and viewBoxSize
 			currentFontSize = oldFontSize;
