@@ -96,6 +96,10 @@
 				case 'tspan':
 				obj = visitTspan(elt);
 				break;
+				
+				case 'image' :
+				obj = visitImage(elt);
+				break;
 			}
 			
 			if(obj==null)
@@ -290,6 +294,21 @@
 			obj.y = ("@y" in elt) ? elt.@y : null;
 			obj.dx = ("@dx" in elt) ? elt.@dx : 0;
 			obj.dy = ("@dy" in elt) ? elt.@dy : 0;
+			
+			return obj;
+		}
+		
+		private function visitImage(elt:XML):Object {
+			var obj:Object = new Object();
+			obj.x = ("@x" in elt) ? elt.@x : null;
+			obj.y = ("@y" in elt) ? elt.@y : null;
+			obj.width = ("@width" in elt) ? elt.@width : 0;
+			obj.height = ("@height" in elt) ? elt.@height : 0;
+			obj.preserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : 0;
+			
+			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
+			var href:String = elt.@xlink::href;
+			obj.href = StringUtil.trim(href);
 			
 			return obj;
 		}

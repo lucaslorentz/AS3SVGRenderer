@@ -95,6 +95,9 @@
 				case 'text':
 				obj = visitText(elt); break;
 				
+				case 'image':
+				obj = visitImage(elt); break;
+				
 				default:
 				throw new Error("Unknown tag type " + elt.localName());
 			}
@@ -436,6 +439,22 @@
 			}
 			
 			s.addChild(subSprite);
+			
+			return s;
+		}
+		
+		private function visitImage(elt:Object):Sprite {
+			var s:Sprite = new Sprite();
+			s.name = elt.id != null ? elt.id : "image";
+						
+			var loader:SVGImageLoader = new SVGImageLoader();
+			loader.width = getUserUnit(elt.width, WIDTH);
+			loader.height = getUserUnit(elt.height, HEIGHT);
+			loader.x = getUserUnit(elt.x, WIDTH);
+			loader.y = getUserUnit(elt.y, HEIGHT);
+			loader.load(elt.href);
+			
+			s.addChild(loader);
 			
 			return s;
 		}

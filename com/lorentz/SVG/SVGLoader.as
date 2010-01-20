@@ -15,7 +15,7 @@ package com.lorentz.SVG{
 		protected static var version:String='1.1';
 
 		protected var _svgXML:XML;
-		protected var _svgSprite:Sprite;
+		protected var _svgSprite:SVGRenderer;
 		protected var _render:Boolean = true;
 
 		public function SVGLoader() {
@@ -39,17 +39,24 @@ package com.lorentz.SVG{
 				render();
 		}
 		
+		private function fileLoadErrorHandler(e:IOErrorEvent):void {
+			dispatchEvent(e);
+		}
+		
 		public function render():void {
 			if(_svgSprite!=null)
 				this.removeChild(_svgSprite);
 				
-			_svgSprite = new SVGRenderer(_svgXML);
+			_svgSprite = new SVGRenderer(_svgXML, false);
+			_svgSprite.addEventListener(SVGEvent.PRE_RENDER_ELEMENT, triggerEvent);
+			_svgSprite.addEventListener(SVGEvent.POS_RENDER_ELEMENT, triggerEvent);
 			this.addChild(_svgSprite);
+			_svgSprite.render();
 			
 			dispatchEvent(new SVGEvent(SVGEvent.RENDER_COMPLETE));
 		}
 		
-		private function fileLoadErrorHandler(e:IOErrorEvent):void {
+		protected function triggerEvent(e:Event):void {
 			dispatchEvent(e);
 		}
 	}

@@ -16,11 +16,11 @@
 	
 	import flash.utils.getTimer;
 
-	public class tests extends Sprite {
+	public class changeFill extends Sprite {
 		import flash.net.URLLoader;
 		import flash.net.URLRequest;
 		
-		public function tests() {
+		public function changeFill() {
 			var array_itens:Array = new Array(
 				"tests/text01.svg",
 				"tests/tspan01.svg",
@@ -51,14 +51,14 @@
 				"tests/rect4.svg",
 				"tests/skew1.svg",
 				"tests/tiger.svg",
-				"tests/toucan.svg",
-				"tests/image.svg"
+				"tests/toucan.svg"
 				);
 
 			lista.dataProvider = new DataProvider(array_itens);
 			lista.addEventListener(fl.events.ListEvent.ITEM_CLICK, on_item_click);
+			btApplyFill.addEventListener(MouseEvent.CLICK, applyFillClick);
 		}
-		
+				
 		private function on_item_click(e:ListEvent){
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, xmlComplete);
@@ -70,9 +70,8 @@
 				this.removeChild(shp);
 				
 			information.text = "Loading";
-			
-			stage.removeEventListener(MouseEvent.CLICK, traceClick);
 		}
+		
 		private function onError(e:IOErrorEvent){
 			information.text = "Cannot load the file";
 		}
@@ -86,20 +85,28 @@
 			XML.ignoreWhitespace = true;
 			
 			var i:Number = getTimer();
-			shp = new SVGRenderer(svg);
+			shp = new SVGRenderer(svg, false); //Second parameter: true to render now, false to not render
+			shp.render();
 			var f:Number = getTimer();
 			
 			information.text = "Time elapsed: "+Number(f-i).toString();
 
 			this.addChildAt(shp, 0);
-			
-			//Add the listener to find problems
-			stage.addEventListener(MouseEvent.CLICK, traceClick);
 		}
-		function traceClick(e:MouseEvent):void {
-			if(shp.contains(e.target as DisplayObject)){
-				trace(e.target.name);
-			}
+		
+		protected function applyFillClick(e:MouseEvent):void {
+			shp.addEventListener(SVGEvent.PRE_RENDER_ELEMENT, preRenderElementHandler);
+			
+			var i:Number = getTimer();
+			shp.render();
+			var f:Number = getTimer();
+			
+			information.text = "Time elapsed: "+Number(f-i).toString();
+		}
+		
+		protected function preRenderElementHandler(e:SVGEvent):void {
+			if(e.element.finalStyle["fill"] != null && e.element.finalStyle["fill"]!="")
+				e.element.finalStyle["fill"] = "#"+colorPickerFill.hexValue;
 		}
 	}
 }
