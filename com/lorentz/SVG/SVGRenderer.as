@@ -446,13 +446,18 @@
 		private function visitImage(elt:Object):Sprite {
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "image";
-						
+			
 			var loader:SVGImageLoader = new SVGImageLoader();
+			
 			loader.width = getUserUnit(elt.width, WIDTH);
 			loader.height = getUserUnit(elt.height, HEIGHT);
 			loader.x = getUserUnit(elt.x, WIDTH);
 			loader.y = getUserUnit(elt.y, HEIGHT);
-			loader.load(elt.href);
+						
+			if(elt.href.match(/^data:[a-z\/]*;base64,/))
+				loader.loadBase64(elt.href);
+			else
+				loader.loadURL(elt.href);
 			
 			s.addChild(loader);
 			

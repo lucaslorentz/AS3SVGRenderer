@@ -10,6 +10,8 @@ package com.lorentz.SVG{
 	import flash.events.IOErrorEvent;
 	
 	import flash.net.URLRequest;
+	
+	import flash.utils.ByteArray;
 
 	public class SVGImageLoader extends Sprite {
 		protected var _loader:Loader;
@@ -51,7 +53,7 @@ package com.lorentz.SVG{
 			update();
 		}
 				
-		public function load(url:String):void {
+		public function loadURL(url:String):void {
 			if(_loader!=null){
 				removeChild(_loader);
 				_loader = null;
@@ -66,13 +68,44 @@ package com.lorentz.SVG{
 			}
 		}
 		
+		//Thanks to youzi530, for coding base64 embed image support
+		public function loadBase64(content:String):void
+		{
+			var decoder:Base64Decoder = new Base64Decoder();
+			var byteArray:ByteArray;
+			
+			var base64String:String = content;
+			
+			base64String = base64String.replace(/^data:[a-z\/]*;base64,/, '');
+			
+			decoder.decode(base64String);
+			byteArray = decoder.flush();
+			
+			loadBytes(byteArray);
+		}
+		
+		public function loadBytes(byteArray:ByteArray):void {
+			if(_loader!=null){
+				removeChild(_loader);
+				_loader = null;
+			}
+			
+			if(byteArray!=null){
+				_loader = new Loader();
+				_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete);
+				_loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
+				_loader.loadBytes(byteArray);
+				this.addChild(_loader);
+			}
+		}
+		
 		private function loadComplete(event:Event):void {
 			if(_loader.content is Bitmap)
 				(_loader.content as Bitmap).smoothing = true;
 				
-			_originalWidth = _loader.width;
-			_originalHeight = _loader.height;
-			
+			_originalWidth = _loader.content.width;
+			_originalHeight = _loader.content.height;
+
 			update();
 		}
 		

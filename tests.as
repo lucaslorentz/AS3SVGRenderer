@@ -52,7 +52,8 @@
 				"tests/skew1.svg",
 				"tests/tiger.svg",
 				"tests/toucan.svg",
-				"tests/image.svg"
+				"tests/image.svg",
+				"tests/image2.svg"
 				);
 
 			lista.dataProvider = new DataProvider(array_itens);
