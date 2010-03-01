@@ -36,6 +36,8 @@ package com.lorentz.SVG{
 			
 			commands = new Vector.<int>();
 			pathData = new Vector.<Number>();
+			
+			penX = penY = 0;
 
 			for(var i:int = 0;i<numSubPaths; i++){
 				renderSubPath(subPaths[i]);
@@ -67,7 +69,7 @@ package com.lorentz.SVG{
 				var args:Array = command.args;
 								
 				var a:int = 0;
-				while (a<args.length){
+				while_args : while (a<args.length){
 					switch (command.type) {
 						case "M" : moveToAbs(Number(args[a++]), Number(args[a++])); break;
 						case "m" : moveToRel(Number(args[a++]), Number(args[a++])); break;
@@ -89,6 +91,8 @@ package com.lorentz.SVG{
 						
 						case "A" : arcAbs(Number(args[a++]), Number(args[a++]), args[a++], args[a++]!=0, args[a++]!=0, Number(args[a++]), Number(args[a++])); break;
 						case "a" : arcRel(Number(args[a++]), Number(args[a++]), args[a++], args[a++]!=0, args[a++]!=0, Number(args[a++]), Number(args[a++]));break;
+						default : trace("Invalid PathCommand type: " +command.type);
+									break while_args;
 					}
 				}
 			}

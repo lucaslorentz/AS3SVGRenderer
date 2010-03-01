@@ -110,7 +110,7 @@
 					obj.visible = false;
 					
 				//Testing
-				if(elt.clipPath!=null){
+				if(elt.clipPath!=null && elt.clipPath!="none"){
 					var id:String = StringUtil.rtrim(String(elt.clipPath).split("(")[1], ")");
 					id = StringUtil.ltrim(id, "#");
 

@@ -319,8 +319,9 @@
 			var array_position:int=-1;
 			input = CleanUp(input);
 			for (var count:Number=0;count<input.length;count++) { 
+				var c:String = input.charAt(count);
 				var code:Number=input.charCodeAt(count); 
-				if (code>=65) {//is a letter
+				if (code>=65 && c!="e") {//is a letter, not exponential number
 					//update the points of last inserted pathObject
 					if(array_position>=0)
 						returnData[array_position].args=parseArgsData(pointString); 
