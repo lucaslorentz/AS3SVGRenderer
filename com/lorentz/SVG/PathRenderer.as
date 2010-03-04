@@ -40,7 +40,7 @@ package com.lorentz.SVG{
 			penX = penY = 0;
 
 			for(var i:int = 0;i<numSubPaths; i++){
-				renderSubPath(subPaths[i]);
+				renderSubPath(subPaths[i], i);
 			}
 			
 			switch (winding.toUpperCase())
@@ -57,7 +57,7 @@ package com.lorentz.SVG{
 			target.graphics.drawPath(commands, pathData, winding);
 		}
 		
-		private function renderSubPath(subPath:Array):void{
+		private function renderSubPath(subPath:Array, pathNumber:int):void{
 			for (var c:int = 0; c < subPath.length; c++) {
 				var command:PathCommand = subPath[c];
 				
@@ -70,7 +70,16 @@ package com.lorentz.SVG{
 								
 				var a:int = 0;
 				while_args : while (a<args.length){
-					switch (command.type) {
+					var type:String = command.type;
+					
+					if(type=="m" && pathNumber==0 && a==0) //If the first command is m, it is considered M
+						type = "M";
+					if(type=="M" && a>0) //Subsequent pairs of coordinates are treated as implicit lineto commands
+						type = "L";
+					if(type=="m" && a>0) //Subsequent pairs of coordinates are treated as implicit lineto commands
+						type = "l";
+					
+					switch (type) {
 						case "M" : moveToAbs(Number(args[a++]), Number(args[a++])); break;
 						case "m" : moveToRel(Number(args[a++]), Number(args[a++])); break;
 						case "L" : lineToAbs(Number(args[a++]), Number(args[a++])); break;
