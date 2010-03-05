@@ -100,6 +100,10 @@
 				case 'image' :
 				obj = visitImage(elt);
 				break;
+				
+				case 'a' :
+				obj = visitA(elt);
+				break;
 			}
 			
 			if(obj==null)
@@ -229,6 +233,27 @@
 		}
 		private function visitG(elt:XML):Object {
 			var obj:Object = new Object();
+			
+			obj.children = new Array();
+			for each(var childElt:XML in elt.*) {
+				var child:Object = visit(childElt);
+				if(child){
+					child.parent = obj;
+					obj.children.push(child);
+				}
+			}
+			
+			return obj;
+		}
+		
+		private function visitA(elt:XML):Object {
+			var obj:Object = new Object();
+			
+			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
+			var link:String = elt.@xlink::href;
+			link = StringUtil.ltrim(link, "#");
+			
+			obj.href = link;
 			
 			obj.children = new Array();
 			for each(var childElt:XML in elt.*) {
