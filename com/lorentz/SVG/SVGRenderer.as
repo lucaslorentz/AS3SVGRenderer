@@ -12,15 +12,11 @@
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	
-	public class SVGRenderer extends Sprite{
-		protected const WIDTH:String = "width";
-		protected const HEIGHT:String = "height";
-		protected const WIDTH_HEIGHT:String = "width_height";
-		
+	public class SVGRenderer extends Sprite{		
 		protected var svg_object:Object;
 		protected var renderedItem:DisplayObject;
 		protected var currentFontSize:Number;
-		protected var currentViewBox:Object;
+		protected var currentViewBox:Rectangle;
 		
 		public function SVGRenderer(svg:Object, renderNow:Boolean = true){
 			if(svg is XML){
@@ -57,7 +53,7 @@
 			var oldFontSize:Number = currentFontSize;
 			var oldViewBox:* = currentViewBox;
 			if(elt.finalStyle["font-size"]!=null){
-				currentFontSize = getUserUnit(elt.finalStyle["font-size"], HEIGHT);
+				currentFontSize = getUserUnit(elt.finalStyle["font-size"], SVGUtil.HEIGHT);
 			}
 			if(elt.viewBox!=null){
 				currentViewBox = elt.viewBox;
@@ -142,16 +138,16 @@
 			}
 
 			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
-				elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, svg_object.styles[elt.type]);
+				elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, svg_object.styles[elt.type]);
 			}
 			
 			if(elt["class"]){ //Merge with classes styles
 				for each(var className:String in String(elt["class"]).split(" "))
-					elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, svg_object.styles["."+className]);
+					elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, svg_object.styles["."+className]);
 			}
 
 			if(elt.style) //Merge all styles with the style attribute
-				elt.finalStyle = SVGUtil.mergeObjectStyles(elt.finalStyle, elt.style);
+				elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, elt.style);
 		}
 		
 		private function visitSvg(elt:Object):Sprite {
@@ -193,13 +189,18 @@
 			}
 			*/
 
-			//Testing
-			if(elt.width!=null && elt.height!=null){
-				var activeAreaWidth:int = elt.viewBox.width || activeArea.width;
-				var activeAreaHeight:int = elt.viewBox.height || activeArea.height;
+			//Testing		
+			if(elt.width!=null && elt.height!=null && elt.width.indexOf("%")==-1 && elt.height.indexOf("%")==-1){
+				var w:Number = getUserUnit(elt.width, SVGUtil.WIDTH);
+				var h:Number = getUserUnit(elt.height, SVGUtil.HEIGHT);
 				
-				activeArea.scaleX = getUserUnit(elt.width, WIDTH)/activeAreaWidth;
-				activeArea.scaleY = getUserUnit(elt.height, HEIGHT)/activeAreaHeight;
+				if(elt.viewBox!=null){				
+					activeArea.scaleX = w/elt.viewBox.width;
+					activeArea.scaleY = h/elt.viewBox.height;
+				} else {
+					activeArea.scaleX = w/activeArea.width;
+					activeArea.scaleY = h/activeArea.height;
+				}
 				
 				activeArea.scaleX = Math.min(activeArea.scaleX, activeArea.scaleY);
 				activeArea.scaleY = Math.min(activeArea.scaleX, activeArea.scaleY);
@@ -213,17 +214,17 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "rectangle";
 			
-			var x:Number = getUserUnit(elt.x, WIDTH);
-			var y:Number = getUserUnit(elt.y, HEIGHT);
-			var width:Number = getUserUnit(elt.width, WIDTH);
-			var height:Number = getUserUnit(elt.height, HEIGHT);
+			var x:Number = getUserUnit(elt.x, SVGUtil.WIDTH);
+			var y:Number = getUserUnit(elt.y, SVGUtil.HEIGHT);
+			var width:Number = getUserUnit(elt.width, SVGUtil.WIDTH);
+			var height:Number = getUserUnit(elt.height, SVGUtil.HEIGHT);
 						
 			beginFill(s, elt);
 			lineStyle(s, elt);
 			
 			if(elt.isRound) {
-				var rx:Number = getUserUnit(elt.rx, WIDTH);
-				var ry:Number = getUserUnit(elt.ry, HEIGHT);
+				var rx:Number = getUserUnit(elt.rx, SVGUtil.WIDTH);
+				var ry:Number = getUserUnit(elt.ry, SVGUtil.HEIGHT);
 				s.graphics.drawRoundRect(x, y, width, height, rx, ry);
 			} else {
 				s.graphics.drawRect(x, y, width, height);
@@ -294,10 +295,10 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "line";
 			
-			var x1:Number = getUserUnit(elt.x1, WIDTH);
-			var y1:Number = getUserUnit(elt.y1, HEIGHT);
-			var x2:Number = getUserUnit(elt.x2, WIDTH);
-			var y2:Number = getUserUnit(elt.y2, HEIGHT);
+			var x1:Number = getUserUnit(elt.x1, SVGUtil.WIDTH);
+			var y1:Number = getUserUnit(elt.y1, SVGUtil.HEIGHT);
+			var x2:Number = getUserUnit(elt.x2, SVGUtil.WIDTH);
+			var y2:Number = getUserUnit(elt.y2, SVGUtil.HEIGHT);
 			
 			lineStyle(s, elt);
 			s.graphics.moveTo(x1, y1);
@@ -309,9 +310,9 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "circle";
 			
-			var cx:Number = getUserUnit(elt.cx, WIDTH);
-			var cy:Number = getUserUnit(elt.cy, HEIGHT);
-			var r:Number = getUserUnit(elt.r, WIDTH); //Its based on width?
+			var cx:Number = getUserUnit(elt.cx, SVGUtil.WIDTH);
+			var cy:Number = getUserUnit(elt.cy, SVGUtil.HEIGHT);
+			var r:Number = getUserUnit(elt.r, SVGUtil.WIDTH); //Its based on width?
 			
 			beginFill(s, elt);
 			lineStyle(s, elt);
@@ -325,10 +326,10 @@
 			var s:Sprite = new Sprite();
 			s.name = elt.id != null ? elt.id : "ellipse";
 			
-			var cx:Number = getUserUnit(elt.cx, WIDTH);
-			var cy:Number = getUserUnit(elt.cy, HEIGHT);
-			var rx:Number = getUserUnit(elt.rx, WIDTH);
-			var ry:Number = getUserUnit(elt.ry, HEIGHT);
+			var cx:Number = getUserUnit(elt.cx, SVGUtil.WIDTH);
+			var cy:Number = getUserUnit(elt.cy, SVGUtil.HEIGHT);
+			var rx:Number = getUserUnit(elt.rx, SVGUtil.WIDTH);
+			var ry:Number = getUserUnit(elt.ry, SVGUtil.HEIGHT);
 			
 			beginFill(s, elt);
 			lineStyle(s, elt);
@@ -343,9 +344,9 @@
 			s.name = elt.id != null ? elt.id : "g";
 			
 	        if( elt.x != null )
-                s.x = getUserUnit(elt.x, WIDTH);
+                s.x = getUserUnit(elt.x, SVGUtil.WIDTH);
             if( elt.y != null )
-                s.y =  getUserUnit(elt.y, HEIGHT);
+                s.y =  getUserUnit(elt.y, SVGUtil.HEIGHT);
 			
 			if(elt.transform)
 				s.transform.matrix = elt.transform;
@@ -361,9 +362,9 @@
 			s.name = elt.id != null ? elt.id : "clipPath";
 			
 	        if( elt.x != null )
-                s.x = getUserUnit(elt.x, WIDTH);
+                s.x = getUserUnit(elt.x, SVGUtil.WIDTH);
             if( elt.y != null )
-                s.y =  getUserUnit(elt.y, HEIGHT);
+                s.y =  getUserUnit(elt.y, SVGUtil.HEIGHT);
 			
 			if(elt.transform)
 				s.transform.matrix = elt.transform;
@@ -380,8 +381,8 @@
 			
 			var subSprite:Sprite = new Sprite();
 
-			var textX:Number = getUserUnit(elt.x, WIDTH);
-			var textY:Number = getUserUnit(elt.y, HEIGHT);
+			var textX:Number = getUserUnit(elt.x, SVGUtil.WIDTH);
+			var textY:Number = getUserUnit(elt.y, SVGUtil.HEIGHT);
 
 			var textAnchor:String = elt.finalStyle["text-anchor"];
 			
@@ -408,8 +409,8 @@
 					tField.appendText(childElt.text);
 					inheritStyles(childElt);
 					tFormat = styleToTextFormat(childElt.finalStyle);
-					tField.x += getUserUnit(childElt.dx, WIDTH);
-					tField.y += getUserUnit(childElt.dy, HEIGHT);
+					tField.x += getUserUnit(childElt.dx, SVGUtil.WIDTH);
+					tField.y += getUserUnit(childElt.dy, SVGUtil.HEIGHT);
 					if(childElt.x!=null)
 						tField.x = childElt.x-textX;
 					if(childElt.y!=null)
@@ -449,10 +450,10 @@
 			
 			var loader:SVGImageLoader = new SVGImageLoader();
 			
-			loader.width = getUserUnit(elt.width, WIDTH);
-			loader.height = getUserUnit(elt.height, HEIGHT);
-			loader.x = getUserUnit(elt.x, WIDTH);
-			loader.y = getUserUnit(elt.y, HEIGHT);
+			loader.width = getUserUnit(elt.width, SVGUtil.WIDTH);
+			loader.height = getUserUnit(elt.height, SVGUtil.HEIGHT);
+			loader.x = getUserUnit(elt.x, SVGUtil.WIDTH);
+			loader.y = getUserUnit(elt.y, SVGUtil.HEIGHT);
 						
 			if(elt.href.match(/^data:[a-z\/]*;base64,/))
 				loader.loadBase64(elt.href);
@@ -477,20 +478,7 @@
 			
 			return tFormat;
 		}
-		
-		private function getFontSize(s:String):Number{
-			switch(s){
-				case "xx-small" : s = "6.94pt"; break;
-				case "x-small" : s = "8.33pt"; break;
-				case "small" : s = "10pt"; break;
-				case "medium" : s = "12pt"; break;
-				case "large" : s = "14.4pt"; break;
-				case "x-large" : s = "17.28pt"; break;
-				case "xx-large" : s = "20.736pt"; break;
-			}
-			return getUserUnit(s, WIDTH);
-		}
-		
+				
 		private function beginFill(s:Sprite, elt:Object):void {
 			var fill_str:String = elt.finalStyle.fill;
 			
@@ -537,57 +525,30 @@
 		}
 		
 		private function calculateLinearGradient(grad:Object):void {
-			var x1:Number = getUserUnit(grad.x1, WIDTH);
-			var y1:Number = getUserUnit(grad.y1, HEIGHT);
-			var x2:Number = getUserUnit(grad.x2, WIDTH);
-			var y2:Number = getUserUnit(grad.y2, HEIGHT);
+			var x1:Number = getUserUnit(grad.x1, SVGUtil.WIDTH);
+			var y1:Number = getUserUnit(grad.y1, SVGUtil.HEIGHT);
+			var x2:Number = getUserUnit(grad.x2, SVGUtil.WIDTH);
+			var y2:Number = getUserUnit(grad.y2, SVGUtil.HEIGHT);
 			
-			grad.mat = flashLinearGradientMatrix(x1, y1, x2, y2);
+			grad.mat = SVGUtil.flashLinearGradientMatrix(x1, y1, x2, y2);
+			if(grad.transform)
+				grad.mat.concat(grad.transform);
 		}
-		
-		private function flashLinearGradientMatrix( x1:Number, y1:Number, x2:Number, y2:Number ):Matrix { 
-			var w:Number = x2-x1;
-			var h:Number = y2-y1; 
-			var a:Number = Math.atan2(h,w); 
-			var vl:Number = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) ); 
-			
-			var matr:Matrix = new flash.geom.Matrix(); 
-			matr.createGradientBox( 1, 1, 0, 0., 0. ); 
-			
-			matr.rotate( a ); 
-			matr.scale( vl, vl ); 
-			matr.translate( x1, y1 ); 
-			
-			return matr; 
-        } 
-		
+				
 		private function calculateRadialGradient(grad:Object):void {
-			var cx:Number = getUserUnit(grad.cx, WIDTH);
-			var cy:Number = getUserUnit(grad.cy, HEIGHT);
-			var r:Number = getUserUnit(grad.r, WIDTH);
-			var fx:Number = getUserUnit(grad.fx, WIDTH);
-			var fy:Number = getUserUnit(grad.fy, HEIGHT);
+			var cx:Number = getUserUnit(grad.cx, SVGUtil.WIDTH);
+			var cy:Number = getUserUnit(grad.cy, SVGUtil.HEIGHT);
+			var r:Number = getUserUnit(grad.r, SVGUtil.WIDTH);
+			var fx:Number = getUserUnit(grad.fx, SVGUtil.WIDTH);
+			var fy:Number = getUserUnit(grad.fy, SVGUtil.HEIGHT);
 	
-			grad.mat = flashRadialGradientMatrix(cx, cy, r, fx, fy);  
+			grad.mat = SVGUtil.flashRadialGradientMatrix(cx, cy, r, fx, fy);
+			if(grad.transform)
+				grad.mat.concat(grad.transform);
 			
 			var f:* = { x:fx-cx, y:fy-cy };
 			grad.focalRatio = Math.sqrt( (f.x*f.x)+(f.y*f.y) )/r;
 		}
-		 
-		private function flashRadialGradientMatrix( cx:Number, cy:Number, r:Number, fx:Number, fy:Number ):Matrix { 
-			var d:Number = r*2; 
-			var mat:Matrix = new flash.geom.Matrix(); 
-			mat.createGradientBox( d, d, 0, 0., 0. ); 
-			
-			var a:Number = Math.atan2(fy-cy,fx-cx); 
-			mat.translate( -cx, -cy ); 
-			mat.rotate( -a );
-			mat.translate( cx, cy ); 
-			
-			mat.translate( cx-r, cy-r ); 
-			
-			return mat; 
-        }
 		 
 		private function lineStyle(s:Sprite, elt:Object):void {
 			var color:uint = SVGColor.parseToInt(elt.finalStyle.stroke);
@@ -597,7 +558,7 @@
 						
 			var w:Number = 1;
 			if(elt.finalStyle["stroke-width"])
-				w = getUserUnit(elt.finalStyle["stroke-width"], WIDTH_HEIGHT);
+				w = getUserUnit(elt.finalStyle["stroke-width"], SVGUtil.WIDTH_HEIGHT);
 
 			var stroke_linecap:String = CapsStyle.NONE;
 
@@ -652,48 +613,12 @@
 				s.graphics.lineStyle(w, color, stroke_opacity, true, "normal", stroke_linecap, stroke_linejoin);
 		}
 		
+		private function getFontSize(s:String):Number{
+			return SVGUtil.getFontSize(s, currentFontSize, currentViewBox);
+		}
+		
 		public function getUserUnit(s:String, viewBoxReference:String):Number {
-			var value:Number;
-			
-			if(s.indexOf("pt")!=-1){
-				value = Number(StringUtil.remove(s, "pt"));
-				return value*1.25;
-			} else if(s.indexOf("pc")!=-1){
-				value = Number(StringUtil.remove(s, "pc"));
-				return value*15;
-			} else if(s.indexOf("mm")!=-1){
-				value = Number(StringUtil.remove(s, "mm"));
-				return value*3.543307;
-			} else if(s.indexOf("cm")!=-1){
-				value = Number(StringUtil.remove(s, "cm"));
-				return value*35.43307;
-			} else if(s.indexOf("in")!=-1){
-				value = Number(StringUtil.remove(s, "in"));
-				return value*90;
-			} else if(s.indexOf("px")!=-1){
-				value = Number(StringUtil.remove(s, "px"));
-				return value;
-				
-			//Relative
-			} else if(s.indexOf("em")!=-1){
-				value = Number(StringUtil.remove(s, "em"));
-				return value*currentFontSize;
-				
-			//Percentage
-			} else if(s.indexOf("%")!=-1){
-				value = Number(StringUtil.remove(s, "%"));
-				
-				switch(viewBoxReference){
-					case WIDTH : return value/100 * currentViewBox.width;
-							break;
-					case HEIGHT : return value/100 * currentViewBox.height;
-							break;
-					default : return value/100 * Math.sqrt(Math.pow(currentViewBox.width,2)+Math.pow(currentViewBox.height,2))/Math.sqrt(2)
-							break;
-				}
-			} else {
-				return Number(s);
-			}
+			return SVGUtil.getUserUnit(s, currentFontSize, currentViewBox, viewBoxReference);
 		}
 	}
 }

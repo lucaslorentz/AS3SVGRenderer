@@ -5,6 +5,7 @@
 */
 
 package com.lorentz.SVG{
+	import flash.display.GraphicsPath;
 	import flash.display.GraphicsPathCommand;
 	import flash.display.GraphicsPathWinding;
 	import flash.display.Sprite;
@@ -30,8 +31,8 @@ package com.lorentz.SVG{
 		public function PathRenderer(commands:Array) {
 			subPaths = extractSubPaths(commands);
 		}
-
-		public function render(target:Sprite, winding:String):void {
+		
+		public function getGraphicsPath(winding:String):GraphicsPath {
 			this.target = target;
 			
 			commands = new Vector.<int>();
@@ -54,7 +55,12 @@ package com.lorentz.SVG{
 					break;
 			}
 			
-			target.graphics.drawPath(commands, pathData, winding);
+			return new GraphicsPath(commands, pathData, winding);
+		}
+
+		public function render(target:Sprite, winding:String):void {
+			var graphicsPath:GraphicsPath = getGraphicsPath(winding);
+			target.graphics.drawPath(graphicsPath.commands, graphicsPath.data, graphicsPath.winding);
 		}
 		
 		private function renderSubPath(subPath:Array, pathNumber:int):void{

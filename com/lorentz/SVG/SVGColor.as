@@ -173,7 +173,7 @@ package com.lorentz.SVG{
 			} else if(s.indexOf("(")>-1){
 				s = StringUtil.rtrim(s,")");
 				s = s.split("(")[1];
-				var args:Array = SVGParser.parseArgsData(s);
+				var args:Array = SVGParserCommon.parseArgsData(s);
 				return uint(args[0])*256*256 + Number(args[1])*256 + Number(args[2]);
 			} else {
 				return parseToInt(getColorByName(s));
