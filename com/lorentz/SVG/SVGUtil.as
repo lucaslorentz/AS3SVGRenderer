@@ -55,7 +55,7 @@
 			return arr.slice();
 		}
 		
-		protected static const presentationStyles = ["display", "visibility", "opacity", "fill",
+		protected static const presentationStyles:Array = ["display", "visibility", "opacity", "fill",
 													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
 													 "stroke-width", "stroke-linecap", "stroke-linejoin",
 													 "font-size", "font-family", "font-weight", "text-anchor",

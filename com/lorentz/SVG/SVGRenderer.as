@@ -110,7 +110,7 @@
 					var id:String = StringUtil.rtrim(String(elt.clipPath).split("(")[1], ")");
 					id = StringUtil.ltrim(id, "#");
 
-					var mask:* = visitClipPath(svg_object.defs[id]);
+					var mask:* = visitClipPath(elt.root.defs[id]);
 
 					var newGroup:Sprite = new Sprite();
 					newGroup.addChild(obj);
@@ -134,19 +134,19 @@
 			if(elt.parent){
 				elt.finalStyle = elt.parent.finalStyle; //Inherits parent style
 			} else {
-				elt.finalStyle = new Object();
+				elt.finalStyle = {};
 			}
 
-			if(svg_object.styles[elt.type]!=null){ //Merge with elements styles
-				elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, svg_object.styles[elt.type]);
+			if(elt.root.styles[elt.type]!=null){ //Merge with type styles
+				elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, elt.root.styles[elt.type]);
 			}
 			
 			if(elt["class"]){ //Merge with classes styles
 				for each(var className:String in String(elt["class"]).split(" "))
-					elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, svg_object.styles["."+className]);
+					elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, elt.root.styles["."+className]);
 			}
 
-			if(elt.style) //Merge all styles with the style attribute
+			if(elt.style) //Merge with element's style attribute
 				elt.finalStyle = SVGUtil.mergeObjects(elt.finalStyle, elt.style);
 		}
 		
@@ -494,7 +494,7 @@
 					var id:String = StringUtil.rtrim(fill_str.split("(")[1], ")");
 					id = StringUtil.ltrim(id, "#");
 	
-					var grad:Object = svg_object.gradients[id];
+					var grad:Object = elt.root.gradients[id];
 					
 					if(grad!=null){
 						switch(grad.type){
@@ -584,7 +584,7 @@
 				var id:String = StringUtil.rtrim(String(elt.finalStyle.stroke).split("(")[1], ")");
 				id = StringUtil.ltrim(id, "#");
 
-				var grad:Object = svg_object.gradients[id];
+				var grad:Object = elt.root.gradients[id];
 				
 				if(grad!=null){
 					switch(grad.type){

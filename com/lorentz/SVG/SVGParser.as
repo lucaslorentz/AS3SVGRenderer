@@ -8,7 +8,6 @@
 		private var svg_original:XML;
 		private var svg:XML;
 		private var svg_object:Object;
-		private var defs:Object = new Object();
 		
 		public function SVGParser(svg:XML){
 			this.svg_original = svg;
@@ -16,10 +15,11 @@
 		
 		public function parse():Object{
 			processUses();
-			svg_object = visit(svg);
-			svg_object.defs = defs;
+			svg_object = {};
 			svg_object.gradients = SVGParserCommon.parseGradients(svg);
 			svg_object.styles = SVGParserCommon.parseStyles(svg);
+			svg_object.defs = parseDefs(svg);
+			visit(svg, svg_object);
 			
 			return svg_object;
 		}
@@ -41,12 +41,26 @@
 			}
 		}
 		
-		private function visit(elt:XML):Object {
+		private function parseDefs(elt:XML):Object {
+			var result:Object = {};
+			
+			for each(var defs:XML in elt..*::defs){
+				for each(var childElt:XML in defs.*) {
+					var child:Object = visit(childElt);
+					if(child){
+						result[child.id] = child;
+					}
+				}
+			}
+			return result;
+		}
+		
+		private function visit(elt:XML, rootObject:Object = null):Object {
 			var obj:Object;
 			
 			switch(elt.localName()) {
 				case 'svg':
-				obj = visitSvg(elt);
+				obj = visitSvg(elt, rootObject);
 				break;
 				
 				case 'rect':
@@ -80,11 +94,7 @@
 				case 'g':
 				obj = visitG(elt);
 				break;
-				
-				case 'defs':
-				obj = visitDefs(elt);
-				break;
-				
+								
 				case 'clipPath':
 				obj = visitClipPath(elt);
 				break;
@@ -128,12 +138,17 @@
 				
 			if("@clip-path" in elt)
 				obj.clipPath = String(elt["@clip-path"]);
+				
+			obj.root = svg_object;
 			
 			return obj;
 		}
 
-		private function visitSvg(elt:XML):Object {
-			var obj:Object = new Object();
+		private function visitSvg(elt:XML, rootObject:Object = null):Object {
+			var obj:Object = rootObject;
+			if (obj == null)
+				obj = new Object();
+				
 			obj.viewBox = SVGParserCommon.parseViewBox(elt.@viewBox);
 			
 			if("@width" in elt)
@@ -263,17 +278,6 @@
 			}
 			
 			return obj;
-		}
-		
-		private function visitDefs(elt:XML):Object {
-			for each(var childElt:XML in elt.*) {
-				var child:Object = visit(childElt);
-				if(child){
-					defs[child.id] = child;
-				}
-			}
-			
-			return null;
 		}
 		
 		private function visitClipPath(elt:XML):Object {
