@@ -8,9 +8,6 @@ package com.lorentz.SVG {
 		public var type:String;
 		public var _args:Array;
 		
-		//Used in another project, can be deleted.
-		public var extra:Object;
-		
 		public function PathCommand(type:String = null, args:Array = null){
 			this.type = type;
 			this._args = args;
@@ -26,6 +23,13 @@ package com.lorentz.SVG {
 		
 		public function set args(value:*):void{
 			_args = value;
+		}
+		
+		public function clone():PathCommand {
+			var c:PathCommand = new PathCommand();
+			c.type = type;
+			c._args = SVGUtil.cloneArray(_args);
+			return c;
 		}
 	}
 }

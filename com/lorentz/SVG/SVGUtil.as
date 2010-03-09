@@ -51,6 +51,10 @@
 			return c;
 		}
 		
+		public static function cloneArray(arr:Array):Array {
+			return arr.slice();
+		}
+		
 		protected static const presentationStyles = ["display", "visibility", "opacity", "fill",
 													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
 													 "stroke-width", "stroke-linecap", "stroke-linejoin",
