@@ -21,6 +21,8 @@
 		public var styles:Object = {};
 		public var gradients:Object = {};
 		
+		public var baseURL:String;
+		
 		public function SVGDocument(){			
 			super();
 		}
@@ -318,7 +320,53 @@
 			obj.svgHref = StringUtil.trim(href);
 			
 			return obj;
-		}		
+		}
+			
+		public function resolveURL(url:String):String
+		{
+			if (url != null && !isHttpURL(url) && baseURL!=null)
+			{
+				if (url.indexOf("./") == 0)
+					url = url.substring(2);
+
+				if (isHttpURL(baseURL))
+				{
+					var slashPos:Number;
+	
+					if (url.charAt(0) == '/')
+					{
+						// non-relative path, "/dev/foo.bar".
+						slashPos = baseURL.indexOf("/", 8);
+						if (slashPos == -1)
+							slashPos = baseURL.length;
+					}
+					else
+					{
+						// relative path, "dev/foo.bar".
+						slashPos = baseURL.lastIndexOf("/") + 1;
+						if (slashPos <= 8)
+						{
+							baseURL += "/";
+							slashPos = baseURL.length;
+						}
+					}
+	
+					if (slashPos > 0)
+						url = baseURL.substring(0, slashPos) + url;
+				} else {
+					url = StringUtil.rtrim(baseURL, "/") + "/" + url;
+				}
+			}
+	
+			return url;
+		}
+	
+		public static function isHttpURL(url:String):Boolean
+		{
+			return url != null &&
+				   (url.indexOf("http://") == 0 ||
+					url.indexOf("https://") == 0);
+		}
 
 		override protected function set numInvalidChildren(value:int):void {
 			super.numInvalidChildren = value;

@@ -12,6 +12,7 @@
 	
 	import com.lorentz.SVG.Base64Decoder;
 	import com.lorentz.SVG.SVGUtil;
+	import com.lorentz.SVG.StringUtil;
 
 	public class SVGImage extends SVGElement implements IViewPort {
 		include "includes/ViewPortProperties.as"
@@ -92,7 +93,7 @@
 			if(svgHref.match(/^data:[a-z\/]*;base64,/)){
 				loadBase64(svgHref);
 			} else {
-				loadURL(svgHref);
+				loadURL(document.resolveURL(svgHref));
 				beginASyncValidation("loadImage");
 			}
 		}

@@ -90,6 +90,7 @@
 			
 			var i:Number = getTimer();
 			shp = new SVGDocument();
+			shp.baseURL = "tests/"
 			shp.parse(svg);
 			var f:Number = getTimer();
 			
