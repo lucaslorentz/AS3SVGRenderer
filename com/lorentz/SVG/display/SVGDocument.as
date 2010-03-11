@@ -373,6 +373,7 @@
 			if(super.numInvalidChildren > 0){
 				stage.addEventListener(Event.ENTER_FRAME, validateAll, false, 0, true);
 				stage.addEventListener(Event.RENDER, validateAll, false, 0, true);
+				stage.invalidate();
 			} else {
 				stage.removeEventListener(Event.ENTER_FRAME, validateAll);
 				stage.removeEventListener(Event.RENDER, validateAll);
