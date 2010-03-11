@@ -17,9 +17,9 @@
 			var cy:Number = getUserUnit(svgCy, SVGUtil.HEIGHT);
 			var r:Number = getUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
 			
+			_content.graphics.clear();
 			beginFill();
 			lineStyle();
-
 			_content.graphics.drawCircle(cx, cy, r);
 			_content.graphics.endFill();
 			_content.graphics.lineStyle();

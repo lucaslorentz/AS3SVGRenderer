@@ -19,6 +19,7 @@
 			var x2:Number = getUserUnit(svgX2, SVGUtil.WIDTH);
 			var y2:Number = getUserUnit(svgY2, SVGUtil.HEIGHT);
 			
+			_content.graphics.clear();
 			lineStyle();
 			_content.graphics.moveTo(x1, y1);
 			_content.graphics.lineTo(x2, y2);

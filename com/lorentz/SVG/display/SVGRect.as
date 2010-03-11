@@ -24,7 +24,8 @@
 			var _y:Number = getUserUnit(svgY, SVGUtil.HEIGHT);
 			var _width:Number = getUserUnit(svgWidth, SVGUtil.WIDTH);
 			var _height:Number = getUserUnit(svgHeight, SVGUtil.HEIGHT);
-						
+
+			_content.graphics.clear();
 			beginFill();
 			lineStyle();
 			

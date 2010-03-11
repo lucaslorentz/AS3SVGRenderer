@@ -12,6 +12,8 @@
 		override protected function render():void {
 			var isPolygon = true;
 			
+			_content.graphics.clear();
+			
             if(isPolygon) {
 				beginFill();
             }

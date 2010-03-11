@@ -19,9 +19,9 @@
 			var rx:Number = getUserUnit(svgRx, SVGUtil.WIDTH);
 			var ry:Number = getUserUnit(svgRy, SVGUtil.HEIGHT);
 			
+			_content.graphics.clear();
 			beginFill();
 			lineStyle();
-
 			_content.graphics.drawEllipse(cx-rx, cy-ry, rx*2, ry*2);
 			_content.graphics.endFill();
 			_content.graphics.lineStyle();

@@ -16,6 +16,7 @@
 			
 			var renderer:PathRenderer = new PathRenderer(path);
 			
+			_content.graphics.clear();
 			beginFill();
 			lineStyle();
 			renderer.render(_content, winding);
