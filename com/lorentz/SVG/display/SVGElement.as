@@ -374,7 +374,7 @@
 			var fill_str:String = _finalStyle.fill;
 			
 			if(fill_str == "" || fill_str=="none"){
-				g.beginFill(0xFFFFFF, 0);
+				return;
 			} else {
 				var fill_opacity:Number = Number(_finalStyle["opacity"]?_finalStyle["opacity"]: (_finalStyle["fill-opacity"]? _finalStyle["fill-opacity"] : 1));
 
