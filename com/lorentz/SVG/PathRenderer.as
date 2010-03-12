@@ -113,7 +113,7 @@ package com.lorentz.SVG{
 			}
 		}
 		
-		private function extractSubPaths(commands:Array):Array{
+		public static function extractSubPaths(commands:Array):Array{
 			var _subPaths:Array = new Array();
 			
 			var path:Array;
@@ -209,8 +209,6 @@ package com.lorentz.SVG{
 			var control1:Point = new Point(x1, y1);
 			var control2:Point = new Point(x2, y2);
 			var anchor2:Point = new Point(x, y);
-			
-			var str:String = "bez"+x1+","+y1+","+x2+","+y2+","+x+","+y;
 
 			var bezier:Bezier = new Bezier(anchor1, control1, control2, anchor2);
 			cubeToBezier(bezier);

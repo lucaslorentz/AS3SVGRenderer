@@ -482,8 +482,8 @@
 		private function beginFill(s:Sprite, elt:Object):void {
 			var fill_str:String = elt.finalStyle.fill;
 			
-			if(fill_str == "" || fill_str=="none"){
-				s.graphics.beginFill(0xFFFFFF, 0);
+			if(fill_str == "" || fill_str == "none"){
+				return;
 			} else {
 				var fill_opacity:Number = Number(elt.finalStyle["opacity"]?elt.finalStyle["opacity"]: (elt.finalStyle["fill-opacity"]? elt.finalStyle["fill-opacity"] : 1));
 
