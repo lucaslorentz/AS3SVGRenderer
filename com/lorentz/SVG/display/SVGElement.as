@@ -69,44 +69,6 @@
 				
 		private var _currentViewBox:Rectangle;
 		private var _currentFontSize:Number = Number.NaN;
-				
-		private var _parentElement:SVGElement;
-		public function get parentElement():SVGElement {
-			return _parentElement;
-		}
-		
-		private var _document:SVGDocument;
-		public function get document():SVGDocument {
-			return _document;
-		}
-		
-		private var _numInvalidChildren:int = 0;
-		protected function get numInvalidChildren():int {
-			return _numInvalidChildren;
-		}
-		protected function set numInvalidChildren(value:int):void {
-			var d = value-_numInvalidChildren;
-			_numInvalidChildren = value;
-			if(_parentElement!=null)
-				_parentElement.numInvalidChildren += d;
-				
-			if(_numInvalidChildren==0 && d!=0)
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_VALIDATED));
-		}
-		
-		private var _numASyncValidations:int = 0;
-		protected function get numASyncValidations():int {
-			return _numASyncValidations;
-		}
-		protected function set numASyncValidations(value:int):void {
-			var d = value-_numASyncValidations;
-			_numASyncValidations = value;
-			if(_parentElement!=null)
-				_parentElement.numASyncValidations += d;
-				
-			if(_numASyncValidations==0 && d!=0)
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_ASYNC_VALIDATED));
-		}
 		
 		protected var _validateFunctions:Array = [];
 		
@@ -133,6 +95,8 @@
 			c.svgClipPath = svgClipPath;
 			c.setStyles(_style);
 			
+			c.transform = transform;
+			
 			return c;
 		}
 		
@@ -141,47 +105,111 @@
 			$addChild(_content);
 			
 			if(this is SVGDocument)
-				_document = this as SVGDocument;
+				setDocument(this as SVGDocument);
 				
 			_validateFunctions.push(inheritStyles, commitProperties);
 				
-			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
+			addEventListener(Event.ADDED, addedHandler, false, 0, true);
+			addEventListener(Event.REMOVED, removedHandler, false, 0, true);
 		}
-				
-		protected function addedToStageHandler(e:Event):void {
+						
+		protected function addedHandler(e:Event):void {
 			var p:DisplayObjectContainer = this.parent;
 			while(!(p is SVGElement) && p!=null)
 				p = p.parent;
-				
-			if(p is SVGElement){
-				_parentElement = p as SVGElement;
-				if(!(this is SVGDocument))
-					_document = _parentElement.document;
-			}
-			
-			if(_parentElement!=null) {
-				_parentElement.numInvalidChildren += _numInvalidChildren + int(_invalidFlag);
-				_parentElement.numASyncValidations += numASyncValidations;
-			}
-					
-			if(!_invalidFlag)
-				invalidate();
-				
-			dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_ADDED, true));
+
+			setParentElement(p as SVGElement);
 		}
 		
-		protected function removedFromStageHandler(e:Event):void {
-			dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_REMOVED, true));
-																						  
-			if(_parentElement!=null){
-				_parentElement.numInvalidChildren -= _numInvalidChildren - int(_invalidFlag);
-				_parentElement.numASyncValidations -= numASyncValidations;
+		protected function removedHandler(e:Event):void {
+			setParentElement(null);
+		}
+		
+		private var _parentElement:SVGElement;
+		public function get parentElement():SVGElement {
+			return _parentElement;
+		}
+		private function setParentElement(value:SVGElement):void {
+			if(_parentElement != value){
+				if(_parentElement != null) {
+					_parentElement.numInvalidChildren -= _numInvalidChildren + int(_invalidFlag);
+					_parentElement.numASyncValidations -= _numASyncValidations;
+					if(!(this is SVGDocument))
+						_parentElement.removeEventListener(SVGDisplayEvent.DOCUMENT_CHANGED, parentDocumentChangedHandler);
+				}
+				
+				_parentElement = value;
+				
+				if(_parentElement != null) {
+					_parentElement.numInvalidChildren += _numInvalidChildren + int(_invalidFlag);
+					_parentElement.numASyncValidations += _numASyncValidations;
+					if(!(this is SVGDocument))
+						_parentElement.addEventListener(SVGDisplayEvent.DOCUMENT_CHANGED, parentDocumentChangedHandler, false, 0, true);
+				}
+				
+				if(!(this is SVGDocument))
+					setDocument(_parentElement!=null ? parentElement.document : null);
+					
+				invalidate();
+				
+				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.PARENT_CHANGED));
 			}
-			
-			_parentElement = null;
-			if(!(this is SVGDocument))
-				_document = null;
+		}
+		
+		private var _document:SVGDocument;
+		public function get document():SVGDocument {
+			return _document;
+		}
+		private function setDocument(value:SVGDocument):void {
+			if(_document != value){
+				if(_document != null)
+					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_REMOVED, true));
+					
+				_document = value;
+				
+				if(_document != null)
+					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_ADDED, true));
+					
+				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.DOCUMENT_CHANGED));
+			}
+		}
+		
+		protected function parentDocumentChangedHandler(e:SVGDisplayEvent):void {
+			setDocument(parentElement.document);
+		}
+		
+		private var _numInvalidChildren:int = 0;
+		protected function get numInvalidChildren():int {
+			return _numInvalidChildren;
+		}
+		protected function set numInvalidChildren(value:int):void {
+			var d = value - _numInvalidChildren;
+			_numInvalidChildren = value;
+			if(_parentElement != null)
+				_parentElement.numInvalidChildren += d;
+				
+			if(_numInvalidChildren == 0 && d != 0){
+				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_SYNC_VALIDATED));
+				if(_numASyncValidations == 0)
+					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_VALIDATED));
+			}
+		}
+		
+		private var _numASyncValidations:int = 0;
+		protected function get numASyncValidations():int {
+			return _numASyncValidations;
+		}
+		protected function set numASyncValidations(value:int):void {
+			var d = value - _numASyncValidations;
+			_numASyncValidations = value;
+			if(_parentElement != null)
+				_parentElement.numASyncValidations += d;
+				
+			if(_numASyncValidations == 0 && d != 0) {
+				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_ASYNC_VALIDATED));
+				if(_numInvalidChildren == 0)
+					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_VALIDATED));
+			}
 		}
 				
 		private var _invalidFlag:Boolean = false;

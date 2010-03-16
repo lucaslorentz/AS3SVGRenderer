@@ -180,7 +180,6 @@ package com.lorentz.SVG{
 			}
 		}
 		
-		//Used in another project, can be deleted.
 		public static function flashToSVG(color:uint):String{
 			var colorText:String = color.toString(16);
 			while (colorText.length < 6) {

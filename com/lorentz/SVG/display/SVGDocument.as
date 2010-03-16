@@ -369,18 +369,35 @@
 		}
 
 		override protected function set numInvalidChildren(value:int):void {
-			super.numInvalidChildren = value;
-			if(super.numInvalidChildren > 0){
-				stage.addEventListener(Event.ENTER_FRAME, validateAll, false, 0, true);
-				stage.addEventListener(Event.RENDER, validateAll, false, 0, true);
-				stage.invalidate();
-			} else {
-				stage.removeEventListener(Event.ENTER_FRAME, validateAll);
-				stage.removeEventListener(Event.RENDER, validateAll);
+			if(super.numInvalidChildren == 0 && value > 0){
+		        if (stage != null) {
+					stage.addEventListener(Event.ENTER_FRAME, validateCaller, false, 0, true);
+					stage.addEventListener(Event.RENDER, validateCaller, false, 0, true);
+					stage.invalidate();
+		        } else {
+					addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
+		        }
 			}
+			super.numInvalidChildren = value;
 		}
 		
-		protected function validateAll(e:Event):void {
+		protected function validateCaller(e:Event):void {
+			if (e.type == Event.ADDED_TO_STAGE) {
+				removeEventListener(Event.ADDED_TO_STAGE, validateCaller);
+				stage.addEventListener(Event.ENTER_FRAME, validateCaller, false, 0, true);
+				// now we can listen for render event:
+				stage.addEventListener(Event.RENDER, validateCaller, false, 0, true);
+				stage.invalidate();
+				return;
+	        } else {
+				e.target.removeEventListener(Event.ENTER_FRAME, validateCaller);
+				e.target.removeEventListener(Event.RENDER, validateCaller);
+				if (stage == null) {
+					// received render, but the stage is not available, so we will listen for addedToStage again:
+					addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
+					return;
+				}
+	        }
 			validate(true);
 		}
 	}

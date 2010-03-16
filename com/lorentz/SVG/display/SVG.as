@@ -17,7 +17,7 @@
 		override protected function initialize():void {			
 			super.initialize();
 						
-			addEventListener(SVGDisplayEvent.CHILDREN_VALIDATED, childrenValidated);
+			addEventListener(SVGDisplayEvent.CHILDREN_SYNC_VALIDATED, childrenValidated);
 			addEventListener(SVGDisplayEvent.CHILDREN_ASYNC_VALIDATED, childrenValidated);
 		}
 		

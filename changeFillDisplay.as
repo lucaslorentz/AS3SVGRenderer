@@ -63,6 +63,7 @@
 			shp = new SVGDocument();
 			shp.addEventListener(SVGDisplayEvent.ELEMENT_ADDED, elementAdded);
 			shp.addEventListener(SVGDisplayEvent.ELEMENT_REMOVED, elementRemoved);
+			this.addChildAt(shp, 0);
 		}
 				
 		private function on_item_click(e:ListEvent){
@@ -70,10 +71,6 @@
 			loader.addEventListener(Event.COMPLETE, xmlComplete);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
 			loader.load( new URLRequest(e.item.data));
-			
-			information.text = "";
-			if(shp!=null && shp.parent!=null)
-				this.removeChild(shp);
 				
 			information.text = "Loading";
 		}
@@ -94,8 +91,6 @@
 			var f:Number = getTimer();
 			
 			information.text = "Time elapsed: "+Number(f-i).toString();
-
-			this.addChildAt(shp, 0);
 		}
 		
 		protected function elementAdded(e:SVGDisplayEvent):void {
