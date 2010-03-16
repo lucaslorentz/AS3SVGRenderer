@@ -98,6 +98,7 @@
 				case 'ellipse': obj = visitEllipse(elt); break;
 				case 'g': obj = visitG(elt); break;
 				case 'clipPath': obj = visitClipPath(elt); break;
+				case 'symbol' : obj = visitSymbol(elt); break;
 				case 'text': obj = visitText(elt); break;
 				case 'tspan': obj = visitTspan(elt); break;
 				case 'image' : obj = visitImage(elt); break;
@@ -252,6 +253,21 @@
 		
 		private function visitClipPath(elt:XML):SVGElement {
 			var obj:SVGClipPath = new SVGClipPath();
+			
+			for each(var childElt:XML in elt.*) {
+				var child:SVGElement = visit(childElt);
+				if(child){
+					obj.addChild(child);
+				}
+			}
+			
+			return obj;
+		}
+		
+		private function visitSymbol(elt:XML):SVGElement {
+			var obj:SVGSymbol = new SVGSymbol();
+			
+			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
 			
 			for each(var childElt:XML in elt.*) {
 				var child:SVGElement = visit(childElt);
