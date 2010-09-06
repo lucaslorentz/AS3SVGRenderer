@@ -1,4 +1,5 @@
 ﻿package com.lorentz.SVG.display {
+	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display.CapsStyle;
 	import flash.display.DisplayObject;
@@ -22,7 +23,7 @@
 	import com.lorentz.SVG.SVGColor;
 	import com.lorentz.SVG.StringUtil;
 	
-	public class SVGElement extends Sprite {
+	public class SVGElement extends Sprite implements IDocumentSetable {
 		public var type:String;
 		public var id:String;
 		public var svgClass:String;
@@ -43,6 +44,9 @@
 		public function getStyle(name:String):Object {
 			return _style[name];
 		}
+		public function getFinalStyle(name:String):Object {
+			return _finalStyle(name);
+		}
 		public function setStyle(name:String, value:String):void {
 			_style[name] = value;
 			invalidate(true);
@@ -53,6 +57,9 @@
 		}
 		public function getStyles():Object {
 			return SVGUtil.cloneObject(_style);
+		}
+		public function getFinalStyles():Object {
+			return SVGUtil.cloneObject(_finalStyle);
 		}
 		public function setStyles(objectStyles:Object):void {
 			for(var p:String in objectStyles)
@@ -118,18 +125,18 @@
 			while(!(p is SVGElement) && p!=null)
 				p = p.parent;
 
-			setParentElement(p as SVGElement);
+			_setParentElement(p as SVGElement);
 		}
 		
 		protected function removedHandler(e:Event):void {
-			setParentElement(null);
+			_setParentElement(null);
 		}
 		
 		private var _parentElement:SVGElement;
 		public function get parentElement():SVGElement {
 			return _parentElement;
 		}
-		private function setParentElement(value:SVGElement):void {
+		private function _setParentElement(value:SVGElement):void {
 			if(_parentElement != value){
 				if(_parentElement != null) {
 					_parentElement.numInvalidChildren -= _numInvalidChildren + int(_invalidFlag);
@@ -160,7 +167,7 @@
 		public function get document():SVGDocument {
 			return _document;
 		}
-		private function setDocument(value:SVGDocument):void {
+		public function setDocument(value:SVGDocument):void {
 			if(_document != value){
 				if(_document != null)
 					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_REMOVED, true));
@@ -367,6 +374,7 @@
 				id = StringUtil.ltrim(id, "#");
 
 				var grad:Object = document.gradients[id];
+				var def:Object = document.defs[id];
 				
 				if(grad!=null){
 					switch(grad.type){
@@ -380,13 +388,16 @@
 							calculateRadialGradient(grad);
 							
 							if(grad.r==0)
-								g.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "normal", stroke_linecap, stroke_linejoin);
+								g.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "none", stroke_linecap, stroke_linejoin);
 							else
 								g.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
 								
 							break;
 						}
 					}
+				} else if(def is SVGPattern){
+					var bitmap:BitmapData = def.getBitmap();
+					g.lineBitmapStyle(bitmap);
 				}
 				return;
 			} else if(noStroke)
@@ -414,6 +425,7 @@
 					id = StringUtil.ltrim(id, "#");
 	
 					var grad:Object = document.gradients[id];
+					var def:Object = document.defs[id];
 					
 					if(grad!=null){
 						switch(grad.type){
@@ -435,6 +447,9 @@
 								return;
 							}
 						}
+					} else if(def is SVGPattern){
+						var bitmap:BitmapData = def.getBitmap();
+						g.beginBitmapFill(bitmap);
 					}
 				} else {
 					var color:uint = SVGColor.parseToInt(fill_str);

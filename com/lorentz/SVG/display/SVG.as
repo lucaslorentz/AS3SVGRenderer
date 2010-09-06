@@ -39,22 +39,45 @@
 			
 			_content.scaleX = 1;
 			_content.scaleY = 1;
+			_content.x = 0;
+			_content.y = 0;
+						
+			if(svgX!=null)
+				_content.x += getUserUnit(svgX, SVGUtil.WIDTH);
 			
-			if(svgWidth!=null && svgHeight!=null && svgWidth.indexOf("%")==-1 && svgHeight.indexOf("%")==-1) {
-				var w:Number = getUserUnit(svgWidth, SVGUtil.WIDTH);
-				var h:Number = getUserUnit(svgHeight, SVGUtil.HEIGHT);
+			if(svgY!=null)
+				_content.y += getUserUnit(svgY, SVGUtil.HEIGHT);
 				
-				if(viewBox!=null){				
-					_content.scaleX = w/viewBox.width;
-					_content.scaleY = h/viewBox.height;
-				} else {
-					_content.scaleX = w/_content.width;
-					_content.scaleY = h/_content.height;
+			var box:Rectangle = null;
+			if(viewBox!=null) {
+				box = viewBox;
+				_content.x -= box.left;
+				_content.y -= box.top;
+				
+				if(svgWidth!=null && svgHeight!=null && svgWidth.indexOf("%")==-1 && svgHeight.indexOf("%")==-1) {
+					var w:Number = getUserUnit(svgWidth, SVGUtil.WIDTH);
+					var h:Number = getUserUnit(svgHeight, SVGUtil.HEIGHT);
+					
+					_content.scaleX = w/box.width;
+					_content.scaleY = h/box.height;
+					
+					var preserveAspectRatio:String = svgPreserveAspectRatio == null ? "xmidymid meet" : svgPreserveAspectRatio.toLowerCase();
+						
+					if(preserveAspectRatio!="none"){
+						_content.scaleX = Math.min(_content.scaleX, _content.scaleY);
+						_content.scaleY = Math.min(_content.scaleX, _content.scaleY);
+					}
 				}
-				
-				_content.scaleX = Math.min(_content.scaleX, _content.scaleY);
-				_content.scaleY = Math.min(_content.scaleX, _content.scaleY);
+			} else if(svgWidth!=null && svgHeight!=null && svgWidth.indexOf("%")==-1 && svgHeight.indexOf("%")==-1) {
+				var w_:Number = getUserUnit(svgWidth, SVGUtil.WIDTH);
+				var h_:Number = getUserUnit(svgHeight, SVGUtil.HEIGHT);
+				box = new Rectangle(0, 0, w_, h_);
 			}
+			
+			if(box != null && (overflow == "hidden" || overflow == "scroll"))
+				_content.scrollRect = box;
+			else
+				_content.scrollRect = null;
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

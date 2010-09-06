@@ -17,17 +17,22 @@
 		
 		public var children:Array = [];
 		
+		protected var subSprite:Sprite;
+		
 		override protected function initialize():void {
 			super.initialize();
+			
+			//Create children
+			subSprite = new Sprite();
+			addChild(subSprite); //Add child before to TSpan inherit this style
+			//
+			
 			_validateFunctions.push(render);
 		}
 		
 		protected function render():void {
-			if(this.numChildren>0)
-				this.removeChildAt(0);
-
-			var subSprite:Sprite = new Sprite();
-			addChild(subSprite); //Add child before to TSpan inherit this style
+			if(subSprite.numChildren>0)
+				subSprite.removeChildAt(0);
 
 			var textX:Number = getUserUnit(svgX, SVGUtil.WIDTH);
 			var textY:Number = getUserUnit(svgY, SVGUtil.HEIGHT);

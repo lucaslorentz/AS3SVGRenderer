@@ -37,3 +37,11 @@ public function get svgPreserveAspectRatio():String {
 public function set svgPreserveAspectRatio(value:String):void {
 	_svgPreserveAspectRatio = value;
 }
+
+protected var _overflow:String;
+public function get overflow():String {
+	return _overflow;
+}
+public function set overflow(value:String):void {
+	_overflow = value;
+}

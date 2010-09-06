@@ -23,6 +23,8 @@
 		
 		public function testDisplay() {
 			var array_itens:Array = new Array(
+				"svgFiles/viewbox.svg",
+				"svgFiles/viewbox2.svg",
 				"svgFiles/simple_link.svg",
 				"svgFiles/text01.svg",
 				"svgFiles/tspan01.svg",

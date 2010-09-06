@@ -77,6 +77,8 @@
 				for each(var childElt:XML in defs.*) {
 					var child:SVGElement = visit(childElt);
 					if(child){
+						if(child is IDocumentSetable)
+							(child as IDocumentSetable).setDocument(this);
 						result[child.id] = child;
 					}
 				}
@@ -104,6 +106,7 @@
 				case 'image' : obj = visitImage(elt); break;
 				case 'a' : obj = visitA(elt); break;
 				case 'use' : obj = visitUse(elt); break;
+				case 'pattern' : obj = visitPattern(elt); break;
 			}
 			
 			if(obj==null)
@@ -337,6 +340,23 @@
 			
 			return obj;
 		}
+		
+		private function visitPattern(elt:XML):SVGPattern {
+			var obj:SVGPattern = new SVGPattern();
+			obj.svgX = ("@x" in elt) ? elt.@x : null;
+			obj.svgY = ("@y" in elt) ? elt.@y : null;
+			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
+			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
+			
+			for each(var childElt:XML in elt.*) {
+				var child:SVGElement = visit(childElt);
+				if(child){
+					obj.addChild(child);
+				}
+			}
+			
+			return obj;
+		}
 			
 		public function resolveURL(url:String):String
 		{
@@ -400,20 +420,15 @@
 		protected function validateCaller(e:Event):void {
 			if (e.type == Event.ADDED_TO_STAGE) {
 				removeEventListener(Event.ADDED_TO_STAGE, validateCaller);
-				stage.addEventListener(Event.ENTER_FRAME, validateCaller, false, 0, true);
-				// now we can listen for render event:
-				stage.addEventListener(Event.RENDER, validateCaller, false, 0, true);
-				stage.invalidate();
-				return;
-	        } else {
-				e.target.removeEventListener(Event.ENTER_FRAME, validateCaller);
-				e.target.removeEventListener(Event.RENDER, validateCaller);
-				if (stage == null) {
-					// received render, but the stage is not available, so we will listen for addedToStage again:
-					addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
-					return;
-				}
-	        }
+			} else {
+					e.target.removeEventListener(Event.ENTER_FRAME, validateCaller);
+					e.target.removeEventListener(Event.RENDER, validateCaller);
+					if (stage == null) {
+						// received render, but the stage is not available, so we will listen for addedToStage again:
+						addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
+						return;
+					}
+			}
 			validate(true);
 		}
 	}
