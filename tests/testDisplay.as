@@ -23,39 +23,41 @@
 		
 		public function testDisplay() {
 			var array_itens:Array = new Array(
-				"tests/simple_link.svg",
-				"tests/text01.svg",
-				"tests/tspan01.svg",
-				"tests/tspan02.svg",
-				"tests/Units.svg",
-				"tests/lingrad01.svg",
-				"tests/arcs01.svg",
-				"tests/arcs02.svg",
-				"tests/butterfly.svg",
-				"tests/circles1.svg",
-				"tests/ellipse1.svg",
-				"tests/ellipse2.svg",
-				"tests/gradiente.svg",
-				"tests/gradiente_linear.svg",
-				"tests/gradients1.svg",
-				"tests/gradients2.svg",
-				"tests/line1.svg",
-				"tests/lion.svg",
-				"tests/path1.svg",
-				"tests/path2.svg",
-				"tests/paths1.svg",
-				"tests/paths2.svg",
-				"tests/paths3.svg",
-				"tests/polygons1.svg",
-				"tests/quadbezier1.svg",
-				"tests/rect1.svg",
-				"tests/rect2.svg",
-				"tests/rect4.svg",
-				"tests/skew1.svg",
-				"tests/tiger.svg",
-				"tests/toucan.svg",
-				"tests/image.svg",
-				"tests/image2.svg"
+			    "svgFiles2/pattern01.svg",
+				"svgFiles2/InitialViewPort.svg",
+				"svgFiles/simple_link.svg",
+				"svgFiles/text01.svg",
+				"svgFiles/tspan01.svg",
+				"svgFiles/tspan02.svg",
+				"svgFiles/Units.svg",
+				"svgFiles/lingrad01.svg",
+				"svgFiles/arcs01.svg",
+				"svgFiles/arcs02.svg",
+				"svgFiles/butterfly.svg",
+				"svgFiles/circles1.svg",
+				"svgFiles/ellipse1.svg",
+				"svgFiles/ellipse2.svg",
+				"svgFiles/gradiente.svg",
+				"svgFiles/gradiente_linear.svg",
+				"svgFiles/gradients1.svg",
+				"svgFiles/gradients2.svg",
+				"svgFiles/line1.svg",
+				"svgFiles/lion.svg",
+				"svgFiles/path1.svg",
+				"svgFiles/path2.svg",
+				"svgFiles/paths1.svg",
+				"svgFiles/paths2.svg",
+				"svgFiles/paths3.svg",
+				"svgFiles/polygons1.svg",
+				"svgFiles/quadbezier1.svg",
+				"svgFiles/rect1.svg",
+				"svgFiles/rect2.svg",
+				"svgFiles/rect4.svg",
+				"svgFiles/skew1.svg",
+				"svgFiles/tiger.svg",
+				"svgFiles/toucan.svg",
+				"svgFiles/image.svg",
+				"svgFiles/image2.svg"
 				);
 
 			lista.dataProvider = new DataProvider(array_itens);
@@ -90,7 +92,7 @@
 			
 			var i:Number = getTimer();
 			shp = new SVGDocument();
-			shp.baseURL = "tests/"
+			shp.baseURL = "svgFiles/"
 			shp.parse(svg);
 			var f:Number = getTimer();
 			
