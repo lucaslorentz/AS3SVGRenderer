@@ -15,7 +15,7 @@
 			for (var count:Number=0;count<input.length;count++) { 
 				var c:String = input.charAt(count);
 				var code:Number=input.charCodeAt(count); 
-				if (code>=65 && c!="e") {//is a letter, not exponential number
+				if (code>=65 && c.toLowerCase()!="e") {//is a letter, not exponential number
 					//update the points of last inserted pathObject
 					if(array_position>=0)
 						returnData[array_position].args=parseArgsData(pointString); 
@@ -41,13 +41,13 @@
 		public static function parseArgsData(input:String):Array { 
 			var returnData:Array=new Array();
 
-			var last_char:String = null;
+			var last_char:String = "";
 			var cur_char:String = null;
 			var cur_arg:String = "";
 			var i:int = 0;
 			while(i<input.length){
 				cur_char = input.charAt(i);
-				if(cur_char=="-" && last_char!="e"){
+				if(cur_char=="-" && last_char.toLowerCase()!="e"){
 					if(cur_arg!="")
 						returnData.push(cur_arg);
 					cur_arg = cur_char;

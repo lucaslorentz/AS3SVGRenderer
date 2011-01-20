@@ -1,7 +1,7 @@
 ﻿/*
 	Author: Lucas Lorentz Lara - 25/09/2008
 	
-	Thanks to Greg. Yachuk, for the changes to use the function new Flash Player 10 function drawPath.
+	Thanks to Greg. Yachuk, for the changes to use the new Flash Player 10 function drawPath.
 */
 
 package com.lorentz.SVG{

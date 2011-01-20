@@ -88,7 +88,7 @@
 			c.svgHeight = svgHeight;
 			c.svgPreserveAspectRatio = svgPreserveAspectRatio;
 			
-			c.viewBox = viewBox.clone();
+			c.viewBox = (viewBox != null) ? viewBox.clone() : null;
 			return c;
 		}
 	}
