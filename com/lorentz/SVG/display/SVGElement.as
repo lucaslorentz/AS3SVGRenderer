@@ -72,7 +72,7 @@
 		}
 		
 		protected var _content:Sprite;
-		protected var _mask:Sprite;
+		protected var _mask:SVGElement;
 				
 		private var _currentViewBox:Rectangle;
 		private var _currentFontSize:Number = Number.NaN;
@@ -246,7 +246,7 @@
 			if(_document==null)
 				return;
 				
-			if(_invalidFlag){															
+			if(_invalidFlag){
 				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.BEFORE_VALIDATE));
 				
 				for(var i:int = 0; i<_validateFunctions.length; i++){
@@ -259,6 +259,9 @@
 				
 				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.VALIDATED));
 			}
+			
+			if(_mask != null)
+				_mask.validate(true);
 			
 			if(recursive && numInvalidChildren>0) {
 				for(var j:int = 0; j<numChildren; j++){

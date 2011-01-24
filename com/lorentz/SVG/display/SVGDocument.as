@@ -34,7 +34,6 @@
 			
 			gradients = SVGParserCommon.parseGradients(_svg);
 			styles = SVGParserCommon.parseStyles(_svg);
-			defs = parseDefs(_svg);
 						
 			visit(_svg, this);
 			
@@ -67,30 +66,20 @@
 		}
 				
 		public function getDefinitionClone(id:String):SVGElement {
+			if(defs[id] == null)
+				throw new Error("Cannot find the definition '"+id+"'");
+				
 			return defs[id].clone(true);
 		}
 		
-		private function parseDefs(elt:XML):Object {
-			var result:Object = {};
-			
-			for each(var defs:XML in elt..*::defs){
-				for each(var childElt:XML in defs.*) {
-					var child:SVGElement = visit(childElt);
-					if(child){
-						if(child is IDocumentSetable)
-							(child as IDocumentSetable).setDocument(this);
-						result[child.id] = child;
-					}
-				}
-			}
-			return result;
-		}
-
 		private function visit(elt:XML, target:SVG = null):SVGElement {
 			var obj:SVGElement;
 			
-			switch(elt.localName()) {
+			var localName:String = String(elt.localName()).toLowerCase();
+			
+			switch(localName) {
 				case 'svg': obj = visitSvg(elt, target); break;
+				case 'defs': obj = visitDefs(elt); break;
 				case 'rect': obj = visitRect(elt); break;
 				case 'path': obj = visitPath(elt); break;
 				case 'polygon': obj = visitPolygon(elt); break;
@@ -99,7 +88,7 @@
 				case 'circle': obj = visitCircle(elt); break;
 				case 'ellipse': obj = visitEllipse(elt); break;
 				case 'g': obj = visitG(elt); break;
-				case 'clipPath': obj = visitClipPath(elt); break;
+				case 'clippath': obj = visitClipPath(elt); break;
 				case 'symbol' : obj = visitSymbol(elt); break;
 				case 'text': obj = visitText(elt); break;
 				case 'tspan': obj = visitTspan(elt); break;
@@ -111,9 +100,17 @@
 			
 			if(obj==null)
 				return null;
-			
-			obj.type = elt.localName();
+							
+			obj.type = localName;
 			obj.id = elt.@id;
+			
+			//Save in definitions
+			if(obj.id != null && obj.id != "")
+				defs[obj.id] = obj;
+			
+			//Set document
+			if(obj is IDocumentSetable)
+				(obj as IDocumentSetable).setDocument(this);
 			
 			obj.setStyles(SVGUtil.presentationStyleToObject(elt));
 			if("@style" in elt){
@@ -132,6 +129,9 @@
 				
 			if(obj is IViewBox)
 				(obj as IViewBox).viewBox = SVGParserCommon.parseViewBox(elt.@viewBox);
+				
+			if(obj.type == "clippath" || obj.type=="symbol")
+				return null;
 			
 			return obj;
 		}
@@ -155,6 +155,13 @@
 			}
 			
 			return obj;
+		}
+		
+		private function visitDefs(elt:XML):SVGElement {
+			for each(var childElt:XML in elt.*) {
+				visit(childElt);
+			}
+			return null;
 		}
 
 		private function visitRect(elt:XML):SVGElement {
