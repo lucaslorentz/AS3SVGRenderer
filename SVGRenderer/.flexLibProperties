@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="false" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="com.lorentz.SVG.Base64Decoder"/>
+    <classEntry path="com.lorentz.SVG.Bezier"/>
+    <classEntry path="com.lorentz.SVG.MathUtils"/>
+    <classEntry path="com.lorentz.SVG.MatrixTransformer"/>
+    <classEntry path="com.lorentz.SVG.PathCommand"/>
+    <classEntry path="com.lorentz.SVG.PathRenderer"/>
+    <classEntry path="com.lorentz.SVG.SVGColor"/>
+    <classEntry path="com.lorentz.SVG.SVGParserCommon"/>
+    <classEntry path="com.lorentz.SVG.SVGRasterRenderer"/>
+    <classEntry path="com.lorentz.SVG.SVGUtil"/>
+    <classEntry path="com.lorentz.SVG.StringUtil"/>
+    <classEntry path="com.lorentz.SVG.display.IDocumentSetable"/>
+    <classEntry path="com.lorentz.SVG.display.IViewBox"/>
+    <classEntry path="com.lorentz.SVG.display.IViewPort"/>
+    <classEntry path="com.lorentz.SVG.display.SVG"/>
+    <classEntry path="com.lorentz.SVG.display.SVGA"/>
+    <classEntry path="com.lorentz.SVG.display.SVGCircle"/>
+    <classEntry path="com.lorentz.SVG.display.SVGClipPath"/>
+    <classEntry path="com.lorentz.SVG.display.SVGDisplayEvent"/>
+    <classEntry path="com.lorentz.SVG.display.SVGDocument"/>
+    <classEntry path="com.lorentz.SVG.display.SVGElement"/>
+    <classEntry path="com.lorentz.SVG.display.SVGEllipse"/>
+    <classEntry path="com.lorentz.SVG.display.SVGG"/>
+    <classEntry path="com.lorentz.SVG.display.SVGImage"/>
+    <classEntry path="com.lorentz.SVG.display.SVGLine"/>
+    <classEntry path="com.lorentz.SVG.display.SVGPath"/>
+    <classEntry path="com.lorentz.SVG.display.SVGPattern"/>
+    <classEntry path="com.lorentz.SVG.display.SVGPolygon"/>
+    <classEntry path="com.lorentz.SVG.display.SVGPolyline"/>
+    <classEntry path="com.lorentz.SVG.display.SVGRect"/>
+    <classEntry path="com.lorentz.SVG.display.SVGShape"/>
+    <classEntry path="com.lorentz.SVG.display.SVGSymbol"/>
+    <classEntry path="com.lorentz.SVG.display.SVGTSpan"/>
+    <classEntry path="com.lorentz.SVG.display.SVGText"/>
+    <classEntry path="com.lorentz.SVG.display.SVGUse"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:Flex="com.lorentz.SVG.Flex.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.lorentz.SVG.display.SVGDocument;
+			
+			import mx.controls.Alert;
+			import mx.events.MenuEvent;
+			import mx.managers.CursorManager;
+			
+			import spark.events.IndexChangeEvent;
+			
+			private var fileReference:FileReference;
+			private var urlLoader:URLLoader;
+			
+			protected function menubar1_itemClickHandler(event:MenuEvent):void
+			{
+				if(event.item.@name == "openSVG"){
+					var svgFilter:FileFilter = new FileFilter("SVG Files", "*.svg");
+					
+					fileReference = new FileReference();
+					fileReference.browse([ svgFilter ]);
+					
+					fileReference.addEventListener(Event.SELECT, fileReference_selectHandler, false, 0, true);
+					fileReference.addEventListener(Event.COMPLETE, fileReference_completeHandler, false, 0, true);
+				}
+			}
+			
+			protected function fileReference_selectHandler(e:Event):void {
+				fileReference.load();
+			}
+			
+			protected function fileReference_completeHandler(e:Event):void {
+				var svgContent:String = fileReference.data.readUTFBytes(fileReference.data.length);
+				svg.source = svgContent; 
+				fileReference = null;
+			}			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:XML id="menuXML" xmlns="">
+			<menu>
+				<menuItem label="File">
+					<menuItem label="Open SVG File" name="openSVG" />
+				</menuItem>
+			</menu>
+		</fx:XML>
+		
+		<s:ArrayCollection id="sampleFilesArray">
+			<fx:String>svgFiles/kejian_1.svg</fx:String>
+			<fx:String>svgFiles/viewbox.svg</fx:String>
+			<fx:String>svgFiles/viewbox2.svg</fx:String>
+			<fx:String>svgFiles/simple_link.svg</fx:String>
+			<fx:String>svgFiles/text01.svg</fx:String>
+			<fx:String>svgFiles/tspan01.svg</fx:String>
+			<fx:String>svgFiles/tspan02.svg</fx:String>
+			<fx:String>svgFiles/Units.svg</fx:String>
+			<fx:String>svgFiles/lingrad01.svg</fx:String>
+			<fx:String>svgFiles/arcs01.svg</fx:String>
+			<fx:String>svgFiles/arcs02.svg</fx:String>
+			<fx:String>svgFiles/butterfly.svg</fx:String>
+			<fx:String>svgFiles/circles1.svg</fx:String>
+			<fx:String>svgFiles/ellipse1.svg</fx:String>
+			<fx:String>svgFiles/ellipse2.svg</fx:String>
+			<fx:String>svgFiles/gradiente.svg</fx:String>
+			<fx:String>svgFiles/gradiente_linear.svg</fx:String>
+			<fx:String>svgFiles/gradients1.svg</fx:String>
+			<fx:String>svgFiles/gradients2.svg</fx:String>
+			<fx:String>svgFiles/line1.svg</fx:String>
+			<fx:String>svgFiles/lion.svg</fx:String>
+			<fx:String>svgFiles/path1.svg</fx:String>
+			<fx:String>svgFiles/path2.svg</fx:String>
+			<fx:String>svgFiles/paths1.svg</fx:String>
+			<fx:String>svgFiles/paths2.svg</fx:String>
+			<fx:String>svgFiles/paths3.svg</fx:String>
+			<fx:String>svgFiles/polygons1.svg</fx:String>
+			<fx:String>svgFiles/quadbezier1.svg</fx:String>
+			<fx:String>svgFiles/rect1.svg</fx:String>
+			<fx:String>svgFiles/rect2.svg</fx:String>
+			<fx:String>svgFiles/rect4.svg</fx:String>
+			<fx:String>svgFiles/skew1.svg</fx:String>
+			<fx:String>svgFiles/tiger.svg</fx:String>
+			<fx:String>svgFiles/toucan.svg</fx:String>
+			<fx:String>svgFiles/image.svg</fx:String>
+			<fx:String>svgFiles/image2.svg</fx:String>
+		</s:ArrayCollection>
+	</fx:Declarations>
+	
+	
+	<s:controlBarContent>
+		<mx:MenuBar dataProvider="{menuXML}"
+					showRoot="false"
+					labelField="@label"
+					itemClick="menubar1_itemClickHandler(event)" />
+	</s:controlBarContent>
+	<s:Image>
+		
+	</s:Image>
+	<s:HGroup left="10" right="10" top="10" bottom="10">
+		<s:Group width="100%" height="100%">
+			<s:Scroller width="100%" height="100%">
+				<s:Group>
+					<Flex:SVG id="svg" source="{sampleList.selectedItem}" />
+				</s:Group>
+			</s:Scroller>
+			<s:Rect width="100%" height="100%">
+				<s:stroke>
+					<s:SolidColorStroke color="#666666" />
+				</s:stroke>
+			</s:Rect>
+		</s:Group>
+	
+		<s:Panel width="200" height="100%"
+				 title="Samples">
+			
+			<s:layout>
+				<s:VerticalLayout />
+			</s:layout>
+			
+			<s:List id="sampleList" width="100%" height="100%"
+					dataProvider="{sampleFilesArray}">
+			</s:List>
+		</s:Panel>
+	</s:HGroup>
+</s:Application>
