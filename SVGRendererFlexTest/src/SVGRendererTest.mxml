@@ -52,7 +52,6 @@
 		</fx:XML>
 		
 		<s:ArrayCollection id="sampleFilesArray">
-			<fx:String>svgFiles/kejian_1.svg</fx:String>
 			<fx:String>svgFiles/viewbox.svg</fx:String>
 			<fx:String>svgFiles/viewbox2.svg</fx:String>
 			<fx:String>svgFiles/simple_link.svg</fx:String>
@@ -98,9 +97,7 @@
 					labelField="@label"
 					itemClick="menubar1_itemClickHandler(event)" />
 	</s:controlBarContent>
-	<s:Image>
-		
-	</s:Image>
+
 	<s:HGroup left="10" right="10" top="10" bottom="10">
 		<s:Group width="100%" height="100%">
 			<s:Scroller width="100%" height="100%">
