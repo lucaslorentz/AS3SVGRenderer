@@ -66,11 +66,8 @@ package com.lorentz.SVG.Flex
 		}
 		
 		private function isXML(str:String):Boolean {
-			//Remove xml header, processing instructions, comments
-			var withoutExtra:String = str.replace(/(?:(?:<\?(?:.|\s)+?\?>)|(?:<!(?:.|\s)+?>)|(?:^<!--(?:.|\s)+?-->))*/g, "");
-			
 			//Check if root node exist
-			return /^\s*<([^\s]*)(?:.|\s)*?<\/\1>\s*$/g.test(withoutExtra);
+			return /<(\S*).*<\/\1>\s*$/sg.test(str);
 		}
 		
 		private function parse(xmlOrXmlString:Object, defaultBaseURL:String):void {
