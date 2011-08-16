@@ -1,96 +1,113 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.display.base.SVGTextContainer;
+	import com.lorentz.SVG.utils.DisplayUtils;
+	import com.lorentz.SVG.utils.SVGUtil;
+	
 	import flash.display.Sprite;
-	import flash.text.TextFormat;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
-	import flash.text.AntiAliasType;
+	import flash.geom.Rectangle;
 	
-	import com.lorentz.SVG.SVGUtil;
+	import flashx.textLayout.edit.SelectionManager;
+	import flashx.textLayout.elements.TextFlow;
+	import flashx.textLayout.formats.TextAlign;
 	
-	public class SVGText extends SVGElement {	
-		public var svgX:String;
-		public var svgY:String;
+	public class SVGText extends SVGTextContainer {		
+		private var _svgX:String;
+		public function get svgX():String {
+			return _svgX;
+		}
+		public function set svgX(value:String):void {
+			if(_svgX != value){
+				_svgX = value;
+				invalidateRender();
+			}
+		}
 
+		private var _svgY:String;
+		public function get svgY():String {
+			return _svgY;
+		}
+		public function set svgY(value:String):void {
+			if(_svgY != value){
+				_svgY = value;
+				invalidateRender();
+			}
+		}
+		
 		public function SVGText(){
-			super();
+			super("text");
 		}
 		
-		public var children:Array = [];
+		public var currentX:Number = 0;
+		public var currentY:Number = 0;
+		public var textFlow:TextFlow;
 		
-		protected var subSprite:Sprite;
-		
-		override protected function initialize():void {
-			super.initialize();
+		protected override function render():void {
+			super.render();
 			
-			//Create children
-			subSprite = new Sprite();
-			addChild(subSprite); //Add child before to TSpan inherit this style
-			//
+			while(_content.numChildren > 0)
+				_content.removeChildAt(0);
 			
-			_validateFunctions.push(render);
-		}
-		
-		protected function render():void {
-			if(subSprite.numChildren>0)
-				subSprite.removeChildAt(0);
-
-			var textX:Number = getUserUnit(svgX, SVGUtil.WIDTH);
-			var textY:Number = getUserUnit(svgY, SVGUtil.HEIGHT);
-
-			var textAnchor:String = _finalStyle["text-anchor"];
+			if(this.numTextElements == 0)
+				return;
 			
-			var dTFormat:TextFormat = styleToTextFormat(_finalStyle);
+			textFlow = new TextFlow();
+			textFlow.textAlign = TextAlign.LEFT;
 
-			var tx:Number = 0;
-			for each(var childElt:Object in children) {
-				if(childElt is String){
-					var tField:TextField = new TextField();				
-					tField.autoSize = TextFieldAutoSize.LEFT;
-					//tField.embedFonts = true;
-					tField.antiAliasType = AntiAliasType.ADVANCED;
-					tField.multiline = false;
-					tField.background = false;
-					tField.selectable = false;
-					tField.x = tx;
-					
-					tField.appendText(childElt as String);
-
-					tField.setTextFormat(dTFormat);
+			var textAnchor:String = _finalStyles["text-anchor"];
+			
+			var startTx:Number = getUserUnit(svgX, SVGUtil.WIDTH);
+			var startTy:Number = getUserUnit(svgY, SVGUtil.HEIGHT);
+			
+			currentX = startTx;
+			currentY = startTy;
+			
+			var maskSprite:Sprite = new Sprite();
+			this.addChild(maskSprite);
+			
+			var noMaskSprite:Sprite = new Sprite();
+			this.addChild(noMaskSprite);
+			
+			for(var i:int = 0; i < this.numTextElements; i++){
+				var textElement:Object = this.getTextElementAt(i);
 				
-					subSprite.addChild(tField);
+				if(textElement is String){
+					var createdText:Object = createTextSprite( textElement as String, textFlow );
 					
-					tField.y -= 2; //Top margin
-					tField.y -= tField.textHeight;
-					tField.x -= 2; //Left margin
-					tx+=tField.textWidth;
-				} else {						
-					subSprite.addChild(childElt as SVGTSpan);
+					var fillTextField:Sprite = createdText.sprite;
+					fillTextField.x = currentX;
+					fillTextField.y = currentY - createdText.height;
 					
-					childElt.invalidate();
-					childElt.validate();
+					maskSprite.addChild(fillTextField);
 					
-					childElt.x = tx;
+					currentX += createdText.xOffset;
+				} else {
+					var tspan:SVGTSpan = textElement as SVGTSpan;
 					
-					if(childElt.svgX!=null)
-						childElt.x = childElt.x-textX;
-					if(childElt.svgY!=null)
-						childElt.y = childElt.y-textY;
-					
-					tx+=childElt.width;
+					tspan.validate();
+										
+					if(tspan.hasOwnFill())
+						noMaskSprite.addChild(tspan);
+					else
+						maskSprite.addChild(tspan);
 				}				
 			}
-
-			subSprite.x = textX;
-			subSprite.y = textY+2; //Bottom margin
 			
-			if(textAnchor == "middle"){
-				subSprite.x -= (subSprite.width/2);
-				subSprite.y -= (subSprite.height/2);
-			}
-			else if(textAnchor == "end"){
-				subSprite.x -= subSprite.width;
-				subSprite.y -= subSprite.height;
-			}
+			textFlow.interactionManager = document.allowTextSelection ? new SelectionManager() : null;
+			textFlow.flowComposer.updateAllControllers();
+
+			if(textAnchor == "middle")
+				noMaskSprite.x = maskSprite.x -= (currentX - startTx)/2;
+			else if(textAnchor == "end")
+				noMaskSprite.x = maskSprite.x -= (currentX - startTx);
+
+			var bounds:Rectangle = DisplayUtils.safeGetBounds(maskSprite, this);
+			var fillRect:Sprite = new Sprite();
+			beginFill(fillRect.graphics);
+			fillRect.graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			fillRect.mask = maskSprite;
+			maskSprite.cacheAsBitmap = true;
+			fillRect.cacheAsBitmap = true;
+			this.addChildAt(fillRect, 0);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {
@@ -98,13 +115,6 @@
 			c.svgX = svgX;
 			c.svgY = svgY;
 			
-			for each(var child:* in children){
-				if(child is String)
-					c.children.push(child);
-				else if(child is SVGTSpan)
-					c.children.push((child as SVGTSpan).clone());
-			}
-
 			return c;
 		}
 	}

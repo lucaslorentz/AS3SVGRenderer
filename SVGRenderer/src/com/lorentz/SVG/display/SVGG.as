@@ -1,11 +1,9 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
+	import com.lorentz.SVG.display.base.SVGContainer;
 	
-	import com.lorentz.SVG.SVGUtil;
-	
-	public class SVGG extends SVGElement {	
+	public class SVGG extends SVGContainer {	
 		public function SVGG(){
-			super();
+			super("g");
 		}
 	}
 }

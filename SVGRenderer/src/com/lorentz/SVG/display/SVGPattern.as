@@ -1,12 +1,12 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.display.base.ISVGViewBox;
+	import com.lorentz.SVG.display.base.SVGContainer;
+	import com.lorentz.SVG.utils.SVGUtil;
+	
 	import flash.display.BitmapData;
 	
-	import flash.geom.Rectangle;
-	
-	import com.lorentz.SVG.SVGUtil;
-	
-	public class SVGPattern extends SVGElement implements IViewBox {	
-		include "includes/ViewBoxProperties.as"
+	public class SVGPattern extends SVGContainer implements ISVGViewBox {
+		include "includes/SVGViewBoxProperties.as"
 		
 		public var svgX:String;
 		public var svgY:String;
@@ -14,16 +14,11 @@
 		public var svgHeight:String;
 		
 		public function SVGPattern(){
-			super();
+			super("pattern");
 		}
-		
-		public override function setDocument(doc:SVGDocument):void {
-			super.setDocument(doc);
-			invalidate(true);
-		}
-	
+			
 		public function getBitmap():BitmapData {
-			validate(true);
+			validate();
 			
 			_content.scaleX = _content.scaleY = 1;
 			

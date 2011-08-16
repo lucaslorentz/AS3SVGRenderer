@@ -1,22 +1,14 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
-	import flash.geom.Rectangle;
+	import com.lorentz.SVG.display.base.ISVGPreserveAspectRatio;
+	import com.lorentz.SVG.display.base.ISVGViewBox;
+	import com.lorentz.SVG.display.base.SVGContainer;
 	
-	import com.lorentz.SVG.SVGUtil;
-	
-	public class SVGSymbol extends SVGG implements IViewBox {	
-		include "includes/ViewBoxProperties.as"
-		
-		protected var _svgPreserveAspectRatio:String;
-		public function get svgPreserveAspectRatio():String {
-			return _svgPreserveAspectRatio;
-		}
-		public function set svgPreserveAspectRatio(value:String):void {
-			_svgPreserveAspectRatio = value;
-		}
+	public class SVGSymbol extends SVGContainer implements ISVGViewBox, ISVGPreserveAspectRatio {	
+		include "includes/SVGPreserveAspectRatio.as"
+		include "includes/SVGViewBoxProperties.as"
 		
 		public function SVGSymbol(){
-			super();
+			super("symbol");
 		}
 	}
 }

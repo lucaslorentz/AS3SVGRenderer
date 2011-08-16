@@ -1,28 +1,62 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
+	import com.lorentz.SVG.display.base.SVGShape;
+	import com.lorentz.SVG.drawing.IDrawer;
+	import com.lorentz.SVG.utils.SVGUtil;
 	
-	import com.lorentz.SVG.SVGUtil;
+	import flash.display.Graphics;
 	
 	public class SVGCircle extends SVGShape {	
 		public function SVGCircle(){
-			super();
+			super("circle");
 		}
 		
-		public var svgCx:String;
-		public var svgCy:String;
-		public var svgR:String;
+		private var _svgCx:String;
+		public function get svgCx():String {
+			return _svgCx;
+		}
+		public function set svgCx(value:String):void {
+			if(_svgCx != value){
+				_svgCx = value;
+				invalidateRender();
+			}
+		}
 		
-		override protected function render():void {		
-			var cx:Number = getUserUnit(svgCx, SVGUtil.WIDTH);
-			var cy:Number = getUserUnit(svgCy, SVGUtil.HEIGHT);
-			var r:Number = getUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
+		private var _svgCy:String;
+		public function get svgCy():String {
+			return _svgCy;
+		}
+		public function set svgCy(value:String):void {
+			if(_svgCy != value){
+				_svgCy = value;
+				invalidateRender();
+			}
+		}
+		
+		private var _svgR:String;
+		public function get svgR():String {
+			return _svgR;
+		}
+		public function set svgR(value:String):void {
+			_svgR = value;
+			invalidateRender();
+		}
+		
+		private var _cxUnits:Number;
+		private var _cyUnits:Number;
+		private var _rUnits:Number;
+		
+		override protected function render():void {
+			_cxUnits = getUserUnit(svgCx, SVGUtil.WIDTH);
+			_cyUnits = getUserUnit(svgCy, SVGUtil.HEIGHT);
+			_rUnits = getUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
 			
-			_content.graphics.clear();
-			beginFill();
-			lineStyle();
-			_content.graphics.drawCircle(cx, cy, r);
-			_content.graphics.endFill();
-			_content.graphics.lineStyle();
+			super.render();
+		}
+		
+		override protected function draw(drawer:IDrawer):void {
+			drawer.moveTo(_cxUnits + _rUnits, _cyUnits);
+			drawer.arcTo(_rUnits, _rUnits, 0, true, false, _cxUnits - _rUnits, _cyUnits);
+			drawer.arcTo(_rUnits, _rUnits, 0, true, false, _cxUnits + _rUnits, _cyUnits);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

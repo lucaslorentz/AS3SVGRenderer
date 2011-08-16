@@ -1,30 +1,73 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
+	import com.lorentz.SVG.display.base.SVGShape;
+	import com.lorentz.SVG.drawing.IDrawer;
+	import com.lorentz.SVG.utils.SVGUtil;
 	
-	import com.lorentz.SVG.SVGUtil;
+	import flash.display.Graphics;
 	
 	public class SVGEllipse extends SVGShape {	
 		public function SVGEllipse(){
-			super();
+			super("ellipse");
 		}
 		
-		public var svgCx:String;
-		public var svgCy:String;
-		public var svgRx:String;
-		public var svgRy:String;
+		private var _svgCx:String;
+		public function get svgCx():String {
+			return _svgCx;
+		}
+		public function set svgCx(value:String):void {
+			if(_svgCx != value){
+				_svgCx = value;
+				invalidateRender();
+			}
+		}
 		
-		override protected function render():void {		
-			var cx:Number = getUserUnit(svgCx, SVGUtil.WIDTH);
-			var cy:Number = getUserUnit(svgCy, SVGUtil.HEIGHT);
-			var rx:Number = getUserUnit(svgRx, SVGUtil.WIDTH);
-			var ry:Number = getUserUnit(svgRy, SVGUtil.HEIGHT);
+		private var _svgCy:String;
+		public function get svgCy():String {
+			return _svgCy;
+		}
+		public function set svgCy(value:String):void {
+			if(_svgCy != value){
+				_svgCy = value;
+				invalidateRender();
+			}
+		}
+		
+		private var _svgRx:String;
+		public function get svgRx():String {
+			return _svgRx;
+		}
+		public function set svgRx(value:String):void {
+			_svgRx = value;
+			invalidateRender();
+		}
+		
+		private var _svgRy:String;
+		public function get svgRy():String {
+			return _svgRy;
+		}
+		public function set svgRy(value:String):void {
+			_svgRy = value;
+			invalidateRender();
+		}
+		
+		private var _cxUnits:Number;
+		private var _cyUnits:Number;
+		private var _rxUnits:Number;
+		private var _ryUnits:Number;
+		
+		override protected function render():void {
+			_cxUnits = getUserUnit(svgCx, SVGUtil.WIDTH);
+			_cyUnits = getUserUnit(svgCy, SVGUtil.HEIGHT);
+			_rxUnits = getUserUnit(svgRx, SVGUtil.WIDTH);
+			_ryUnits = getUserUnit(svgRy, SVGUtil.HEIGHT);
 			
-			_content.graphics.clear();
-			beginFill();
-			lineStyle();
-			_content.graphics.drawEllipse(cx-rx, cy-ry, rx*2, ry*2);
-			_content.graphics.endFill();
-			_content.graphics.lineStyle();
+			super.render();
+		}
+		
+		override protected function draw(drawer:IDrawer):void {
+			drawer.moveTo(_cxUnits + _rxUnits, _cyUnits);
+			drawer.arcTo(_rxUnits, _ryUnits, 0, true, false, _cxUnits - _rxUnits, _cyUnits);
+			drawer.arcTo(_rxUnits, _ryUnits, 0, true, false, _cxUnits + _rxUnits, _cyUnits);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

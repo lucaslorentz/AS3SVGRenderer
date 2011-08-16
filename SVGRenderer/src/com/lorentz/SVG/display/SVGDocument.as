@@ -1,43 +1,83 @@
 ﻿package com.lorentz.SVG.display {
-	import com.lorentz.SVG.MatrixTransformer;
-	import com.lorentz.SVG.PathCommand;
-	import com.lorentz.SVG.SVGColor;
-	import com.lorentz.SVG.SVGParserCommon;
-	import com.lorentz.SVG.SVGUtil;
-	import com.lorentz.SVG.StringUtil;
+	import com.lorentz.SVG.events.SVGEvent;
+	import com.lorentz.SVG.parser.AsyncSVGParser;
+	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.utils.SVGUtil;
+	import com.lorentz.SVG.utils.StringUtil;
 	
-	import flash.display.GradientType;
-	import flash.display.SpreadMethod;
-	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.geom.Matrix;
-	import flash.geom.Rectangle;
-	import flash.utils.Dictionary;
 	
-	public class SVGDocument extends SVG {	
-		protected var _svg:XML;
-				
-		public var defs:Object = {};
+	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	public class SVGDocument extends SVG {		
+		private var _svg:XML;
+		
+		private var _parser:AsyncSVGParser;
+		private var _parsing:Boolean = false;
+						
+		private var _definitions:Object = {};
 		public var styles:Object = {};
 		public var gradients:Object = {};
 		
 		public var baseURL:String;
 		
+		public var validateWhileParsing:Boolean = true;
+		public var allowTextSelection:Boolean = true;
+		public var defaultFont:String = "Verdana";
+		
 		public function SVGDocument(){			
 			super();
 		}
-				
-		public function parse(svg:XML):void {			
-			clear();
+		
+		override public function get document():SVGDocument {
+			return this;
+		}
+		
+		override public function setSVGDocument(value:SVGDocument):void {
+		}
+		
+		public function parse(xmlOrXmlString:Object):void {
+			var xml:XML;
 			
+			if(xmlOrXmlString is String)
+			{
+				var xmlString:String = SVGUtil.processXMLEntities(String(xmlOrXmlString));
+				
+				var oldXMLIgnoreWhitespace:Boolean = XML.ignoreWhitespace;
+				XML.ignoreWhitespace = false;
+				xml = new XML(xmlString);
+				XML.ignoreWhitespace = oldXMLIgnoreWhitespace; 
+			}
+			else if(xmlOrXmlString is XML)
+				xml = xmlOrXmlString as XML;
+			else
+				throw new Error("Invalid param 'xmlOrXmlString'.");	
+			
+			parseXML(xml);
+		}
+						
+		private function parseXML(svg:XML):void {			
+			clear();
+						
 			_svg = svg;
 			
-			gradients = SVGParserCommon.parseGradients(_svg);
-			styles = SVGParserCommon.parseStyles(_svg);
-						
-			visit(_svg, this);
+			if(_parsing)
+				_parser.cancel();
 			
-			invalidate();
+			_parsing = true;
+			
+			_parser = new AsyncSVGParser(this, svg);
+			_parser.addEventListener(AsyncSVGParser.COMPLETE, parser_completeHandler);
+			_parser.parse();
+		}
+
+		
+		protected function parser_completeHandler(e:Event):void {
+			_parsing = false;
+			_parser = null;
+			dispatchEvent( new SVGEvent( SVGEvent.PARSE_COMPLETE ) );
 		}
 		
 		public function clear():void {
@@ -48,337 +88,66 @@
 			svgClipPath = null;
 			clearStyles();
 			
-			viewBox = null;
+			svgViewBox = null;
 			svgX = null;
 			svgY = null;
 			svgWidth = null;
 			svgHeight = null;
 			
-			defs = {};
 			styles = {};
 			gradients = {};
 			
-			while(numChildren>0)
-				removeChildAt(0);
+			for(var id:String in _definitions)
+				removeDefinition(id);
+
+			while(numElements > 0)
+				removeElementAt(0);
+			
+			while(_content.numChildren > 0)
+				_content.removeChildAt(0);
 				
 			_content.scaleX = 1;
 			_content.scaleY = 1;
 		}
+		
+		public function listDefinitions():Vector.<String> {
+			var definitionsList:Vector.<String> = new Vector.<String>();
+			for(var id:String in _definitions)
+				definitionsList.push(id);
+			return definitionsList;
+		}
+		
+		public function addDefinition(id:String, element:SVGElement):void {
+			if(!_definitions[id]){
+				_definitions[id] = element;
+				element.setSVGDocument(this);
+			}
+		}
 				
 		public function getDefinitionClone(id:String):SVGElement {
-			if(defs[id] == null)
-				throw new Error("Cannot find the definition '"+id+"'");
-				
-			return defs[id].clone(true);
-		}
-		
-		private function visit(elt:XML, target:SVG = null):SVGElement {
-			var obj:SVGElement;
-			
-			var localName:String = String(elt.localName()).toLowerCase();
-			
-			switch(localName) {
-				case 'svg': obj = visitSvg(elt, target); break;
-				case 'defs': obj = visitDefs(elt); break;
-				case 'rect': obj = visitRect(elt); break;
-				case 'path': obj = visitPath(elt); break;
-				case 'polygon': obj = visitPolygon(elt); break;
-				case 'polyline': obj = visitPolyline(elt); break;
-				case 'line': obj = visitLine(elt); break;
-				case 'circle': obj = visitCircle(elt); break;
-				case 'ellipse': obj = visitEllipse(elt); break;
-				case 'g': obj = visitG(elt); break;
-				case 'clippath': obj = visitClipPath(elt); break;
-				case 'symbol' : obj = visitSymbol(elt); break;
-				case 'text': obj = visitText(elt); break;
-				case 'tspan': obj = visitTspan(elt); break;
-				case 'image' : obj = visitImage(elt); break;
-				case 'a' : obj = visitA(elt); break;
-				case 'use' : obj = visitUse(elt); break;
-				case 'pattern' : obj = visitPattern(elt); break;
-				case 'switch' : obj = visitSwitch(elt); break;
-			}
-			
-			if(obj==null)
+			if(_definitions[id] == null)
 				return null;
-							
-			obj.type = localName;
-			obj.id = elt.@id;
-			
-			//Save in definitions
-			if(obj.id != null && obj.id != "")
-				defs[obj.id] = obj;
-			
-			//Set document
-			if(obj is IDocumentSetable)
-				(obj as IDocumentSetable).setDocument(this);
-			
-			obj.setStyles(SVGUtil.presentationStyleToObject(elt));
-			if("@style" in elt){
-				obj.setStyles(SVGUtil.styleToObject(elt.@style));
-			}
-			
-			if("@class" in elt){
-				obj.svgClass = String(elt.@["class"]);
-			}
-			
-			if("@transform" in elt)
-				obj.transform.matrix = SVGParserCommon.parseTransformation(elt.@transform);
 				
-			if("@clip-path" in elt)
-				obj.svgClipPath = String(elt["@clip-path"]);
-				
-			if(obj is IViewBox)
-				(obj as IViewBox).viewBox = SVGParserCommon.parseViewBox(elt.@viewBox);
-				
-			if(obj.type == "clippath" || obj.type=="symbol")
-				return null;
-			
-			return obj;
+			return _definitions[id].clone(true);
+		}
+		
+		public function removeDefinition(id:String):void {
+			if(_definitions[id])
+			{
+				var element:SVGElement = _definitions[id] as SVGElement;
+				element.setSVGDocument(null);
+				_definitions[id] = null;
+			}
+		}
+		
+		svg_internal function onElementAdded(element:SVGElement):void {
+			this.dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_ADDED, element ));
+		}
+		
+		svg_internal function onElementRemoved(element:SVGElement):void {
+			this.dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_REMOVED, element ));
 		}
 
-		private function visitSvg(elt:XML, target:SVG):SVGElement {
-			var obj:SVG = target;
-			if(obj==null)
-				obj = new SVG();
-						
-			obj.svgX = ("@x" in elt) ? elt.@x : null;
-			obj.svgY = ("@y" in elt) ? elt.@y : null;
-			obj.svgWidth = ("@width" in elt) ? elt.@width : "100%";
-			obj.svgHeight = ("@height" in elt) ? elt.@height : "100%";
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitDefs(elt:XML):SVGElement {
-			for each(var childElt:XML in elt.*) {
-				visit(childElt);
-			}
-			return null;
-		}
-
-		private function visitRect(elt:XML):SVGElement {
-			var obj:SVGRect = new SVGRect();
-			
-			obj.svgX = elt.@x;
-			obj.svgY =  elt.@y;
-			obj.svgWidth =  elt.@width;
-			obj.svgHeight =  elt.@height;
-			obj.svgRx =  elt.@rx;
-			obj.svgRy =  elt.@ry;
-
-			if (obj.isRound) {
-				obj.svgRx = (obj.svgRy != null && obj.svgRx == null) ? obj.svgRy : obj.svgRx;
-				obj.svgRy = (obj.svgRx != null && obj.svgRy == null) ? obj.svgRx : obj.svgRy;
-			}
-			
-			return obj;
-		}
-		
-		private function visitPath(elt:XML):SVGElement {
-			var obj:SVGPath = new SVGPath();
-			obj.path = SVGParserCommon.parsePathData(elt.@d);
-			return obj;
-		}
-		
-		private function visitPolygon(elt:XML):SVGElement {
-			var obj:SVGPolygon = new SVGPolygon();
-			obj.points = SVGParserCommon.parseArgsData(elt.@points);
-			return obj;
-		}
-		private function visitPolyline(elt:XML):SVGElement {
-			var obj:SVGPolyline = new SVGPolyline();
-			obj.points = SVGParserCommon.parseArgsData(elt.@points);
-			return obj;
-		}
-		private function visitLine(elt:XML):SVGElement {
-			var obj:SVGLine = new SVGLine();
-
-			obj.svgX1 = elt.@x1;
-			obj.svgY1 = elt.@y1;
-			
-			obj.svgX2 = elt.@x2;
-			obj.svgY2 = elt.@y2;
-
-			return obj;
-		}
-		private function visitCircle(elt:XML):SVGElement {
-			var obj:SVGCircle = new SVGCircle();
-
-			obj.svgCx = elt.@cx;
-			obj.svgCy = elt.@cy;
-
-			obj.svgR = elt.@r;
-
-			return obj;
-		}
-		private function visitEllipse(elt:XML):SVGElement {
-			var obj:SVGEllipse = new SVGEllipse();
-
-			obj.svgCx = elt.@cx;
-			obj.svgCy = elt.@cy;
-			obj.svgRx = elt.@rx;
-			obj.svgRy = elt.@ry;
-			
-			return obj;
-		}
-		private function visitG(elt:XML):SVGElement {
-			var obj:SVGG = new SVGG();
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitA(elt:XML):SVGElement {
-			var obj:SVGA = new SVGA();
-			
-			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
-			var link:String = elt.@xlink::href;
-			link = StringUtil.ltrim(link, "#");
-			
-			obj.svgHref = link;
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitClipPath(elt:XML):SVGElement {
-			var obj:SVGClipPath = new SVGClipPath();
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitSymbol(elt:XML):SVGElement {
-			var obj:SVGSymbol = new SVGSymbol();
-			
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitText(elt:XML):SVGElement {
-			var obj:SVGText = new SVGText();
-
-			obj.svgX = ("@x" in elt) ? elt.@x : "0";
-			obj.svgY = ("@y" in elt) ? elt.@y : "0";
-			
-			obj.children = new Array();
-			for each(var childElt:XML in elt.*) {
-				if(childElt.nodeKind() == "text"){
-					obj.children.push(SVGParserCommon.CleanUp(childElt.toString()));
-				} else if(childElt.nodeKind() == "element"){
-					var child:Object = visit(childElt);
-					if(child!=null){
-						obj.children.push(child);
-					}
-				}
-			}
-			return obj;
-		}
-		private function visitTspan(elt:XML):SVGElement {
-			var obj:SVGTSpan = new SVGTSpan();
-			obj.text = SVGParserCommon.CleanUp(elt.text().toString());
-			obj.svgX = ("@x" in elt) ? elt.@x : null;
-			obj.svgY = ("@y" in elt) ? elt.@y : null;
-			obj.svgDx = ("@dx" in elt) ? elt.@dx : "0";
-			obj.svgDy = ("@dy" in elt) ? elt.@dy : "0";
-			
-			return obj;
-		}
-		
-		private function visitImage(elt:XML):SVGElement {
-			var obj:SVGImage = new SVGImage();
-			obj.svgX = ("@x" in elt) ? elt.@x : null;
-			obj.svgY = ("@y" in elt) ? elt.@y : null;
-			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
-			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
-			
-			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
-			var href:String = elt.@xlink::href;
-			obj.svgHref = StringUtil.trim(href);
-			
-			return obj;
-		}
-		
-		private function visitUse(elt:XML):SVGElement {
-			var obj:SVGUse = new SVGUse();
-			obj.svgX = ("@x" in elt) ? elt.@x : null;
-			obj.svgY = ("@y" in elt) ? elt.@y : null;
-			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
-			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
-			
-			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
-			var href:String = elt.@xlink::href;
-			obj.svgHref = StringUtil.trim(href);
-			
-			return obj;
-		}
-		
-		private function visitPattern(elt:XML):SVGPattern {
-			var obj:SVGPattern = new SVGPattern();
-			obj.svgX = ("@x" in elt) ? elt.@x : null;
-			obj.svgY = ("@y" in elt) ? elt.@y : null;
-			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
-			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-		
-		private function visitSwitch(elt:XML):SVGElement {
-			var obj:SVGG = new SVGG();
-			
-			for each(var childElt:XML in elt.*) {
-				var child:SVGElement = visit(childElt);
-				if(child){
-					obj.addChild(child);
-				}
-			}
-			
-			return obj;
-		}
-			
 		public function resolveURL(url:String):String
 		{
 			if (url != null && !isHttpURL(url) && baseURL!=null)
@@ -424,33 +193,56 @@
 				   (url.indexOf("http://") == 0 ||
 					url.indexOf("https://") == 0);
 		}
+		
+		override public function validate():void {
+			super.validate();
+			if(this.numInvalidElements > 0)
+				queueValidation();
+		}
 
-		override protected function set numInvalidChildren(value:int):void {
-			if(super.numInvalidChildren == 0 && value > 0){
-		        if (stage != null) {
+		override protected function set numInvalidElements(value:int):void {
+			if(super.numInvalidElements == 0 && value > 0)
+				queueValidation();
+
+			super.numInvalidElements = value;
+		}
+		
+		private var _validationQueued:Boolean
+		protected function queueValidation():void {
+			if(!_validationQueued){
+				_validationQueued = false;
+				
+				if (stage != null) {
 					stage.addEventListener(Event.ENTER_FRAME, validateCaller, false, 0, true);
 					stage.addEventListener(Event.RENDER, validateCaller, false, 0, true);
 					stage.invalidate();
-		        } else {
+				} else {
 					addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
-		        }
+				}
 			}
-			super.numInvalidChildren = value;
 		}
 		
 		protected function validateCaller(e:Event):void {
+			_validationQueued = false;
+			
+			if(_parsing && !validateWhileParsing){
+				queueValidation();
+				return;
+			}
+			
 			if (e.type == Event.ADDED_TO_STAGE) {
 				removeEventListener(Event.ADDED_TO_STAGE, validateCaller);
 			} else {
-					e.target.removeEventListener(Event.ENTER_FRAME, validateCaller);
-					e.target.removeEventListener(Event.RENDER, validateCaller);
+					e.target.removeEventListener(Event.ENTER_FRAME, validateCaller, false);
+					e.target.removeEventListener(Event.RENDER, validateCaller, false);
 					if (stage == null) {
 						// received render, but the stage is not available, so we will listen for addedToStage again:
 						addEventListener(Event.ADDED_TO_STAGE, validateCaller, false, 0, true);
 						return;
 					}
 			}
-			validate(true);
+			
+			validate();
 		}
 	}
 }

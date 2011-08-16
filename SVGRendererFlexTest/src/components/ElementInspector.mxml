@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="848" height="258"
+		 enabled="{element != null}">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.lorentz.SVG.display.SVGElement;
+			import com.lorentz.SVG.utils.DisplayUtils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			
+			private var _element:SVGElement;
+			[Bindable]
+			public function get element():SVGElement {
+				return _element;
+			}
+			public function set element(value:SVGElement):void {
+				_element = value;
+				
+				updateInfo();
+				updateProperties();
+				updateStyles();
+			}
+			
+			protected function updateInfo():void {
+				if(element == null)
+				{
+					typeLabel.text = "";
+					idLabel.text = "";
+					xLabel.text = "";
+					yLabel.text = "";
+					widthLabel.text = "";
+					heightLabel.text = "";
+					return;
+				}
+				
+				typeLabel.text = _element.type;
+				idLabel.text = _element.id;
+				
+				var bounds:Rectangle = DisplayUtils.safeGetBounds(_element, _element.document);
+				xLabel.text = "x: "+round(bounds.x, 2).toString();
+				yLabel.text = "y: "+round(bounds.y, 2).toString();
+				widthLabel.text = "width: "+round(bounds.width, 2).toString();
+				heightLabel.text = "height: "+round(bounds.height, 2).toString();
+			}
+			
+			protected function round(value:Number, precision:int):Number {
+				return int(value*precision)/precision;
+			}
+			
+			protected function updateProperties():void {
+				if(element == null)
+				{
+					_propertiesList = null;
+					return;
+				}
+				
+				var propertiesList:ArrayCollection = new ArrayCollection();
+				for each(var propertyName:String in listObjectProperties(element)){
+					if(/^(?:svg|SVG).*/.test(propertyName)){
+						var value:String = String(element[propertyName]).substr(0, 200);
+						propertiesList.addItem( { Property: propertyName, Value: value } );
+					}
+				}
+				_propertiesList = propertiesList;
+			}
+			
+			protected function updateStyles():void {
+				if(element == null)
+				{
+					_stylesList = null;
+					return;
+				}
+				
+				var styles:Object = element.getStyles();				
+				var finalStyles:Object = element.getFinalStyles();
+				var stylesList:ArrayCollection = new ArrayCollection();
+				for(var styleName:String in finalStyles)
+				{
+					var inherited:String = styles[styleName] == null ? "yes" : "no";
+					stylesList.addItem( { Style: styleName, Value: finalStyles[styleName], Inherited: inherited } );
+				}
+				_stylesList = stylesList;
+			}
+			
+			protected function listObjectProperties(object:Object):Vector.<String> {
+				var description:XML = describeType(object);
+				var properties:Vector.<String> = new Vector.<String>();
+				for each (var a:XML in description.accessor)
+					properties.push(String(a.@name));
+				return properties;
+			}
+			
+			[Bindable]
+			private var _propertiesList:IList;
+			
+			[Bindable]
+			private var _stylesList:IList;
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:HorizontalLayout />
+	</s:layout>
+	
+	<s:Panel title="Element Info" width="100%" height="100%">
+		<s:Form width="100%">
+			<s:FormItem label="Type:" width="100%">
+				<s:Label id="typeLabel" />
+			</s:FormItem>
+			<s:FormItem label="Id:" width="100%">
+				<s:Label id="idLabel" />
+			</s:FormItem>
+			<s:FormItem label="Bounds:" width="100%">
+				<s:HGroup width="100%" gap="20">
+					<s:VGroup>
+						<s:Label id="xLabel" />
+						<s:Label id="yLabel" />						
+					</s:VGroup>
+					<s:VGroup>
+						<s:Label id="widthLabel" />
+						<s:Label id="heightLabel" />
+					</s:VGroup>
+				</s:HGroup>
+			</s:FormItem>
+		</s:Form>
+	</s:Panel>
+	
+	<s:Panel title="Properties" width="100%" height="100%">
+		<s:DataGrid top="10" left="10" right="10" bottom="10"
+					dataProvider="{_propertiesList}">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="Property" headerText="Property"></s:GridColumn>
+					<s:GridColumn dataField="Value" headerText="Value"></s:GridColumn>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:Panel>
+	
+	<s:Panel title="Styles" width="100%" height="100%">
+		<s:DataGrid top="10" left="10" right="10" bottom="10"
+					dataProvider="{_stylesList}">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="Style" headerText="Style"></s:GridColumn>
+					<s:GridColumn dataField="Value" headerText="Value"></s:GridColumn>
+					<s:GridColumn dataField="Inherited" headerText="Inherited"></s:GridColumn>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:Panel>
+</s:Group>

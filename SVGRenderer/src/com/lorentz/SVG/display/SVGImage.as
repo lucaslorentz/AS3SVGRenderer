@@ -1,41 +1,42 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
-	import flash.display.Loader;
+	import com.lorentz.SVG.display.base.ISVGViewPort;
+	import com.lorentz.SVG.utils.Base64AsyncDecoder;
+	
 	import flash.display.Bitmap;
-	
-	import flash.events.Event;	
+	import flash.display.Loader;
+	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	
+	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
-	
 	import flash.utils.ByteArray;
-	
-	import com.lorentz.SVG.Base64Decoder;
-	import com.lorentz.SVG.SVGUtil;
-	import com.lorentz.SVG.StringUtil;
 
-	public class SVGImage extends SVGElement implements IViewPort {
-		include "includes/ViewPortProperties.as"
+	public class SVGImage extends SVGElement implements ISVGViewPort {
+		include "includes/SVGViewPortProperties.as"
 		
-		public var svgHref:String;
+		private var _svgHrefChanged:Boolean = false;
+		private var _svgHref:String;
+		public function get svgHref():String {
+			return _svgHref;
+		}
+		public function set svgHref(value:String):void {
+			if(_svgHref != value){
+				_svgHref = value;
+				_svgHrefChanged = true;
+				invalidateProperties();
+			}
+		}
 		
 		protected var _loader:Loader;
 		
-		protected var _originalWidth:Number;
-		protected var _originalHeight:Number;
-		
+		protected var _base64AsyncDecoder:Base64AsyncDecoder;
+
 		public function SVGImage() {
-			super();
-		}
-		
-		override protected function initialize():void {
-			super.initialize();
-			_validateFunctions.push(loadImage);
+			super("image");
 		}
 				
 		public function loadURL(url:String):void {
-			if(_loader!=null){
-				removeChild(_loader);
+			if(_loader != null){
+				_content.removeChild(_loader);
 				_loader = null;
 			}
 			
@@ -44,29 +45,34 @@
 				_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete);
 				_loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
 				_loader.load(new URLRequest(url));
-				this.addChild(_loader);
+				_content.addChild(_loader);
 			}
 		}
 		
 		//Thanks to youzi530, for coding base64 embed image support
 		public function loadBase64(content:String):void
 		{
-			var decoder:Base64Decoder = new Base64Decoder();
-			var byteArray:ByteArray;
+			var base64String:String = content.replace(/^data:[a-z\/]*;base64,/, '');
 			
-			var base64String:String = content;
-			
-			base64String = base64String.replace(/^data:[a-z\/]*;base64,/, '');
-			
-			decoder.decode(base64String);
-			byteArray = decoder.flush();
-			
-			loadBytes(byteArray);
+			_base64AsyncDecoder = new Base64AsyncDecoder(base64String);
+			_base64AsyncDecoder.addEventListener(Base64AsyncDecoder.COMPLETE, base64AsyncDecoder_completeHandler);
+			_base64AsyncDecoder.addEventListener(Base64AsyncDecoder.ERROR, base64AsyncDecoder_errorHandler);
+			_base64AsyncDecoder.decode();
+		}
+		
+		private function base64AsyncDecoder_completeHandler(e:Event):void {
+			loadBytes(_base64AsyncDecoder.bytes);
+			_base64AsyncDecoder = null;
+		}
+		
+		private function base64AsyncDecoder_errorHandler(e:Event):void {
+			trace(_base64AsyncDecoder.errorMessage);
+			_base64AsyncDecoder = null;
 		}
 		
 		public function loadBytes(byteArray:ByteArray):void {
 			if(_loader!=null){
-				removeChild(_loader);
+				_content.removeChild(_loader);
 				_loader = null;
 			}
 			
@@ -75,26 +81,26 @@
 				_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete);
 				_loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
 				_loader.loadBytes(byteArray);
-				this.addChild(_loader);
+				_content.addChild(_loader);
 			}
 		}
 		
 		override protected function commitProperties():void {
-			if( svgX != null )
-                x = getUserUnit(svgX, SVGUtil.WIDTH);
-            if( svgY != null )
-                y =  getUserUnit(svgY, SVGUtil.HEIGHT);
-		}
-		
-		protected function loadImage():void {
-			if(_loader!=null)
-				return;
+			super.commitProperties();
+
+			if(_svgHrefChanged)
+			{
+				_svgHrefChanged = false;
 				
-			if(svgHref.match(/^data:[a-z\/]*;base64,/)){
-				loadBase64(svgHref);
-			} else {
-				loadURL(document.resolveURL(svgHref));
-				beginASyncValidation("loadImage");
+				if(svgHref != null && svgHref != ""){
+					if(svgHref.match(/^data:[a-z\/]*;base64,/)){
+						loadBase64(svgHref);
+						beginASyncValidation("loadImage");
+					} else {
+						loadURL(document.resolveURL(svgHref));
+						beginASyncValidation("loadImage");
+					}
+				}
 			}
 		}
 		
@@ -102,56 +108,27 @@
 			if(_loader.content is Bitmap)
 				(_loader.content as Bitmap).smoothing = true;
 				
-			_originalWidth = _loader.content.width;
-			_originalHeight = _loader.content.height;
+			updateViewPort();
 			
-			updateView();
+			endASyncValidation("loadImage");
 		}
 		
 		private function loadError(e:IOErrorEvent):void {
 			trace("Failed to load image");
-			updateView();
-		}
+			updateViewPort();
 			
-		public function updateView():void {
 			endASyncValidation("loadImage");
-							
-			if(_loader!=null){
-				var x:Number = 0;
-				var y:Number = 0;
-				
-				var _width:Number = svgWidth==null ? _originalWidth : getUserUnit(svgWidth, SVGUtil.WIDTH);
-				var _height:Number = svgHeight==null ? _originalHeight : getUserUnit(svgHeight, SVGUtil.HEIGHT);
-				
-				var w:Number = _width;
-				var h:Number = _height;
-				
-				/*if(_preserveAspectRatio){
-					var rw:Number = w / _originalWidth;
-					var rh:Number = h / _originalHeight;
-					if(rw>rh){
-						w = rh*_originalWidth;
-						x = (_width - w) / 2; 
-					} else {
-						h = rw*_originalHeight;
-						y = (_height - h) / 2;
-					}
-				}*/
-				
-				_loader.x = x;
-				_loader.y = y;
-				_loader.width = w;
-				_loader.height = h;
-			}
+		}
+		
+		override protected function getViewPortContentBox():Rectangle {
+			if(_loader == null || _loader.content == null)
+				return null;
+			
+			return new Rectangle(0, 0, _loader.content.width, _loader.content.height);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {
 			var c:SVGImage = super.clone(deep) as SVGImage;
-			c.svgX = svgX;
-			c.svgY = svgY;
-			c.svgWidth = svgWidth;
-			c.svgHeight = svgHeight;
-			c.svgPreserveAspectRatio = svgPreserveAspectRatio;
 			c.svgHref = svgHref;
 			return c;
 		}

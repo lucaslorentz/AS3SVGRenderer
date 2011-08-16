@@ -1,14 +1,13 @@
 ﻿package com.lorentz.SVG.display {
-	import flash.display.Sprite;
+	import com.lorentz.SVG.display.base.SVGContainer;
+	
 	import flash.events.MouseEvent;
-	import flash.net.navigateToURL;
 	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 	
-	import com.lorentz.SVG.SVGUtil;
-	
-	public class SVGA extends SVGG {	
+	public class SVGA extends SVGContainer {	
 		public function SVGA(){
-			super();
+			super("a");
 		}
 		
 		public var svgHref:String;
@@ -24,6 +23,7 @@
 			if(svgHref!=null && svgHref!="")
 				navigateToURL(new URLRequest(svgHref));
 		}
+		
 		override public function clone(deep:Boolean = true):SVGElement {
 			var c:SVGA = super.clone(deep) as SVGA;
 			c.svgHref = svgHref;

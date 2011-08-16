@@ -1,0 +1,64 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" version="1.1">
+    <defs>
+        <linearGradient id="g1" x="0%" y="100%">
+            <stop stop-color="#FF0000" offset="0%"/>
+            <stop stop-color="#00FF00" offset="50%"/>
+            <stop stop-color="#0000FF" offset="100%"/>
+        </linearGradient>
+		<linearGradient id="g2" x="0%" y="100%">
+            <stop stop-color="#FFFF00" offset="0%"/>
+            <stop stop-color="#333300" offset="100%"/>
+        </linearGradient>
+		<linearGradient id="g3" x="0%" y="100%">
+            <stop stop-color="#000000" offset="0%"/>
+            <stop stop-color="#EEEEEE" offset="100%"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(10, 50)">
+		<text font-size="40" fill="url(#g1)" stroke="none">
+		    Testing 
+			<tspan dy="10">
+				gradient 
+				<tspan dy="10">
+					text
+				</tspan>
+			</tspan>
+		</text>
+    </g>
+    <g transform="translate(10, 100)">
+		<text font-size="40" fill="url(#g1)" stroke="none">
+		    Testing 
+			<tspan dy="10" fill="url(#g2)">
+				gradient 
+				<tspan dy="10">
+					text
+				</tspan>
+			</tspan>
+		</text>
+    </g>
+	<g transform="translate(10, 150)">
+		<text font-size="40" fill="url(#g1)" stroke="none">
+		    Testing 
+			<tspan dy="10">
+				gradient 
+				<tspan dy="10" fill="url(#g2)">
+					text
+				</tspan>
+			</tspan>
+		</text>
+    </g>
+	<g transform="translate(10, 200)">
+		<text font-size="40" fill="url(#g1)" stroke="none">
+		    Testing 
+			<tspan dy="10" fill="url(#g2)">
+				gradient 
+				<tspan dy="10" fill="url(#g3)">
+					text
+				</tspan>
+			</tspan>
+		</text>
+    </g>
+</svg>

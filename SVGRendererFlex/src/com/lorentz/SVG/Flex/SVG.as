@@ -1,10 +1,12 @@
 package com.lorentz.SVG.Flex
 {
-	import com.lorentz.SVG.display.SVGDisplayEvent;
 	import com.lorentz.SVG.display.SVGDocument;
+	import com.lorentz.SVG.events.SVGEvent;
+	import com.lorentz.SVG.utils.DisplayUtils;
 	
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.geom.Rectangle;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -22,9 +24,13 @@ package com.lorentz.SVG.Flex
 		override protected function createChildren():void {
 			super.createChildren();
 			
-			this._svgDocument = new SVGDocument();
-			this._svgDocument.addEventListener(SVGDisplayEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);
+			_svgDocument = new SVGDocument();
+			_svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);
 			this.addChild(_svgDocument);
+		}
+		
+		public function get svgDocument():SVGDocument {
+			return _svgDocument;
 		}
 		
 		private var _source:Object;
@@ -45,7 +51,34 @@ package com.lorentz.SVG.Flex
 		}
 		public function set baseURL(value:Object):void {
 			_baseURL = value;
-			invalidateProperties();
+		}
+		
+		private var _defaultFontName:String = "Verdana";
+		[Bindable]
+		public function get defaultFontName():String {
+			return _defaultFontName;
+		}
+		public function set defaultFontName(value:String):void {
+			_defaultFontName = value;
+		}
+		
+		private var _validateWhileParsing:Boolean = false;
+		[Bindable]
+		public function get validateWhileParsing():Boolean {
+			return _validateWhileParsing;
+		}
+		public function set validateWhileParsing(value:Boolean):void {
+			_validateWhileParsing = value;
+		}
+		
+		private var _allowTextSelection:Boolean = true;
+		[Bindable]
+		public function get allowTextSelection():Boolean {
+			return _allowTextSelection;
+		}
+		public function set allowTextSelection(value:Boolean):void {
+			
+			_allowTextSelection = value;
 		}
 		
 		override protected function commitProperties():void {
@@ -71,24 +104,13 @@ package com.lorentz.SVG.Flex
 		}
 		
 		private function parse(xmlOrXmlString:Object, defaultBaseURL:String):void {
-			var xml:XML;
-			
-			if(xmlOrXmlString is String)
-			{
-				var oldXMLIgnoreWhitespace:Boolean = XML.ignoreWhitespace;
-				XML.ignoreWhitespace = false;
-				xml = new XML(xmlOrXmlString);
-				XML.ignoreWhitespace = oldXMLIgnoreWhitespace; 
-			}
-			else if(xmlOrXmlString is XML)
-				xml = xmlOrXmlString as XML;
-			else
-				throw new Error("Invalid param 'xmlOrXmlString'.");
-			
-			//Set baseURL			
-			_svgDocument.baseURL = _baseURL == null ? defaultBaseURL : String(_baseURL);			
+			//Set baseURL and defaultFont
+			_svgDocument.defaultFont = _defaultFontName;
+			_svgDocument.baseURL = _baseURL == null ? defaultBaseURL : String(_baseURL);
+			_svgDocument.validateWhileParsing = _validateWhileParsing;
+			_svgDocument.allowTextSelection = _allowTextSelection;
 
-			this._svgDocument.parse(xml);
+			this._svgDocument.parse(xmlOrXmlString);
 		}
 		
 		private function clear():void {
@@ -138,13 +160,19 @@ package com.lorentz.SVG.Flex
 			_isLoading = false;
 		}
 		
-		private function svgDocument_validatedHandler(e:SVGDisplayEvent):void {
+		private function svgDocument_validatedHandler(e:SVGEvent):void {
 			this.invalidateSize();
 		}
 		
 		override protected function measure():void {
-			this.measuredWidth = _svgDocument.width;
-			this.measuredHeight = _svgDocument.height;
+			if(_svgDocument.scrollRect != null){
+				this.measuredWidth = _svgDocument.scrollRect.width;
+				this.measuredHeight = _svgDocument.scrollRect.height;
+			} else {
+				var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
+				this.measuredWidth = bounds.left + _svgDocument.width;
+				this.measuredHeight = bounds.top + _svgDocument.height;
+			}
 		}
 	}
 }

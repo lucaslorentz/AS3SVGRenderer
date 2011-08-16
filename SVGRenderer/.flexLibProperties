@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <flexLibProperties includeAllClasses="false" useMultiPlatformConfig="false" version="3">
   <includeClasses>
-    <classEntry path="com.lorentz.SVG.Base64Decoder"/>
-    <classEntry path="com.lorentz.SVG.Bezier"/>
-    <classEntry path="com.lorentz.SVG.MathUtils"/>
-    <classEntry path="com.lorentz.SVG.MatrixTransformer"/>
-    <classEntry path="com.lorentz.SVG.PathCommand"/>
-    <classEntry path="com.lorentz.SVG.PathRenderer"/>
-    <classEntry path="com.lorentz.SVG.SVGColor"/>
-    <classEntry path="com.lorentz.SVG.SVGParserCommon"/>
-    <classEntry path="com.lorentz.SVG.SVGRasterRenderer"/>
-    <classEntry path="com.lorentz.SVG.SVGUtil"/>
-    <classEntry path="com.lorentz.SVG.StringUtil"/>
-    <classEntry path="com.lorentz.SVG.display.IDocumentSetable"/>
-    <classEntry path="com.lorentz.SVG.display.IViewBox"/>
-    <classEntry path="com.lorentz.SVG.display.IViewPort"/>
+    <classEntry path="com.lorentz.SVG.utils.Bezier"/>
+    <classEntry path="com.lorentz.SVG.utils.MathUtils"/>
+    <classEntry path="com.lorentz.SVG.utils.MatrixTransformer"/>
+    <classEntry path="com.lorentz.SVG.utils.SVGColorUtils"/>
+    <classEntry path="com.lorentz.SVG.parser.SVGParserCommon"/>
+    <classEntry path="com.lorentz.SVG.utils.SVGUtil"/>
+    <classEntry path="com.lorentz.SVG.utils.StringUtil"/>
+    <classEntry path="com.lorentz.SVG.display.base.ISVGViewBox"/>
+    <classEntry path="com.lorentz.SVG.display.base.ISVGViewPort"/>
     <classEntry path="com.lorentz.SVG.display.SVG"/>
     <classEntry path="com.lorentz.SVG.display.SVGA"/>
     <classEntry path="com.lorentz.SVG.display.SVGCircle"/>
     <classEntry path="com.lorentz.SVG.display.SVGClipPath"/>
-    <classEntry path="com.lorentz.SVG.display.SVGDisplayEvent"/>
+    <classEntry path="com.lorentz.SVG.events.SVGEvent"/>
     <classEntry path="com.lorentz.SVG.display.SVGDocument"/>
     <classEntry path="com.lorentz.SVG.display.SVGElement"/>
     <classEntry path="com.lorentz.SVG.display.SVGEllipse"/>
@@ -31,11 +26,43 @@
     <classEntry path="com.lorentz.SVG.display.SVGPolygon"/>
     <classEntry path="com.lorentz.SVG.display.SVGPolyline"/>
     <classEntry path="com.lorentz.SVG.display.SVGRect"/>
-    <classEntry path="com.lorentz.SVG.display.SVGShape"/>
+    <classEntry path="com.lorentz.SVG.display.base.SVGShape"/>
     <classEntry path="com.lorentz.SVG.display.SVGSymbol"/>
     <classEntry path="com.lorentz.SVG.display.SVGTSpan"/>
     <classEntry path="com.lorentz.SVG.display.SVGText"/>
     <classEntry path="com.lorentz.SVG.display.SVGUse"/>
+    <classEntry path="com.lorentz.SVG.parser.VisitDefinition"/>
+    <classEntry path="com.lorentz.processing.ProcessExecutor"/>
+    <classEntry path="com.lorentz.processing.Process"/>
+    <classEntry path="com.lorentz.SVG.parser.AsyncSVGParser"/>
+    <classEntry path="com.lorentz.SVG.data.gradients.SVGGradient"/>
+    <classEntry path="com.lorentz.SVG.data.gradients.SVGLinearGradient"/>
+    <classEntry path="com.lorentz.SVG.data.gradients.SVGRadialGradient"/>
+    <classEntry path="com.lorentz.processing.IProcess"/>
+    <classEntry path="com.lorentz.SVG.display.base.ISVGPreserveAspectRatio"/>
+    <classEntry path="com.lorentz.SVG.display.base.SVGContainer"/>
+    <classEntry path="com.lorentz.SVG.display.SVGSwitch"/>
+    <classEntry path="com.lorentz.SVG.utils.DisplayUtils"/>
+    <classEntry path="com.lorentz.SVG.drawing.IDrawer"/>
+    <classEntry path="com.lorentz.SVG.drawing.GraphicsPathDrawer"/>
+    <classEntry path="com.lorentz.SVG.utils.ArcUtils"/>
+    <classEntry path="com.lorentz.SVG.drawing.DashedDrawer"/>
+    <classEntry path="com.lorentz.SVG.drawing.GraphicsDrawer"/>
+    <classEntry path="com.lorentz.SVG.utils.TextUtils"/>
+    <classEntry path="com.lorentz.SVG.display.base.SVGTextContainer"/>
+    <classEntry path="com.lorentz.SVG.display.base.SVGGraphicsElement"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGMoveToCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGClosePathCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGLineToCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGCurveToQuadraticCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGArcToCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGLineToHorizontalCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGLineToVerticalCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGCurveToQuadraticSmoothCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGPathCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGCurveToCubicCommand"/>
+    <classEntry path="com.lorentz.SVG.data.path.SVGCurveToCubicSmoothCommand"/>
+    <classEntry path="com.lorentz.SVG.utils.SVGViewPortUtils"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

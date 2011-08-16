@@ -1,605 +1,595 @@
 ﻿package com.lorentz.SVG.display {
-	import com.lorentz.SVG.SVGColor;
-	import com.lorentz.SVG.SVGUtil;
-	import com.lorentz.SVG.StringUtil;
+	import com.lorentz.SVG.display.base.ISVGPreserveAspectRatio;
+	import com.lorentz.SVG.display.base.ISVGViewBox;
+	import com.lorentz.SVG.display.base.ISVGViewPort;
+	import com.lorentz.SVG.events.SVGEvent;
+	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.utils.MathUtils;
+	import com.lorentz.SVG.utils.SVGUtil;
+	import com.lorentz.SVG.utils.SVGViewPortUtils;
 	
-	import flash.display.BitmapData;
-	import flash.display.CapsStyle;
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.GradientType;
-	import flash.display.Graphics;
-	import flash.display.JointStyle;
 	import flash.display.Sprite;
-	import flash.events.Event;
 	import flash.geom.Matrix;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.text.AntiAliasType;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
-	import flash.text.TextFormat;
-	import flash.utils.Dictionary;
+	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
-	public class SVGElement extends Sprite implements IDocumentSetable {
-		public var type:String;
-		public var id:String;
-		public var svgClass:String;
+	use namespace svg_internal;
+	
+	[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	[Event(name="syncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	[Event(name="documentChanged", type="com.lorentz.SVG.events.SVGEvent")]
+
+	public class SVGElement extends Sprite {
+		protected var _content:Sprite;
+		private var _mask:SVGElement;
 		
-		protected var _svgClipPathChanged:Boolean = false;
-		protected var _svgClipPath:String;
+		protected var _viewPortElement:ISVGViewPort;
+		private var _currentFontSize:Number = Number.NaN;
+		
+		private var _type:String;
+		private var _id:String;
+		
+		private var _svgClass:String;
+		private var _svgClipPathChanged:Boolean = false;
+		private var _svgClipPath:String;
+		private var _svgMaskChanged:Boolean = false;
+		private var _svgMask:String;
+		private var _svgTransform:Matrix;
+		protected var _styles:Object = {}; //Styles set to this element
+		protected var _finalStyles:Object; //After inherit styles
+		private var _parentElement:SVGElement;
+		private var _document:SVGDocument;
+		private var _numInvalidElements:int = 0;
+		private var _numRunningAsyncValidations:int = 0;
+		private var _invalidFlag:Boolean = false;
+		private var _invalidStyleFlag:Boolean = false;
+		private var _invalidPropertiesFlag:Boolean = false;
+		private var _invalidTransformFlag:Boolean = false;
+		private var runningAsyncValidations:Object = {};
+		private var _displayChanged:Boolean = false;
+		private var _opacityChanged:Boolean = false;
+		
+		public function SVGElement(tagName:String){
+			_type = tagName;
+			initialize();
+		}
+		
+		protected function initialize():void {			
+			_content = new Sprite();
+			addChild(_content);
+		}
+				
+		public function get type():String {
+			return _type;
+		}
+		
+		public function get id():String {
+			return _id;
+		}
+		public function set id(value:String):void {
+			_id = value;
+		}
+
+		public function get svgClass():String {
+			return _svgClass;
+		}
+		public function set svgClass(value:String):void {
+			_svgClass = value;
+			invalidateStyle(true);
+		}
+
 		public function get svgClipPath():String {
 			return _svgClipPath;
 		}
 		public function set svgClipPath(value:String):void {
 			_svgClipPath = value;
 			_svgClipPathChanged = true;
-			invalidate();
+			invalidateProperties();
 		}
-			
-		protected var _style:Object = {};
-		protected var _finalStyle:Object; //After inherit parent styles
+		
+		public function get svgMask():String {
+			return _svgMask;
+		}
+		public function set svgMask(value:String):void {
+			_svgMask = value;
+			_svgMaskChanged = true;
+			invalidateProperties();
+		}
+		
+		public function get svgTransform():Matrix {
+			return _svgTransform;
+		}
+		public function set svgTransform(value:Matrix):void {
+			_svgTransform = value;
+			_invalidTransformFlag = true;
+			invalidateProperties();
+		}
+		
+		/////////////////////////////
+		// Stores a list of elements that are attached to this element
+		/////////////////////////////
+		private var _elementsAttached:Vector.<SVGElement> = new Vector.<SVGElement>();
+		protected function attachElement(element:SVGElement):void {
+			if(_elementsAttached.indexOf(element) == -1){
+				_elementsAttached.push(element);
+				element.svg_internal::setParentElement(this);
+			}
+		}
+		protected function detachElement(element:SVGElement):void {
+			var index:int = _elementsAttached.indexOf(element);
+			if(index != -1){
+				_elementsAttached.splice(index, 1);
+				element.svg_internal::setParentElement(null);
+			}
+		}
+		
+		///////////////////////////////////////
+		// Style manipulation
+		///////////////////////////////////////
 		public function getStyle(name:String):Object {
-			return _style[name];
+			return _styles[name];
 		}
 		public function getFinalStyle(name:String):Object {
-			return _finalStyle(name);
+			return _finalStyles(name);
 		}
 		public function setStyle(name:String, value:String):void {
-			_style[name] = value;
-			invalidate(true);
+			_styles[name] = value;
+			invalidateStyle(true);
 		}
 		public function clearStyle(name:String):void {
-			delete _style[name];
-			invalidate(true);
+			delete _styles[name];
+			invalidateStyle(true);
 		}
 		public function getStyles():Object {
-			return SVGUtil.cloneObject(_style);
+			return SVGUtil.cloneObject(_styles);
 		}
 		public function getFinalStyles():Object {
-			return SVGUtil.cloneObject(_finalStyle);
+			return SVGUtil.cloneObject(_finalStyles);
 		}
 		public function setStyles(objectStyles:Object):void {
 			for(var p:String in objectStyles)
-				_style[p] = objectStyles[p];
-			invalidate(true);
+				_styles[p] = objectStyles[p];
+			invalidateStyle(true);
 		}
 		public function clearStyles():void {
-			_style = {};
-			invalidate(true);
+			_styles = {};
+			invalidateStyle(true);
 		}
-		
-		protected var _content:Sprite;
-		protected var _mask:SVGElement;
-				
-		private var _currentViewBox:Rectangle;
-		private var _currentFontSize:Number = Number.NaN;
-		
-		protected var _validateFunctions:Array = [];
-		
-		public function SVGElement(){
-			initialize();
-		}
-		
-		public function clone(deep:Boolean = true):SVGElement {
-			var clazz:Class = flash.utils.getDefinitionByName(flash.utils.getQualifiedClassName(this)) as Class;
-			
-			var c:SVGElement = new clazz();
-
-			if(deep){
-				for(var i:int = 0; i<numChildren; i++){
-					var child:SVGElement = getChildAt(i) as SVGElement;
-					if(child!=null)
-						c.addChild(child.clone(deep));
-				}
-			}
-			
-			c.type = type;
-			c.id = id;
-			c.svgClass = svgClass;
-			c.svgClipPath = svgClipPath;
-			c.setStyles(_style);
-			
-			c.transform = transform;
-			
-			return c;
-		}
-		
-		protected function initialize():void {
-			_content = new Sprite();
-			$addChild(_content);
-			
-			if(this is SVGDocument)
-				setDocument(this as SVGDocument);
-				
-			_validateFunctions.push(inheritStyles, commitProperties);
-				
-			addEventListener(Event.ADDED, addedHandler, false, 0, true);
-			addEventListener(Event.REMOVED, removedHandler, false, 0, true);
-		}
-						
-		protected function addedHandler(e:Event):void {
-			var p:DisplayObjectContainer = this.parent;
-			while(!(p is SVGElement) && p!=null)
-				p = p.parent;
-
-			_setParentElement(p as SVGElement);
-		}
-		
-		protected function removedHandler(e:Event):void {
-			_setParentElement(null);
-		}
-		
-		private var _parentElement:SVGElement;
+		///////////////////////////////////////
+								
 		public function get parentElement():SVGElement {
 			return _parentElement;
 		}
-		private function _setParentElement(value:SVGElement):void {
+		
+		svg_internal function setParentElement(value:SVGElement):void {
 			if(_parentElement != value){
 				if(_parentElement != null) {
-					_parentElement.numInvalidChildren -= _numInvalidChildren + int(_invalidFlag);
-					_parentElement.numASyncValidations -= _numASyncValidations;
-					if(!(this is SVGDocument))
-						_parentElement.removeEventListener(SVGDisplayEvent.DOCUMENT_CHANGED, parentDocumentChangedHandler);
+					_parentElement.numInvalidElements -= _numInvalidElements;
+					_parentElement.numRunningAsyncValidations -= _numRunningAsyncValidations;
 				}
 				
 				_parentElement = value;
 				
 				if(_parentElement != null) {
-					_parentElement.numInvalidChildren += _numInvalidChildren + int(_invalidFlag);
-					_parentElement.numASyncValidations += _numASyncValidations;
-					if(!(this is SVGDocument))
-						_parentElement.addEventListener(SVGDisplayEvent.DOCUMENT_CHANGED, parentDocumentChangedHandler, false, 0, true);
+					_parentElement.numInvalidElements += _numInvalidElements;
+					_parentElement.numRunningAsyncValidations += _numRunningAsyncValidations;
 				}
 				
-				if(!(this is SVGDocument))
-					setDocument(_parentElement!=null ? parentElement.document : null);
+				setSVGDocument(_parentElement != null ? parentElement.document : null);
 					
-				invalidate();
-				
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.PARENT_CHANGED));
+				invalidateStyle();
 			}
 		}
 		
-		private var _document:SVGDocument;
 		public function get document():SVGDocument {
 			return _document;
 		}
-		public function setDocument(value:SVGDocument):void {
+		public function setSVGDocument(value:SVGDocument):void {
 			if(_document != value){
-				if(_document != null)
-					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_REMOVED, true));
-					
+				if(_document)
+					_document.onElementRemoved(this);
+				
 				_document = value;
 				
-				if(_document != null)
-					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.ELEMENT_ADDED, true));
-					
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.DOCUMENT_CHANGED));
+				if(_document)
+					_document.onElementAdded(this);
+				
+				invalidateStyle(true);
+				
+				for each(var element:SVGElement in _elementsAttached){
+					element.setSVGDocument(value);
+				}
 			}
 		}
 		
-		protected function parentDocumentChangedHandler(e:SVGDisplayEvent):void {
-			setDocument(parentElement.document);
+		protected function get numInvalidElements():int {
+			return _numInvalidElements;
 		}
-		
-		private var _numInvalidChildren:int = 0;
-		protected function get numInvalidChildren():int {
-			return _numInvalidChildren;
-		}
-		protected function set numInvalidChildren(value:int):void {
-			var d:int = value - _numInvalidChildren;
-			_numInvalidChildren = value;
+		protected function set numInvalidElements(value:int):void {
+			var d:int = value - _numInvalidElements;
+			_numInvalidElements = value;
 			if(_parentElement != null)
-				_parentElement.numInvalidChildren += d;
+				_parentElement.numInvalidElements += d;
 				
-			if(_numInvalidChildren == 0 && d != 0){
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_SYNC_VALIDATED));
-				if(_numASyncValidations == 0)
-					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_VALIDATED));
+			if(_numInvalidElements == 0 && d != 0){
+				dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
+				if(_numRunningAsyncValidations == 0)
+					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
 			}
 		}
 		
-		private var _numASyncValidations:int = 0;
-		protected function get numASyncValidations():int {
-			return _numASyncValidations;
+		protected function get numRunningAsyncValidations():int {
+			return _numRunningAsyncValidations;
 		}
-		protected function set numASyncValidations(value:int):void {
-			var d:int = value - _numASyncValidations;
-			_numASyncValidations = value;
+		protected function set numRunningAsyncValidations(value:int):void {
+			var d:int = value - _numRunningAsyncValidations;
+			_numRunningAsyncValidations = value;
 			if(_parentElement != null)
-				_parentElement.numASyncValidations += d;
+				_parentElement.numRunningAsyncValidations += d;
 				
-			if(_numASyncValidations == 0 && d != 0) {
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_ASYNC_VALIDATED));
-				if(_numInvalidChildren == 0)
-					dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.CHILDREN_VALIDATED));
+			if(_numRunningAsyncValidations == 0 && d != 0) {
+				dispatchEvent(new SVGEvent(SVGEvent.ASYNC_VALIDATED));
+				if(_numInvalidElements == 0)
+					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
 			}
 		}
 				
-		private var _invalidFlag:Boolean = false;
-		public function get isInvalid():Boolean {
-			return _invalidFlag;
-		}
-		public function invalidate(recursive:Boolean = false):void {
+		private function invalidate():void {
 			if(!_invalidFlag){											
 				_invalidFlag = true;
 								
-				if(_parentElement!=null)
-					_parentElement.numInvalidChildren += 1;
+				numInvalidElements += 1;
 					
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.INVALIDATE));
-			}
-			
-			if(recursive) {
-				for(var i:int = 0; i<numChildren; i++){
-					var child:SVGElement = this.getChildAt(i) as SVGElement;
-					if(child!=null)
-						child.invalidate(recursive);
-				}
+				dispatchEvent(new SVGEvent(SVGEvent.INVALIDATE));
 			}
 		}
-
-		public function validate(recursive:Boolean = false):void {
-			if(_document==null)
-				return;
-				
-			if(_invalidFlag){
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.BEFORE_VALIDATE));
-				
-				for(var i:int = 0; i<_validateFunctions.length; i++){
-					_validateFunctions[i]();
-				}
-				
-				_invalidFlag = false;
-				if(_parentElement!=null)
-					_parentElement.numInvalidChildren -= 1;
-				
-				dispatchEvent(new SVGDisplayEvent(SVGDisplayEvent.VALIDATED));
+		
+		public function invalidateStyle(recursive:Boolean = true):void {
+			if(!_invalidStyleFlag){
+				_invalidStyleFlag = true;
+				invalidate();
 			}
-			
-			if(_mask != null)
-				_mask.validate(true);
-			
-			if(recursive && numInvalidChildren>0) {
-				for(var j:int = 0; j<numChildren; j++){
-					var child:SVGElement = this.getChildAt(j) as SVGElement;
-					if(child!=null)
-						child.validate(recursive);
+			if(recursive) {
+				for each(var element:SVGElement in _elementsAttached){
+					element.invalidateStyle(recursive);
 				}
 			}
 		}
 		
-		protected var runningASyncValidations:Object = {};
+		public function invalidateProperties():void {
+			if(!_invalidPropertiesFlag){
+				_invalidPropertiesFlag = true;
+				invalidate();
+			}
+		}
+
+		public function validate():void {
+			if(_invalidStyleFlag)
+				updateStyles();
+				
+			updateViewPortElement();
+			updateCurrentFontSize();
+			
+			if(_invalidPropertiesFlag)
+				commitProperties();
+
+			if(_invalidFlag){
+				_invalidFlag = false;
+				numInvalidElements -= 1;
+			}
+			
+			if(numInvalidElements > 0) {
+				for each(var element:SVGElement in _elementsAttached){
+					element.validate();
+				}
+			}
+			
+			if(this is ISVGViewPort)
+				updateViewPort();
+		}
+		
 		public function beginASyncValidation(validationId:String):void {
-			if(runningASyncValidations[validationId]==null){
-				runningASyncValidations[validationId] = true;
-				numASyncValidations++;
+			if(runningAsyncValidations[validationId] == null){
+				runningAsyncValidations[validationId] = true;
+				numRunningAsyncValidations++;
 			}
 		}
 		
 		public function endASyncValidation(validationId:String):void {
-			if(runningASyncValidations[validationId]!=null){
-				numASyncValidations--;
-				delete runningASyncValidations[validationId];
+			if(runningAsyncValidations[validationId] != null){
+				numRunningAsyncValidations--;
+				delete runningAsyncValidations[validationId];
 			}
 		}
 
-		protected function inheritStyles():void {
+		protected function updateStyles():void {
+			_invalidStyleFlag = false;
+			
+			var oldFinalStyles:Object = _finalStyles || {};
+			
 			if(_parentElement){
-				_finalStyle = _parentElement._finalStyle; //Inherits parent style
+				_finalStyles = _parentElement.getFinalStyles(); //Inherits parent style
 			} else {
-				_finalStyle = {};
+				_finalStyles = {};
 			}
 
-			if(document.styles[type]!=null){ //Merge with elements styles
-				_finalStyle = SVGUtil.mergeObjects(_finalStyle, document.styles[type]);
+			if(document.styles[_type] != null){ //Merge with elements styles
+				_finalStyles = SVGUtil.mergeObjects(_finalStyles, document.styles[_type]);
 			}
 			
 			if(svgClass){ //Merge with classes styles
 				for each(var className:String in svgClass.split(" "))
-					_finalStyle = SVGUtil.mergeObjects(_finalStyle, document.styles["."+className]);
+					_finalStyles = SVGUtil.mergeObjects(_finalStyles, document.styles["."+className]);
 			}
 
-			if(_style) //Merge all styles with the style attribute
-				_finalStyle = SVGUtil.mergeObjects(_finalStyle, _style);
+			if(_styles) //Merge all styles with the style attribute
+				_finalStyles = SVGUtil.mergeObjects(_finalStyles, _styles);
+			
+			//Check for changed styles
+			var styleName:String;
+			
+			for(styleName in oldFinalStyles){
+				if(oldFinalStyles[styleName] != _finalStyles[styleName])
+					onStyleChanged(styleName, oldFinalStyles[styleName], _finalStyles[styleName]);
+			}
+			for(styleName in _finalStyles){
+				if(!(styleName in oldFinalStyles))
+					onStyleChanged(styleName, oldFinalStyles[styleName], _finalStyles[styleName]);
+			}
+		}
+		
+		protected function onStyleChanged(styleName:String, oldValue:String, newValue:String):void {
+			switch(styleName){
+				case "display" :
+					_displayChanged = true;
+					invalidateProperties();
+					break;
+				case "opacity" :
+					_opacityChanged = true;
+					invalidateProperties();
+					break;
+			}
+		}
+				
+		private function computeTransformMatrix():Matrix {
+			var mat:Matrix = null;
+			
+			if(this.transform.matrix){
+				mat = this.transform.matrix;
+				mat.identity();
+			} else {
+				mat = new Matrix();
+			}
+			
+			mat.scale(scaleX, scaleY);
+			mat.rotate(MathUtils.radiusToDegress(rotation));
+			mat.translate(x, y);
+			
+			if(svgTransform != null)
+				mat.concat(svgTransform);
+			
+			return mat;
+		}
+		
+		protected function updateViewPortElement():void {			
+			if(this is ISVGViewPort)
+				_viewPortElement = this as ISVGViewPort;
+			else if(_parentElement != null)
+				_viewPortElement = _parentElement._viewPortElement;
+			else
+				_viewPortElement = null;
+		}
+		
+		protected function updateCurrentFontSize():void {
+			if(_finalStyles["font-size"])
+				_currentFontSize = getUserUnit(_finalStyles["font-size"], SVGUtil.HEIGHT);
+			else
+				_currentFontSize = Number.NaN;
 		}
 		
 		protected function commitProperties():void {
-			if(_finalStyle["display"]=="none" || _finalStyle["visibility"]=="hidden")
-				visible = false;
+			_invalidPropertiesFlag = false;
 			
-			if(_finalStyle["font-size"]!=null)
-				_currentFontSize = getUserUnit(_finalStyle["font-size"], SVGUtil.HEIGHT);
-				
-			if(this is IViewBox && (this as IViewBox).viewBox!=null)
-				_currentViewBox = (this as IViewBox).viewBox;
-			else if(_parentElement!=null)
-				_currentViewBox = _parentElement._currentViewBox;
-			
+			if(_invalidTransformFlag){
+				_invalidTransformFlag = false;
+				this.transform.matrix = computeTransformMatrix();
+			}
 			
 			if(_svgClipPathChanged){
 				_svgClipPathChanged = false;
-				if(_mask!=null) {
+				if(_mask != null) { //Clear mask
 					_content.mask = null;
-					$removeChild(_mask);
+					_content.cacheAsBitmap = false;
+					removeChild(_mask);
+					detachElement(_mask);
 					_mask = null;
 				}
 					
-				if(svgClipPath!=null && svgClipPath!="" && svgClipPath!="none"){
-					var cId:String = StringUtil.rtrim(svgClipPath.split("(")[1], ")");
-					cId = StringUtil.ltrim(cId, "#");
+				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
+					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
 
-					_mask = document.getDefinitionClone(cId);
-					$addChild(_mask);
+					_mask = document.getDefinitionClone(clipPathId);
+					attachElement(_mask);
+					addChild(_mask);
 					_content.mask = _mask;
 				}
 			}
-		}
-		
-		protected function lineStyle(g:Graphics=null):void {
-			if(g==null)
-				g = _content.graphics;
-				
-			var color:uint = SVGColor.parseToInt(_finalStyle.stroke);
-			var noStroke:Boolean = _finalStyle.stroke==null || _finalStyle.stroke == '' || _finalStyle.stroke=="none";
-
-			var stroke_opacity:Number = Number(_finalStyle["opacity"]?_finalStyle["opacity"]: (_finalStyle["stroke-opacity"]? _finalStyle["stroke-opacity"] : 1));
-						
-			var w:Number = 1;
-			if(_finalStyle["stroke-width"])
-				w = getUserUnit(_finalStyle["stroke-width"], SVGUtil.WIDTH_HEIGHT);
-
-			var stroke_linecap:String = CapsStyle.NONE;
-
-			if(_finalStyle["stroke-linecap"]){
-				var linecap:String = StringUtil.trim(_finalStyle["stroke-linecap"]).toLowerCase(); 
-				if(linecap=="round")
-					stroke_linecap = CapsStyle.ROUND;
-				else if(linecap=="square")
-					stroke_linecap = CapsStyle.SQUARE;
-			}
-				
-			var stroke_linejoin:String = JointStyle.MITER;
 			
-			if(_finalStyle["stroke-linejoin"]){
-				var linejoin:String = StringUtil.trim(_finalStyle["stroke-linejoin"]).toLowerCase(); 
-				if(linejoin=="round")
-					stroke_linejoin = JointStyle.ROUND;
-				else if(linejoin=="bevel")
-					stroke_linejoin = JointStyle.BEVEL;
-			}
-			
-			if(!noStroke && _finalStyle.stroke.indexOf("url")>-1){
-				var id:String = StringUtil.rtrim(String(_finalStyle.stroke).split("(")[1], ")");
-				id = StringUtil.ltrim(id, "#");
-
-				var grad:Object = document.gradients[id];
-				var def:Object = document.defs[id];
-				
-				if(grad!=null){
-					switch(grad.type){
-						case GradientType.LINEAR: {
-							calculateLinearGradient(grad);
-	
-							g.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
-							break;
-						}
-						case GradientType.RADIAL: {
-							calculateRadialGradient(grad);
-							
-							if(grad.r==0)
-								g.lineStyle(w, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, "none", stroke_linecap, stroke_linejoin);
-							else
-								g.lineGradientStyle(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
-								
-							break;
-						}
-					}
-				} else if(def is SVGPattern){
-					var bitmap:BitmapData = def.getBitmap();
-					g.lineBitmapStyle(bitmap);
+			if(_svgMaskChanged){
+				_svgMaskChanged = false;
+				if(_mask != null) { //Clear mask
+					_content.mask = null;
+					_content.cacheAsBitmap = false;
+					removeChild(_mask);
+					detachElement(_mask);
+					_mask = null;
 				}
-				return;
-			} else if(noStroke)
-				g.lineStyle();
-			else
-				g.lineStyle(w, color, stroke_opacity, true, "normal", stroke_linecap, stroke_linejoin);
-		}
-		
-		protected function beginFill(g:Graphics=null):void {
-			if(g==null)
-				g = _content.graphics;
 				
-			var fill_str:String = _finalStyle.fill;
-			
-			if(fill_str == "" || fill_str=="none"){
-				return;
-			} else {
-				var fill_opacity:Number = Number(_finalStyle["opacity"]?_finalStyle["opacity"]: (_finalStyle["fill-opacity"]? _finalStyle["fill-opacity"] : 1));
-
-				if(fill_str==null){
-					g.beginFill(0x000000, fill_opacity); //Initial value to fill is black
+				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Clip Path
+					var maskId:String = SVGUtil.extractUrlId(svgMask);
 					
-				} else if(fill_str.indexOf("url")>-1){
-					var id:String = StringUtil.rtrim(fill_str.split("(")[1], ")");
-					id = StringUtil.ltrim(id, "#");
-	
-					var grad:Object = document.gradients[id];
-					var def:Object = document.defs[id];
-					
-					if(grad!=null){
-						switch(grad.type){
-							case GradientType.LINEAR: {
-								calculateLinearGradient(grad);
-								
-								g.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb");
-								
-								return;
-							}
-							case GradientType.RADIAL: {
-								calculateRadialGradient(grad);
-							
-								if(grad.r==0)
-									g.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
-								else
-									g.beginGradientFill(grad.type, grad.colors, grad.alphas, grad.ratios, grad.mat, grad.spreadMethod, "rgb", grad.focalRatio);
-									
-								return;
-							}
-						}
-					} else if(def is SVGPattern){
-						var bitmap:BitmapData = def.getBitmap();
-						g.beginBitmapFill(bitmap);
-					}
-				} else {
-					var color:uint = SVGColor.parseToInt(fill_str);
-					g.beginFill(color, fill_opacity);
+					_mask = document.getDefinitionClone(maskId);
+					attachElement(_mask);
+					_mask.cacheAsBitmap = true;
+					_content.cacheAsBitmap = true;
+					addChild(_mask);
+					_content.mask = _mask;
 				}
+			}	
+			
+			if(_displayChanged){
+				_displayChanged = false;
+				visible = _finalStyles["display"] != "none" && _finalStyles["visibility"] != "hidden";
 			}
-		}
-		
-		private function calculateLinearGradient(grad:Object):void {
-			var x1:Number = getUserUnit(grad.x1, SVGUtil.WIDTH);
-			var y1:Number = getUserUnit(grad.y1, SVGUtil.HEIGHT);
-			var x2:Number = getUserUnit(grad.x2, SVGUtil.WIDTH);
-			var y2:Number = getUserUnit(grad.y2, SVGUtil.HEIGHT);
 			
-			grad.mat = SVGUtil.flashLinearGradientMatrix(x1, y1, x2, y2);
-			if(grad.transform)
-				grad.mat.concat(grad.transform);
-		}
-				
-		private function calculateRadialGradient(grad:Object):void {
-			var cx:Number = getUserUnit(grad.cx, SVGUtil.WIDTH);
-			var cy:Number = getUserUnit(grad.cy, SVGUtil.HEIGHT);
-			var r:Number = getUserUnit(grad.r, SVGUtil.WIDTH);
-			var fx:Number = getUserUnit(grad.fx, SVGUtil.WIDTH);
-			var fy:Number = getUserUnit(grad.fy, SVGUtil.HEIGHT);
-	
-			grad.mat = SVGUtil.flashRadialGradientMatrix(cx, cy, r, fx, fy);
-			if(grad.transform)
-				grad.mat.concat(grad.transform);
+			if(_opacityChanged){
+				_opacityChanged = false;
+				_content.alpha = Number(_finalStyles["opacity"] || 1);
+			}
 			
-			var f:* = { x:fx-cx, y:fy-cy };
-			grad.focalRatio = Math.sqrt( (f.x*f.x)+(f.y*f.y) )/r;
-		}
-				
-		protected function styleToTextFormat(style:Object):TextFormat {
-			var sFontSize:String = style["font-size"];
-			var sFont:String = style["font-family"];
-
-			var tFormat:TextFormat = new TextFormat();
-			tFormat.font = sFont == null? "Arial" : sFont;
-			//tFormat.font = "Arial";
-			tFormat.bold = style["font-weight"] != undefined ? true : false;
-			tFormat.size = getFontSize(sFontSize==null ? "medium" : sFontSize);
-			tFormat.color = SVGColor.parseToInt(style["fill"])
-			
-			return tFormat;
+			if(this is ISVGViewPort)
+				updateViewPortSize();
 		}
 
 		protected function getFontSize(s:String):Number{
-			return SVGUtil.getFontSize(s, _currentFontSize, _currentViewBox);
+			var viewPortWidth:Number = 0;
+			var viewPortHeight:Number = 0;
+			
+			if(_viewPortElement != null)
+			{
+				viewPortWidth = _viewPortElement.viewPortWidth;
+				viewPortHeight = _viewPortElement.viewPortHeight;
+			}
+			
+			return SVGUtil.getFontSize(s, _currentFontSize, viewPortWidth, viewPortHeight);
 		}
 		
-
-		protected function getUserUnit(s:String, viewBoxReference:String):Number {
-			return SVGUtil.getUserUnit(s, _currentFontSize, _currentViewBox, viewBoxReference);
+		protected function getUserUnit(s:String, viewPortReference:String):Number {
+			var viewPortWidth:Number = 0;
+			var viewPortHeight:Number = 0;
+			
+			if(_viewPortElement != null)
+			{
+				viewPortWidth = _viewPortElement.viewPortWidth;
+				viewPortHeight = _viewPortElement.viewPortHeight;
+			}
+			
+			return SVGUtil.getUserUnit(s, _currentFontSize, viewPortWidth, viewPortHeight, viewPortReference);
 		}
 		
-		protected final function get $numChildren():int
-	    {
-	        return super.numChildren;
-	    }
-	    protected final function $addChild(child:DisplayObject):DisplayObject
-	    {
-	        return super.addChild(child);
-	    }
-		protected final function $addChildAt(child:DisplayObject, index:int):DisplayObject
-	    {
-	        return super.addChildAt(child, index);
-	    }
-	    protected final function $removeChild(child:DisplayObject):DisplayObject
-	    {
-	        return super.removeChild(child);
-	    }
-	    protected final function $removeChildAt(index:int):DisplayObject
-	    {
-	        return super.removeChildAt(index);
-	    }
-	    protected final function $getChildAt(index:int):DisplayObject
-	    {
-	        return super.getChildAt(index);
-	    }
-	    protected final function $getChildByName(name:String):DisplayObject
-	    {
-	        return super.getChildByName(name);
-	    }
-	    protected final function $getChildIndex(child:DisplayObject):int
-	    {
-	        return super.getChildIndex(child);
-	    }
-	    protected final function $setChildIndex(child:DisplayObject, newIndex:int):void
-	    {
-	    	super.setChildIndex(child, newIndex);
-	    }	    
-	    protected final function $contains(child:DisplayObject):Boolean
-	    {
-			return super.contains(child); 
-	    }
-	    protected final function $swapChildren(child1:DisplayObject, child2:DisplayObject):void {
-	    	super.swapChildren(child1, child2);
-	    }
-	    protected final function $swapChildrenAt(index1:int, index2:int):void {
-	    	super.swapChildrenAt(index1, index2);	
-	    }
-	    
-	    override public function get numChildren():int
-	    {
-	        return _content.numChildren;
-	    }
-	    override public function addChild(child:DisplayObject):DisplayObject
-	    {
-	        return _content.addChild(child);
-	    }
-	    override public function addChildAt(child:DisplayObject, index:int):DisplayObject
-	    {
-	        return _content.addChildAt(child, index);
-	    }
-	    override public function removeChild(child:DisplayObject):DisplayObject
-	    {
-        	return _content.removeChild(child);
-	    }
-	    override public function removeChildAt(index:int):DisplayObject
-	    {
-	        return _content.removeChildAt(index);
-	    }
-	    override public function getChildAt(index:int):DisplayObject
-	    {
-	        return _content.getChildAt(index);
-	    }
-	    override public function getChildByName(name:String):DisplayObject
-	    {
-	        return _content.getChildByName(name);
-	    }
-	    override public function getChildIndex(child:DisplayObject):int
-	    {
-	        return _content.getChildIndex(child);
-	    }
-	    override public function setChildIndex(child:DisplayObject, newIndex:int):void
-	    {
-	    	_content.setChildIndex(child, newIndex);
-	    }
-	    override public function contains(child:DisplayObject):Boolean
-	    {
-	        return _content.contains(child);
-	    }
-	    override public function swapChildren(child1:DisplayObject, child2:DisplayObject):void {
-	        _content.swapChildren(child1, child2);
-	    }
-	    override public function swapChildrenAt(index1:int, index2:int):void {
-	        _content.swapChildrenAt(index1, index2);	
-	    }
+		public function clone(deep:Boolean = true):SVGElement {
+			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
+			
+			var copy:SVGElement = new clazz();
+					
+			copy.svgClass = svgClass;
+			copy.svgClipPath = svgClipPath;
+			copy.svgMask = svgMask;
+			copy.setStyles(_styles);
+			
+			copy.svgTransform = svgTransform;
+			
+			if(this is ISVGViewBox)
+				(copy as ISVGViewBox).svgViewBox = (this as ISVGViewBox).svgViewBox;
+			
+			if(this is ISVGPreserveAspectRatio)
+				(copy as ISVGPreserveAspectRatio).svgPreserveAspectRatio = (this as ISVGPreserveAspectRatio).svgPreserveAspectRatio;
+			
+			if(this is ISVGViewPort){
+				var thisViewPort:ISVGViewPort = this as ISVGViewPort;
+				var cViewPort:ISVGViewPort = copy as ISVGViewPort;
+				
+				cViewPort.svgX = thisViewPort.svgX;
+				cViewPort.svgY = thisViewPort.svgY;
+				cViewPort.svgWidth = thisViewPort.svgWidth;
+				cViewPort.svgHeight = thisViewPort.svgHeight;
+				cViewPort.svgOverflow = thisViewPort.svgOverflow;
+			}
+			
+			return copy;
+		}
+		
+		
+			
+		/////////////////////////////////////////////////
+		// ViewPort
+		/////////////////////////////////////////////////
+		private var _viewPortWidth:Number;
+		public function get viewPortWidth():Number {
+			return _viewPortWidth;
+		}
+		private var _viewPortHeight:Number;
+		public function get viewPortHeight():Number {
+			return _viewPortHeight;
+		}
+		
+		protected function updateViewPortSize():void {
+			var viewPort:ISVGViewPort = this as ISVGViewPort;
+			
+			if(viewPort == null)
+				throw new Error("Element '"+type+"' isn't a viewPort.");
+			
+			if(this is ISVGViewBox && (this as ISVGViewBox).svgViewBox != null){
+				_viewPortWidth = (this as ISVGViewBox).svgViewBox.width;
+				_viewPortHeight = (this as ISVGViewBox).svgViewBox.height;
+			} else {
+				if(viewPort.svgWidth)
+					_viewPortWidth = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
+				if(viewPort.svgHeight)
+					_viewPortHeight = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
+			}
+		}
+		
+		protected function getViewPortContentBox():Rectangle {
+			return null;
+		}
+		
+		protected function updateViewPort():void {
+			var viewPort:ISVGViewPort = this as ISVGViewPort;
+			
+			if(viewPort == null)
+				throw new Error("Element '"+type+"' isn't a viewPort.");
+		
+			this.scrollRect = null;
+			_content.scaleX = 1;
+			_content.scaleY = 1;
+			_content.x = 0;
+			_content.y = 0;
+			
+			var box:Rectangle;
+			if(this is ISVGViewBox)
+				box = (this as ISVGViewBox).svgViewBox;
+			else
+				box = getViewPortContentBox();
+			
+			if(box != null && viewPort.svgWidth != null && viewPort.svgHeight != null) {
+				var x:Number = viewPort.svgX ? getUserUnit(viewPort.svgX, SVGUtil.WIDTH) : 0;
+				var y:Number = viewPort.svgY ? getUserUnit(viewPort.svgY, SVGUtil.HEIGHT) : 0;				
+				var w:Number = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
+				var h:Number = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
+				var viewPortBox:Rectangle = new Rectangle(x, y, w, h);
+				
+				var parts:Array = /(?:(defer)\s+)?(\w*)(?:\s+(meet|slice))?/gi.exec(String(viewPort.svgPreserveAspectRatio || "").toLowerCase());					
+				var defer:Boolean = parts[1] != undefined;
+				var align:String = parts[2] || "xmidymid";
+				var meetOrSlice:String = parts[3] || "meet";
+				
+				var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, align, meetOrSlice);
+					
+				if(meetOrSlice == "slice"){
+					this.scrollRect = viewPortBox;
+				}
+				
+				_content.scaleX = viewPortContentMetrics.contentScaleX;
+				_content.scaleY = viewPortContentMetrics.contentScaleY;
+				_content.x = viewPortContentMetrics.contentX;
+				_content.y = viewPortContentMetrics.contentY;
+			}
+		}
 	}
 }

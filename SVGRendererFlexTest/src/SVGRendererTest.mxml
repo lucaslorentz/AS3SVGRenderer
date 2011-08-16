@@ -2,14 +2,43 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
-			   xmlns:Flex="com.lorentz.SVG.Flex.*">
+			   xmlns:Flex="com.lorentz.SVG.Flex.*"
+			   addedToStage="application1_addedToStageHandler(event)" xmlns:components="components.*">
+		
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace Flex "com.lorentz.SVG.Flex.*";
+		
+		@font-face 
+		{
+			src: local("Verdana");
+			fontFamily: Verdana;
+			fontStyle: normal;
+			fontWeight: normal;
+			embedAsCFF: false;
+			advancedAntiAliasing: true;
+		}
+	</fx:Style>
 	
 	<fx:Script>
 		<![CDATA[
 			import com.lorentz.SVG.display.SVGDocument;
+			import com.lorentz.SVG.display.SVGElement;
+			import com.lorentz.SVG.events.SVGEvent;
+			import com.lorentz.SVG.utils.DisplayUtils;
+			import com.lorentz.processing.ProcessExecutor;
+			
+			import flash.filters.ShaderFilter;
+			import flash.globalization.DateTimeFormatter;
+			import flash.globalization.DateTimeStyle;
+			import flash.globalization.LocaleID;
+			import flash.utils.getTimer;
 			
 			import mx.controls.Alert;
+			import mx.events.FlexEvent;
 			import mx.events.MenuEvent;
+			import mx.graphics.Stroke;
 			import mx.managers.CursorManager;
 			
 			import spark.events.IndexChangeEvent;
@@ -17,6 +46,64 @@
 			private var fileReference:FileReference;
 			private var urlLoader:URLLoader;
 			
+			protected function application1_addedToStageHandler(event:Event):void
+			{
+				ProcessExecutor.instance.initialize(this.stage);
+				
+				svg.svgDocument.addEventListener(SVGEvent.PARSE_COMPLETE, svgDocument_eventHandler);
+				svg.svgDocument.addEventListener(SVGEvent.ASYNC_VALIDATED, svgDocument_eventHandler);
+				svg.svgDocument.addEventListener(SVGEvent.INVALIDATE, svgDocument_eventHandler);
+				svg.svgDocument.addEventListener(SVGEvent.SYNC_VALIDATED, svgDocument_eventHandler);
+				svg.svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_eventHandler);
+				/*svg.svgDocument.addEventListener(SVGEvent.ELEMENT_ADDED, svgDocument_eventHandler);
+				svg.svgDocument.addEventListener(SVGEvent.ELEMENT_REMOVED, svgDocument_eventHandler);*/
+				
+				svg.addEventListener(MouseEvent.MOUSE_OVER, svg_mouseOverHandler);
+				svg.addEventListener(MouseEvent.MOUSE_OUT, svg_mouseOutHandler);
+				svgGroup.addEventListener(MouseEvent.CLICK, svgGroup_clickHandler);
+			}
+			
+			protected function svgDocument_eventHandler(e:SVGEvent):void {
+				var message:String = "Event: " + e.type;
+				if(e.target != svg.svgDocument)
+					message += "( Target: "+e.target+" )";
+				log(message);
+			}
+			
+			
+			private var _selectedElement:SVGElement;
+			[Bindable]
+			public function get selectedElement():SVGElement {
+				return _selectedElement;
+			}
+			public function set selectedElement(value:SVGElement):void {
+				if(_selectedElement)
+					_selectedElement.transform.colorTransform = new ColorTransform();
+				
+				_selectedElement = value;
+				
+				if(_selectedElement)
+					_selectedElement.transform.colorTransform = new ColorTransform(1, 1, 1, 1, 0x66, 0x66, 0x66);
+			}
+			
+			protected function svgGroup_clickHandler(e:MouseEvent):void {
+				selectedElement = DisplayUtils.getSVGElement(e.target as DisplayObject);
+			}
+			
+			protected function svg_mouseOverHandler(e:MouseEvent):void {
+				var svgElement:SVGElement = DisplayUtils.getSVGElement(e.target as DisplayObject);
+				if(svgElement){
+					svgElement.transform.colorTransform = new ColorTransform(1, 1, 1, 1, 0x66, 0x66, 0x66);
+				}
+			}
+			
+			protected function svg_mouseOutHandler(e:MouseEvent):void {
+				var svgElement:SVGElement = DisplayUtils.getSVGElement(e.target as DisplayObject);
+				if(svgElement && svgElement != _selectedElement){
+					svgElement.transform.colorTransform = new ColorTransform();
+				}
+			}
+						
 			protected function menubar1_itemClickHandler(event:MenuEvent):void
 			{
 				if(event.item.@name == "openSVG"){
@@ -35,10 +122,27 @@
 			}
 			
 			protected function fileReference_completeHandler(e:Event):void {
+				clear();
+				
 				var svgContent:String = fileReference.data.readUTFBytes(fileReference.data.length);
 				svg.source = svgContent; 
 				fileReference = null;
-			}			
+			}
+
+			protected function sampleList_changeHandler(event:IndexChangeEvent):void
+			{
+				clear();
+				svg.source = sampleList.selectedItem;
+			}
+			
+			protected function log(message:String):void {
+				logTextArea.appendText(getTimer() + " - " + message + "\n");
+			}
+			
+			protected function clear():void {
+				logTextArea.text = "";
+				selectedElement = null;
+			}
 		]]>
 	</fx:Script>
 	
@@ -52,6 +156,13 @@
 		</fx:XML>
 		
 		<s:ArrayCollection id="sampleFilesArray">
+			<fx:String>svgFiles/preserveAspectRatio.svg</fx:String>
+			<fx:String>svgFiles/gradientText.svg</fx:String>
+			<fx:String>svgFiles/maskedText.svg</fx:String>
+			<fx:String>svgFiles/dashedPath.svg</fx:String>
+			<fx:String>svgFiles/dashedRect.svg</fx:String>
+			<fx:String>svgFiles/marker.svg</fx:String>
+			<fx:String>svgFiles/opacity01.svg</fx:String>
 			<fx:String>svgFiles/viewbox.svg</fx:String>
 			<fx:String>svgFiles/viewbox2.svg</fx:String>
 			<fx:String>svgFiles/simple_link.svg</fx:String>
@@ -91,37 +202,73 @@
 	</fx:Declarations>
 	
 	
-	<s:controlBarContent>
+	<s:controlBarContent>		
 		<mx:MenuBar dataProvider="{menuXML}"
 					showRoot="false"
 					labelField="@label"
-					itemClick="menubar1_itemClickHandler(event)" />
+					itemClick="menubar1_itemClickHandler(event)">
+		</mx:MenuBar>
+		
+		<s:CheckBox id="showSVGBoundsCheckBox"
+					label="Show SVG Bounds"/>
+		
+		<s:CheckBox id="validateWhileParsingCheckBox"
+					label="Validate while parsing"
+					selected="true"/>
+		
+		<s:CheckBox id="allowTextSelectionCheckBox"
+					label="Allow text selection"
+					selected="true"/>
 	</s:controlBarContent>
 
-	<s:HGroup left="10" right="10" top="10" bottom="10">
-		<s:Group width="100%" height="100%">
-			<s:Scroller width="100%" height="100%">
-				<s:Group>
-					<Flex:SVG id="svg" source="{sampleList.selectedItem}" />
-				</s:Group>
-			</s:Scroller>
-			<s:Rect width="100%" height="100%">
-				<s:stroke>
-					<s:SolidColorStroke color="#666666" />
-				</s:stroke>
-			</s:Rect>
-		</s:Group>
+	<s:VGroup left="10" right="10" top="10" bottom="10">
+		<s:HGroup width="100%" height="100%">
+			<s:Group width="100%" height="100%">
+				<s:Scroller width="100%" height="100%">
+					<s:Group id="svgGroup"
+							 width="100%" height="100%"
+							 mouseEnabledWhereTransparent="true">
+						<Flex:SVG id="svg"
+								  defaultFontName="Verdana"
+								  validateWhileParsing="{validateWhileParsingCheckBox.selected}"
+								  allowTextSelection="{allowTextSelectionCheckBox.selected}"/>
+						<s:Rect width="{svg.width}" height="{svg.height}"
+								visible="{showSVGBoundsCheckBox.selected}">
+							<s:stroke>
+								<s:SolidColorStroke color="#333333" weight="2" />
+							</s:stroke>
+						</s:Rect>
+					</s:Group>
+				</s:Scroller>
+				<s:Rect width="100%" height="100%">
+					<s:stroke>
+						<s:SolidColorStroke color="#666666" />
+					</s:stroke>
+				</s:Rect>
+			</s:Group>
+			<s:Panel width="200" height="100%"
+					 title="Samples">
+				
+				<s:layout>
+					<s:VerticalLayout />
+				</s:layout>
+				
+				<s:List id="sampleList" width="100%" height="100%"
+						dataProvider="{sampleFilesArray}"
+						change="sampleList_changeHandler(event)">
+				</s:List>
+			</s:Panel>
+		</s:HGroup>
 	
-		<s:Panel width="200" height="100%"
-				 title="Samples">
+		<s:HGroup width="100%" height="200">
+			<components:ElementInspector width="100%" height="100%"
+										 element="{selectedElement}"/>
 			
-			<s:layout>
-				<s:VerticalLayout />
-			</s:layout>
-			
-			<s:List id="sampleList" width="100%" height="100%"
-					dataProvider="{sampleFilesArray}">
-			</s:List>
-		</s:Panel>
-	</s:HGroup>
+			<s:Panel width="400" height="100%"
+					 title="Log">
+				<s:TextArea id="logTextArea"
+							width="100%" height="100%"/>
+			</s:Panel>
+		</s:HGroup>
+	</s:VGroup>
 </s:Application>
