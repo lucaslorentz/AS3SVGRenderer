@@ -12,7 +12,7 @@ package com.lorentz.SVG.display.base
 
 	use namespace svg_internal;
 
-	public class SVGTextContainer extends SVGShape
+	public class SVGTextContainer extends SVGGraphicsElement
 	{
 		public function SVGTextContainer(tagName:String) {
 			super(tagName);
@@ -44,7 +44,7 @@ package com.lorentz.SVG.display.base
 			if(element is SVGElement)
 				attachElement(element as SVGElement);
 			
-			invalidateTextOwner();
+			invalidateRender();
 		}
 		
 		public function getTextElementAt(index:int):Object {
@@ -63,11 +63,13 @@ package com.lorentz.SVG.display.base
 			if(element is SVGElement)
 				detachElement(element as SVGElement);
 			
-			invalidateTextOwner();
+			invalidateRender();
 		}
 		
-		protected function invalidateTextOwner():void {
-			if(textOwner)
+		override public function invalidateRender():void {
+			super.invalidateRender();
+			
+			if(textOwner && textOwner != this)
 				textOwner.invalidateRender();
 		}
 		
@@ -78,7 +80,7 @@ package com.lorentz.SVG.display.base
 				case "font-size" :
 				case "font-family" :
 				case "font-weight" :
-					invalidateTextOwner();
+					invalidateRender();
 					break;
 			}
 		}

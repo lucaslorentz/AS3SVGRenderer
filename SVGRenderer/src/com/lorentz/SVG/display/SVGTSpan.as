@@ -17,7 +17,7 @@
 		public function set svgX(value:String):void {
 			if(_svgX != value){
 				_svgX = value;
-				invalidateTextOwner();
+				invalidateRender();
 			}
 		}
 		
@@ -28,7 +28,7 @@
 		public function set svgY(value:String):void {
 			if(_svgY != value){
 				_svgY = value;
-				invalidateTextOwner();
+				invalidateRender();
 			}
 		}
 		
@@ -39,7 +39,7 @@
 		public function set svgDx(value:String):void {
 			if(_svgDx != value){
 				_svgDx = value;
-				invalidateTextOwner();
+				invalidateRender();
 			}
 		}
 		
@@ -50,7 +50,7 @@
 		public function set svgDy(value:String):void {
 			if(_svgDy != value){
 				_svgDy = value;
-				invalidateTextOwner();
+				invalidateRender();
 			}
 		}
 
@@ -63,6 +63,8 @@
 		}
 		
 		override protected function render():void {
+			super.render();
+			
 			while(this.numChildren > 0)
 				this.removeChildAt(0);
 			
@@ -100,6 +102,7 @@
 				} else {
 					var tspan:SVGTSpan = textElement as SVGTSpan;
 					
+					tspan.invalidateRender();
 					tspan.validate();
 					
 					if(tspan.hasOwnFill())

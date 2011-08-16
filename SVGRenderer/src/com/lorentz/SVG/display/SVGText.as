@@ -83,6 +83,7 @@
 				} else {
 					var tspan:SVGTSpan = textElement as SVGTSpan;
 					
+					tspan.invalidateRender();
 					tspan.validate();
 										
 					if(tspan.hasOwnFill())
