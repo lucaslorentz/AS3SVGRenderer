@@ -22,8 +22,6 @@
 	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
 	
-	[Event(name="documentChanged", type="com.lorentz.SVG.events.SVGEvent")]
-
 	public class SVGElement extends Sprite {
 		protected var _content:Sprite;
 		private var _mask:SVGElement;
