@@ -12,6 +12,11 @@
 			super(tagName);
 		}
 		
+		override protected function initialize():void {
+			super.initialize();
+			this.mouseChildren = false;
+		}
+		
 		protected function draw(drawer:IDrawer):void {
 		}
 				
