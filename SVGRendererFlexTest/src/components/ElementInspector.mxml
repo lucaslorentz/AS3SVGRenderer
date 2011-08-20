@@ -11,7 +11,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.lorentz.SVG.display.SVGElement;
+			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.utils.DisplayUtils;
 			
 			import mx.collections.ArrayCollection;

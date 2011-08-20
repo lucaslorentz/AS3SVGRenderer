@@ -4,6 +4,7 @@
 	import com.lorentz.SVG.drawing.IDrawer;
 	import com.lorentz.SVG.drawing.SVGPathRenderer;
 	import com.lorentz.SVG.drawing.SVGPathRenderer;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGPath extends SVGShape {	
 		public function SVGPath(){

@@ -4,6 +4,7 @@
 	import flash.events.MouseEvent;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGA extends SVGContainer {	
 		public function SVGA(){

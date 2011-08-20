@@ -1,6 +1,5 @@
 package com.lorentz.SVG.display.base
 {
-	import com.lorentz.SVG.display.SVGElement;
 	import com.lorentz.SVG.display.SVGText;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.TextUtils;

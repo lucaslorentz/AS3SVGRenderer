@@ -1,5 +1,5 @@
 ﻿package com.lorentz.SVG.events {
-	import com.lorentz.SVG.display.SVGElement;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	import flash.events.Event;
 	

@@ -1,7 +1,4 @@
-﻿package com.lorentz.SVG.display {
-	import com.lorentz.SVG.display.base.ISVGPreserveAspectRatio;
-	import com.lorentz.SVG.display.base.ISVGViewBox;
-	import com.lorentz.SVG.display.base.ISVGViewPort;
+﻿package com.lorentz.SVG.display.base {
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.MathUtils;
@@ -13,6 +10,7 @@
 	import flash.geom.Rectangle;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
+	import com.lorentz.SVG.display.SVGDocument;
 	
 	use namespace svg_internal;
 	

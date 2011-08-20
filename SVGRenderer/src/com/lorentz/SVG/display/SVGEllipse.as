@@ -4,6 +4,7 @@
 	import com.lorentz.SVG.utils.SVGUtil;
 	
 	import flash.display.Graphics;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGEllipse extends SVGShape {	
 		public function SVGEllipse(){

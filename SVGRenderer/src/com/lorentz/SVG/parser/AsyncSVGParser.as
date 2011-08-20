@@ -5,7 +5,7 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.SVGCircle;
 	import com.lorentz.SVG.display.SVGClipPath;
 	import com.lorentz.SVG.display.SVGDocument;
-	import com.lorentz.SVG.display.SVGElement;
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.SVGEllipse;
 	import com.lorentz.SVG.display.SVGG;
 	import com.lorentz.SVG.display.SVGImage;

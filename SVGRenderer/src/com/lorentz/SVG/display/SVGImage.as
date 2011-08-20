@@ -9,6 +9,7 @@
 	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
+	import com.lorentz.SVG.display.base.SVGElement;
 
 	public class SVGImage extends SVGElement implements ISVGViewPort {
 		include "includes/SVGViewPortProperties.as"

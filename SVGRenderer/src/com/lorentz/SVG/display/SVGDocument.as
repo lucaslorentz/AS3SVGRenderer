@@ -6,6 +6,7 @@
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.Event;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]

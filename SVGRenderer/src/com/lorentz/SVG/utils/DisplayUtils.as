@@ -1,6 +1,6 @@
 package com.lorentz.SVG.utils
 {
-	import com.lorentz.SVG.display.SVGElement;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	import flash.display.DisplayObject;
 	import flash.geom.Rectangle;

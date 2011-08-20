@@ -9,6 +9,7 @@
 	import flashx.textLayout.edit.SelectionManager;
 	import flashx.textLayout.elements.TextFlow;
 	import flashx.textLayout.formats.TextAlign;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGText extends SVGTextContainer {		
 		private var _svgX:String;

@@ -4,6 +4,7 @@
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.geom.Rectangle;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGUse extends SVGElement implements ISVGViewPort {
 		include "includes/SVGViewPortProperties.as"

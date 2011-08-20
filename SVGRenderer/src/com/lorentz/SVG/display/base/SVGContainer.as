@@ -1,6 +1,5 @@
 package com.lorentz.SVG.display.base
 {
-	import com.lorentz.SVG.display.SVGElement;
 
 	public class SVGContainer extends SVGElement
 	{

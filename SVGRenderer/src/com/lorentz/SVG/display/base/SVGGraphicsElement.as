@@ -3,7 +3,6 @@ package com.lorentz.SVG.display.base
 	import com.lorentz.SVG.data.gradients.SVGGradient;
 	import com.lorentz.SVG.data.gradients.SVGLinearGradient;
 	import com.lorentz.SVG.data.gradients.SVGRadialGradient;
-	import com.lorentz.SVG.display.SVGElement;
 	import com.lorentz.SVG.display.SVGPattern;
 	import com.lorentz.SVG.drawing.DashedDrawer;
 	import com.lorentz.SVG.parser.SVGParserCommon;

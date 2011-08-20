@@ -24,7 +24,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.lorentz.SVG.display.SVGDocument;
-			import com.lorentz.SVG.display.SVGElement;
+			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.events.SVGEvent;
 			import com.lorentz.SVG.utils.DisplayUtils;
 			import com.lorentz.processing.ProcessExecutor;

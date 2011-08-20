@@ -2,6 +2,7 @@
 	import com.lorentz.SVG.display.base.SVGShape;
 	import com.lorentz.SVG.drawing.IDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGRect extends SVGShape {	
 		public function SVGRect(){

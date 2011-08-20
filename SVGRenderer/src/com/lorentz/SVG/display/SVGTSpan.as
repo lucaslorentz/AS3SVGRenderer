@@ -6,6 +6,7 @@
 	
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
+	import com.lorentz.SVG.display.base.SVGElement;
 	
 	use namespace svg_internal;
 	
