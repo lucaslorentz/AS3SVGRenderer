@@ -1,5 +1,8 @@
 ﻿package com.lorentz.SVG.display.base {
+	import com.lorentz.SVG.data.style.StyleDeclaration;
+	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
+	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -10,7 +13,6 @@
 	import flash.geom.Rectangle;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
-	import com.lorentz.SVG.display.SVGDocument;
 	
 	use namespace svg_internal;
 	
@@ -36,8 +38,10 @@
 		private var _svgMaskChanged:Boolean = false;
 		private var _svgMask:String;
 		private var _svgTransform:Matrix;
-		protected var _styles:Object = {}; //Styles set to this element
-		protected var _finalStyles:Object; //After inherit styles
+		
+		private var _style:StyleDeclaration;
+		private var _finalStyle:StyleDeclaration;
+		
 		private var _parentElement:SVGElement;
 		private var _document:SVGDocument;
 		private var _numInvalidElements:int = 0;
@@ -55,11 +59,15 @@
 			initialize();
 		}
 		
-		protected function initialize():void {			
+		protected function initialize():void {
+			_style = new StyleDeclaration();
+			_finalStyle = new StyleDeclaration();
+			_finalStyle.addEventListener(StyleDeclarationEvent.PROPERTY_CHANGE, finalStyle_propertyChangeHandler, false, 0, true);
+			
 			_content = new Sprite();
 			addChild(_content);
 		}
-				
+		
 		public function get type():String {
 			return _type;
 		}
@@ -70,7 +78,7 @@
 		public function set id(value:String):void {
 			_id = value;
 		}
-
+		
 		public function get svgClass():String {
 			return _svgClass;
 		}
@@ -78,7 +86,7 @@
 			_svgClass = value;
 			invalidateStyle(true);
 		}
-
+		
 		public function get svgClipPath():String {
 			return _svgClipPath;
 		}
@@ -127,37 +135,14 @@
 		///////////////////////////////////////
 		// Style manipulation
 		///////////////////////////////////////
-		public function getStyle(name:String):Object {
-			return _styles[name];
+		public function get style():StyleDeclaration {
+			return _style;
 		}
-		public function getFinalStyle(name:String):Object {
-			return _finalStyles(name);
-		}
-		public function setStyle(name:String, value:String):void {
-			_styles[name] = value;
-			invalidateStyle(true);
-		}
-		public function clearStyle(name:String):void {
-			delete _styles[name];
-			invalidateStyle(true);
-		}
-		public function getStyles():Object {
-			return SVGUtil.cloneObject(_styles);
-		}
-		public function getFinalStyles():Object {
-			return SVGUtil.cloneObject(_finalStyles);
-		}
-		public function setStyles(objectStyles:Object):void {
-			for(var p:String in objectStyles)
-				_styles[p] = objectStyles[p];
-			invalidateStyle(true);
-		}
-		public function clearStyles():void {
-			_styles = {};
-			invalidateStyle(true);
+		public function get finalStyle():StyleDeclaration {
+			return _finalStyle;
 		}
 		///////////////////////////////////////
-								
+		
 		public function get parentElement():SVGElement {
 			return _parentElement;
 		}
@@ -177,7 +162,7 @@
 				}
 				
 				setSVGDocument(_parentElement != null ? parentElement.document : null);
-					
+				
 				invalidateStyle();
 			}
 		}
@@ -211,7 +196,7 @@
 			_numInvalidElements = value;
 			if(_parentElement != null)
 				_parentElement.numInvalidElements += d;
-				
+			
 			if(_numInvalidElements == 0 && d != 0){
 				dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
 				if(_numRunningAsyncValidations == 0)
@@ -227,20 +212,20 @@
 			_numRunningAsyncValidations = value;
 			if(_parentElement != null)
 				_parentElement.numRunningAsyncValidations += d;
-				
+			
 			if(_numRunningAsyncValidations == 0 && d != 0) {
 				dispatchEvent(new SVGEvent(SVGEvent.ASYNC_VALIDATED));
 				if(_numInvalidElements == 0)
 					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
 			}
 		}
-				
+		
 		private function invalidate():void {
 			if(!_invalidFlag){											
 				_invalidFlag = true;
-								
+				
 				numInvalidElements += 1;
-					
+				
 				dispatchEvent(new SVGEvent(SVGEvent.INVALIDATE));
 			}
 		}
@@ -263,17 +248,17 @@
 				invalidate();
 			}
 		}
-
+		
 		public function validate():void {
 			if(_invalidStyleFlag)
 				updateStyles();
-				
+			
 			updateViewPortElement();
 			updateCurrentFontSize();
 			
 			if(_invalidPropertiesFlag)
 				commitProperties();
-
+			
 			if(_invalidFlag){
 				_invalidFlag = false;
 				numInvalidElements -= 1;
@@ -302,41 +287,38 @@
 				delete runningAsyncValidations[validationId];
 			}
 		}
-
+		
 		protected function updateStyles():void {
 			_invalidStyleFlag = false;
 			
-			var oldFinalStyles:Object = _finalStyles || {};
+			var newFinalStyle:StyleDeclaration = new StyleDeclaration();
 			
 			if(_parentElement){
-				_finalStyles = _parentElement.getFinalStyles(); //Inherits parent style
-			} else {
-				_finalStyles = {};
+				_parentElement.finalStyle.copyTo(newFinalStyle);
 			}
-
-			if(document.styles[_type] != null){ //Merge with elements styles
-				_finalStyles = SVGUtil.mergeObjects(_finalStyles, document.styles[_type]);
+			
+			var typeStyle:StyleDeclaration = document.getStyleDeclaration(_type);
+			if(typeStyle){ //Merge with elements styles
+				typeStyle.copyTo(newFinalStyle);
 			}
 			
 			if(svgClass){ //Merge with classes styles
-				for each(var className:String in svgClass.split(" "))
-					_finalStyles = SVGUtil.mergeObjects(_finalStyles, document.styles["."+className]);
+				for each(var className:String in svgClass.split(" ")){
+					var classStyle:StyleDeclaration = document.getStyleDeclaration("."+className);
+					if(classStyle)
+						classStyle.copyTo(newFinalStyle);
+				}
 			}
-
-			if(_styles) //Merge all styles with the style attribute
-				_finalStyles = SVGUtil.mergeObjects(_finalStyles, _styles);
 			
-			//Check for changed styles
-			var styleName:String;
+			//Merge all styles with the style attribute
+			_style.copyTo(newFinalStyle);
 			
-			for(styleName in oldFinalStyles){
-				if(oldFinalStyles[styleName] != _finalStyles[styleName])
-					onStyleChanged(styleName, oldFinalStyles[styleName], _finalStyles[styleName]);
-			}
-			for(styleName in _finalStyles){
-				if(!(styleName in oldFinalStyles))
-					onStyleChanged(styleName, oldFinalStyles[styleName], _finalStyles[styleName]);
-			}
+			//Apply new finalStyle
+			newFinalStyle.copyTo(_finalStyle, false);
+		}
+		
+		private function finalStyle_propertyChangeHandler(e:StyleDeclarationEvent):void {
+			onStyleChanged(e.propertyName, e.oldValue, e.newValue);
 		}
 		
 		protected function onStyleChanged(styleName:String, oldValue:String, newValue:String):void {
@@ -351,7 +333,7 @@
 					break;
 			}
 		}
-				
+		
 		private function computeTransformMatrix():Matrix {
 			var mat:Matrix = null;
 			
@@ -382,8 +364,10 @@
 		}
 		
 		protected function updateCurrentFontSize():void {
-			if(_finalStyles["font-size"])
-				_currentFontSize = getUserUnit(_finalStyles["font-size"], SVGUtil.HEIGHT);
+			var fontSize:String = finalStyle.getPropertyValue("font-size");
+			
+			if(fontSize)
+				_currentFontSize = getUserUnit(fontSize, SVGUtil.HEIGHT);
 			else
 				_currentFontSize = Number.NaN;
 		}
@@ -405,10 +389,10 @@
 					detachElement(_mask);
 					_mask = null;
 				}
-					
+				
 				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
 					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
-
+					
 					_mask = document.getDefinitionClone(clipPathId);
 					attachElement(_mask);
 					addChild(_mask);
@@ -440,18 +424,18 @@
 			
 			if(_displayChanged){
 				_displayChanged = false;
-				visible = _finalStyles["display"] != "none" && _finalStyles["visibility"] != "hidden";
+				visible = finalStyle.getPropertyValue("display") != "none" && finalStyle.getPropertyValue("visibility") != "hidden";
 			}
 			
 			if(_opacityChanged){
 				_opacityChanged = false;
-				_content.alpha = Number(_finalStyles["opacity"] || 1);
+				_content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
 			}
 			
 			if(this is ISVGViewPort)
 				updateViewPortSize();
 		}
-
+		
 		protected function getFontSize(s:String):Number{
 			var viewPortWidth:Number = 0;
 			var viewPortHeight:Number = 0;
@@ -482,11 +466,11 @@
 			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
 			
 			var copy:SVGElement = new clazz();
-					
+			
 			copy.svgClass = svgClass;
 			copy.svgClipPath = svgClipPath;
 			copy.svgMask = svgMask;
-			copy.setStyles(_styles);
+			_style.copyTo(copy.style);
 			
 			copy.svgTransform = svgTransform;
 			
@@ -511,7 +495,7 @@
 		}
 		
 		
-			
+		
 		/////////////////////////////////////////////////
 		// ViewPort
 		/////////////////////////////////////////////////
@@ -550,7 +534,7 @@
 			
 			if(viewPort == null)
 				throw new Error("Element '"+type+"' isn't a viewPort.");
-		
+			
 			this.scrollRect = null;
 			_content.scaleX = 1;
 			_content.scaleY = 1;
@@ -576,7 +560,7 @@
 				var meetOrSlice:String = parts[3] || "meet";
 				
 				var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, align, meetOrSlice);
-					
+				
 				if(meetOrSlice == "slice"){
 					this.scrollRect = viewPortBox;
 				}

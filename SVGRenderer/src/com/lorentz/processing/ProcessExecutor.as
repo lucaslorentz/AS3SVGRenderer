@@ -23,6 +23,7 @@ package com.lorentz.processing
 		
 		private var _stage:Stage;
 		private var _processes:Vector.<IProcess>;
+		private var _percentFrameProcessingTime:Number = 0.25; //Considering the use of 25% of the available time
 		
 		public function ProcessExecutor()
 		{
@@ -34,9 +35,16 @@ package com.lorentz.processing
 			_stage = stage;
 			_processes = new Vector.<IProcess>();
 		}
+				
+		public function get percentFrameProcessingTime():Number {
+			return _percentFrameProcessingTime;
+		}
+		public function set percentFrameProcessingTime(value:Number):void {
+			_percentFrameProcessingTime = value;
+		}
 		
-		private function get frameProcessingTime():Number {
-			return 1000 / _stage.frameRate * .25; //Considering the use of 25% of the available time
+		private function get internalFrameProcessingTime():Number {
+			return 1000 / _stage.frameRate * _percentFrameProcessingTime; 
 		}
 		
 		private function ensureInitialized():void {
@@ -70,7 +78,7 @@ package com.lorentz.processing
 		}
 		
 		private function enterFrameHandler(e:Event):void {
-			var timePerProcess:int = frameProcessingTime / _processes.length;
+			var timePerProcess:int = internalFrameProcessingTime / _processes.length;
 			
 			for each(var process:IProcess in _processes)
 				executeProcess(process, timePerProcess);

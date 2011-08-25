@@ -16,7 +16,6 @@
     <classEntry path="com.lorentz.SVG.display.SVGClipPath"/>
     <classEntry path="com.lorentz.SVG.events.SVGEvent"/>
     <classEntry path="com.lorentz.SVG.display.SVGDocument"/>
-    <classEntry path="com.lorentz.SVG.display.base.SVGElement"/>
     <classEntry path="com.lorentz.SVG.display.SVGEllipse"/>
     <classEntry path="com.lorentz.SVG.display.SVGG"/>
     <classEntry path="com.lorentz.SVG.display.SVGImage"/>
@@ -63,6 +62,8 @@
     <classEntry path="com.lorentz.SVG.data.path.SVGCurveToCubicCommand"/>
     <classEntry path="com.lorentz.SVG.data.path.SVGCurveToCubicSmoothCommand"/>
     <classEntry path="com.lorentz.SVG.utils.SVGViewPortUtils"/>
+    <classEntry path="com.lorentz.SVG.data.style.StyleDeclaration"/>
+    <classEntry path="com.lorentz.SVG.events.StyleDeclarationEvent"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

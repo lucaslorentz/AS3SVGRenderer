@@ -1,11 +1,11 @@
 package com.lorentz.SVG.parser
 {
+	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.display.SVG;
 	import com.lorentz.SVG.display.SVGA;
 	import com.lorentz.SVG.display.SVGCircle;
 	import com.lorentz.SVG.display.SVGClipPath;
 	import com.lorentz.SVG.display.SVGDocument;
-	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.SVGEllipse;
 	import com.lorentz.SVG.display.SVGG;
 	import com.lorentz.SVG.display.SVGImage;
@@ -23,6 +23,7 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.SVGUse;
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.SVGContainer;
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.processing.Process;
@@ -47,7 +48,10 @@ package com.lorentz.SVG.parser
 		
 		public function parse():void {
 			_target.gradients = SVGParserCommon.parseGradients(_svg);
-			_target.styles = SVGParserCommon.parseStyles(_svg);
+			
+			var stylesObj:Object = SVGParserCommon.parseStyles(_svg);
+			for(var selector:String in stylesObj)
+				_target.addStyleDeclaration(selector, stylesObj[selector]);
 			
 			visitQueue = new Vector.<VisitDefinition>();
 			visitQueue.push(new VisitDefinition(_svg));
@@ -117,9 +121,9 @@ package com.lorentz.SVG.parser
 				if(element.id != null && element.id != "")
 					_target.addDefinition(element.id, element);
 				
-				element.setStyles(SVGUtil.presentationStyleToObject(elt));
+				SVGUtil.presentationStyleToStyleDeclaration(elt, element.style);
 				if("@style" in elt)
-					element.setStyles(SVGUtil.styleToObject(elt.@style));
+					element.style.fromString(elt.@style);
 				
 				if("@class" in elt)
 					element.svgClass = String(elt.@["class"]);

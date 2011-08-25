@@ -1,4 +1,6 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.data.style.StyleDeclaration;
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.parser.AsyncSVGParser;
 	import com.lorentz.SVG.svg_internal;
@@ -6,27 +8,28 @@
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.Event;
-	import com.lorentz.SVG.display.base.SVGElement;
+	import flash.text.engine.FontLookup;
+	import flash.text.engine.RenderingMode;
 	
+	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
 	
-	public class SVGDocument extends SVG {		
-		private var _svg:XML;
-		
+	public class SVGDocument extends SVG {			
 		private var _parser:AsyncSVGParser;
 		private var _parsing:Boolean = false;
 						
 		private var _definitions:Object = {};
-		public var styles:Object = {};
+		private var _stylesDeclarations:Object = {};
 		public var gradients:Object = {};
 		
 		public var baseURL:String;
 		
 		public var validateWhileParsing:Boolean = true;
 		public var allowTextSelection:Boolean = true;
-		public var defaultFont:String = "Verdana";
+		public var defaultFontName:String = "Verdana";
+		public var fontLookup:String = FontLookup.EMBEDDED_CFF;
 		
 		public function SVGDocument(){			
 			super();
@@ -62,12 +65,12 @@
 		private function parseXML(svg:XML):void {			
 			clear();
 						
-			_svg = svg;
-			
 			if(_parsing)
 				_parser.cancel();
-			
+						
 			_parsing = true;
+			
+			dispatchEvent( new SVGEvent( SVGEvent.PARSE_START ) );
 			
 			_parser = new AsyncSVGParser(this, svg);
 			_parser.addEventListener(AsyncSVGParser.COMPLETE, parser_completeHandler);
@@ -82,12 +85,9 @@
 		}
 		
 		public function clear():void {
-			_svg = null;
-			
 			id = null;
 			svgClass = null;
 			svgClipPath = null;
-			clearStyles();
 			
 			svgViewBox = null;
 			svgX = null;
@@ -95,8 +95,10 @@
 			svgWidth = null;
 			svgHeight = null;
 			
-			styles = {};
+			_stylesDeclarations = {};
 			gradients = {};
+			
+			style.clear();
 			
 			for(var id:String in _definitions)
 				removeDefinition(id);
@@ -109,6 +111,27 @@
 				
 			_content.scaleX = 1;
 			_content.scaleY = 1;
+		}
+		
+		public function listStyleDeclarations():Vector.<String> {
+			var selectorsList:Vector.<String> = new Vector.<String>();
+			for(var id:String in _stylesDeclarations)
+				selectorsList.push(id);
+			return selectorsList;
+		}
+		
+		public function addStyleDeclaration(selector:String, styleDeclaration:StyleDeclaration):void {
+			_stylesDeclarations[selector] = styleDeclaration;
+		}
+		
+		public function getStyleDeclaration(selector:String):StyleDeclaration {
+			return _stylesDeclarations[selector];
+		}
+		
+		public function removeStyleDeclaration(selector:String):StyleDeclaration {
+			var value:StyleDeclaration = _stylesDeclarations[selector];
+			delete _stylesDeclarations[selector];
+			return value;
 		}
 		
 		public function listDefinitions():Vector.<String> {

@@ -35,9 +35,15 @@ package com.lorentz.SVG.display.base
 		}
 		
 		public function addElement(element:SVGElement):void {
-			_elements.push(element);
-			invalidateElements();
-			attachElement(element);
+			addElementAt(element, numElements);
+		}
+		
+		public function addElementAt(element:SVGElement, index:int):void {
+			if(_elements.indexOf(element) == -1){
+				_elements.splice(index, 0, element);
+				invalidateElements();
+				attachElement(element);
+			}
 		}
 		
 		public function getElementAt(index:int):SVGElement {
@@ -49,12 +55,7 @@ package com.lorentz.SVG.display.base
 		}
 		
 		public function removeElement(element:SVGElement):void {
-			var index:int = _elements.indexOf(element);
-			if(index != -1){
-				_elements.splice(index, 1);
-				invalidateElements();
-				detachElement(element);
-			}
+			removeElementAt(_elements.indexOf(element));
 		}
 		
 		public function removeElementAt(index:int):void {

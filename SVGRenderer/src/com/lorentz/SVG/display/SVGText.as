@@ -54,7 +54,7 @@
 			textFlow = new TextFlow();
 			textFlow.textAlign = TextAlign.LEFT;
 
-			var textAnchor:String = _finalStyles["text-anchor"];
+			var textAnchor:String = finalStyle.getPropertyValue("text-anchor");
 			
 			var startTx:Number = getUserUnit(svgX, SVGUtil.WIDTH);
 			var startTy:Number = getUserUnit(svgY, SVGUtil.HEIGHT);

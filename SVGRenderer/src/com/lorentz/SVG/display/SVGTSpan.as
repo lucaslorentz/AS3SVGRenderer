@@ -60,7 +60,7 @@
 		}
 
 		public function hasOwnFill():Boolean {
-			return _styles["fill"] != null && _styles["fill"] != "" && _styles["fill"] != "none";
+			return style.getPropertyValue("fill") != null && style.getPropertyValue("fill") != "" && style.getPropertyValue("fill") != "none";
 		}
 		
 		override protected function render():void {

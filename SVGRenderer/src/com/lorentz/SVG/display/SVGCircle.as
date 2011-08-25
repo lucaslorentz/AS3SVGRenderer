@@ -60,6 +60,14 @@
 			drawer.arcTo(_rUnits, _rUnits, 0, true, false, _cxUnits + _rUnits, _cyUnits);
 		}
 		
+		override protected function drawToGraphics(graphics:Graphics):void {
+			graphics.drawCircle(_cxUnits, _cyUnits, _rUnits);
+		}
+		
+		override protected function get hasDrawToGraphics():Boolean {
+			return true;
+		}
+		
 		override public function clone(deep:Boolean = true):SVGElement {
 			var c:SVGCircle = super.clone(deep) as SVGCircle;
 			c.svgCx = svgCx;

@@ -38,8 +38,12 @@ package com.lorentz.SVG.display.base
 		
 		private var _textElements:Vector.<Object> = new Vector.<Object>();
 		public function addTextElement(element:Object):void {
-			_textElements.push(element);
-						
+			addTextElementAt(element, numTextElements);
+		}
+		
+		public function addTextElementAt(element:Object, index:int):void {
+			_textElements.splice(index, 0, element);
+			
 			if(element is SVGElement)
 				attachElement(element as SVGElement);
 			
@@ -87,9 +91,10 @@ package com.lorentz.SVG.display.base
 		protected function createTextSprite(text:String, textFlow:TextFlow):Object {
 			var format:TextLayoutFormat = new TextLayoutFormat();
 			
-			format.fontSize = getFontSize(_finalStyles["font-size"] || "medium");
-			format.fontFamily = String(_finalStyles["font-family"] || document.defaultFont);
-			format.fontWeight = _finalStyles["font-weight"] != undefined ? FontWeight.BOLD : FontWeight.NORMAL;
+			format.fontSize = getFontSize(finalStyle.getPropertyValue("font-size") || "medium");
+			format.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
+			format.fontWeight = finalStyle.getPropertyValue("font-weight") ? FontWeight.BOLD : FontWeight.NORMAL;
+			format.fontLookup = document.fontLookup;
 			
 			return TextUtils.createTextSprite(text, textFlow, format);
 		}

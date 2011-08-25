@@ -13,6 +13,7 @@
 	import com.lorentz.SVG.data.path.SVGLineToVerticalCommand;
 	import com.lorentz.SVG.data.path.SVGMoveToCommand;
 	import com.lorentz.SVG.data.path.SVGPathCommand;
+	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.utils.MatrixTransformer;
 	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -156,10 +157,10 @@
 		public static function parseStyles(elt:XML):Object {
 			var result:Object = {};
 			
-			var stylesText:XMLList = (elt..*::style.text());
+			var stylesTexts:XMLList = (elt..*::style.text());
 			
-			for each(var style_str:String in stylesText){
-				var content:String = cleanUpText(style_str);
+			for each(var styleString:String in stylesTexts){
+				var content:String = cleanUpText(styleString);
 				
 				var parts:Array = content.split("}");
 				for each (var s:String in parts)
@@ -172,7 +173,7 @@
 						var names:Array = StringUtil.trim(subparts[0]).split(" ");
 						for each(var n:String in names){
 							var style_text:String = StringUtil.trim(subparts[1]);
-							result[n] = SVGUtil.styleToObject(style_text);
+							result[n] = StyleDeclaration.createFromString(style_text);
 						}
 					}
 				}
@@ -301,19 +302,20 @@
 				grad.ratios = new Array();
 			
 			for each(var stop:XML in xml_grad.*::stop){
-				var stop_style:Object = new Object();
+				var stopStyle:StyleDeclaration = new StyleDeclaration();
 				
 				if("@stop-opacity" in stop)
-					stop_style["stop-opacity"] = stop.@["stop-opacity"];
+					stopStyle.setProperty("stop-opacity", stop.@["stop-opacity"]);
 				
 				if("@stop-color" in stop)
-					stop_style["stop-color"] = stop.@["stop-color"];
+					stopStyle.setProperty("stop-color", stop.@["stop-color"]);
 				
-				if("@style" in stop)
-					stop_style = SVGUtil.mergeObjects(stop_style, SVGUtil.styleToObject(stop.@style));
+				if("@style" in stop){
+					stopStyle.fromString(stop.@style);
+				}
 				
-				grad.colors.push( SVGColorUtils.parseToUint(stop_style["stop-color"]) );
-				grad.alphas.push( stop_style["stop-opacity"]!=null ? Number(stop_style["stop-opacity"]) : 1 );
+				grad.colors.push( SVGColorUtils.parseToUint(stopStyle.getPropertyValue("stop-color")) );
+				grad.alphas.push( stopStyle.getPropertyValue("stop-opacity" ) != null ? Number(stopStyle.getPropertyValue("stop-opacity")) : 1 );
 				
 				var offset:Number = Number(StringUtil.rtrim(stop.@offset, "%"));
 				if(String(stop.@offset).indexOf("%") > -1){

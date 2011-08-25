@@ -65,15 +65,18 @@ package com.lorentz.SVG.display.base
 		}
 		
 		protected function get hasFill():Boolean {
-			return _finalStyles["fill"] != "" && _finalStyles["fill"] != "none"; 
+			var fill:String = finalStyle.getPropertyValue("fill"); 
+			return fill != "" && fill != "none"; 
 		}
 		
 		protected function get hasStroke():Boolean {
-			return _finalStyles["stroke"] != null && _finalStyles["stroke"] != '' && _finalStyles["stroke"] != "none";
+			var stroke:String = finalStyle.getPropertyValue("stroke");
+			return stroke != null && stroke != "" && stroke != "none";
 		}
 		
 		protected function get hasDashedStroke():Boolean {
-			return _finalStyles["stroke-dasharray"] != null && _finalStyles["stroke-dasharray"] != "none";
+			var strokeDashArray:String = finalStyle.getPropertyValue("stroke-dasharray");
+			return strokeDashArray != null && strokeDashArray != "none";
 		}
 		
 		protected function configureDashedDrawer(dashedDrawer:DashedDrawer):void {
@@ -81,15 +84,15 @@ package com.lorentz.SVG.display.base
 				return;
 			
 			var strokeDashArray:Array = [];
-			for each(var length:String in SVGParserCommon.splitNumericArgs(_finalStyles["stroke-dasharray"])){
+			for each(var length:String in SVGParserCommon.splitNumericArgs(finalStyle.getPropertyValue("stroke-dasharray"))){
 				strokeDashArray.push(getUserUnit(length, SVGUtil.WIDTH_HEIGHT));
 			}
 			
 			dashedDrawer.dashArray = strokeDashArray;
 			
-			dashedDrawer.dashOffset = Number(_finalStyles["stroke-dashoffset"] || 0);
+			dashedDrawer.dashOffset = Number(finalStyle.getPropertyValue("stroke-dashoffset") || 0);
 			
-			var dashAlign:String = String(_finalStyles["stroke-dashalign"] || "none").toLowerCase();
+			var dashAlign:String = String(finalStyle.getPropertyValue("stroke-dashalign") || "none").toLowerCase();
 			dashedDrawer.alignToCorners = dashAlign == "corners";
 		}
 		
@@ -98,9 +101,9 @@ package com.lorentz.SVG.display.base
 				g = _content.graphics;
 						
 			if(hasFill){
-				var fill:String = _finalStyles["fill"];
+				var fill:String = finalStyle.getPropertyValue("fill");
 				
-				var fillOpacity:Number = Number(_finalStyles["fill-opacity"] || 1);
+				var fillOpacity:Number = Number(finalStyle.getPropertyValue("fill-opacity") || 1);
 				
 				if(fill == null){
 					g.beginFill(0x000000, fillOpacity); //Default value to fill is black
@@ -143,15 +146,15 @@ package com.lorentz.SVG.display.base
 				g = _content.graphics;
 					
 			if(hasStroke) {
-				var strokeOpacity:Number = Number(_finalStyles["stroke-opacity"] || 1);
+				var strokeOpacity:Number = Number(finalStyle.getPropertyValue("stroke-opacity") || 1);
 				
 				var strokeWidth:Number = 1;
-				if(_finalStyles["stroke-width"])
-					strokeWidth = getUserUnit(_finalStyles["stroke-width"], SVGUtil.WIDTH_HEIGHT);
+				if(finalStyle.getPropertyValue("stroke-width"))
+					strokeWidth = getUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
 				
 				var strokeLineCap:String = CapsStyle.NONE;
-				if(_finalStyles["stroke-linecap"]){
-					switch(StringUtil.trim(_finalStyles["stroke-linecap"]).toLowerCase()){
+				if(finalStyle.getPropertyValue("stroke-linecap")){
+					switch(StringUtil.trim(finalStyle.getPropertyValue("stroke-linecap")).toLowerCase()){
 						case "round" :
 							strokeLineCap = CapsStyle.ROUND;
 							break;
@@ -162,8 +165,8 @@ package com.lorentz.SVG.display.base
 				}
 				
 				var strokeLineJoin:String = JointStyle.MITER;				
-				if(_finalStyles["stroke-linejoin"]){
-					switch(StringUtil.trim(_finalStyles["stroke-linejoin"]).toLowerCase()){
+				if(finalStyle.getPropertyValue("stroke-linejoin")){
+					switch(StringUtil.trim(finalStyle.getPropertyValue("stroke-linejoin")).toLowerCase()){
 						case "round" :
 							strokeLineJoin = JointStyle.ROUND;
 							break;
@@ -173,8 +176,10 @@ package com.lorentz.SVG.display.base
 					}
 				}
 				
-				if(_finalStyles.stroke.indexOf("url")>-1){
-					var id:String = SVGUtil.extractUrlId(_finalStyles.stroke);
+				var stroke:String = finalStyle.getPropertyValue("stroke");
+				
+				if(stroke.indexOf("url")>-1){
+					var id:String = SVGUtil.extractUrlId(stroke);
 					
 					var grad:SVGGradient = document.gradients[id];
 					var def:SVGElement = document.getDefinitionClone(id);
@@ -198,9 +203,8 @@ package com.lorentz.SVG.display.base
 						var bitmap:BitmapData = (def as SVGPattern).getBitmap();
 						g.lineBitmapStyle(bitmap);
 					}
-					return;
 				} else {
-					var color:uint = SVGColorUtils.parseToUint(_finalStyles.stroke);
+					var color:uint = SVGColorUtils.parseToUint(stroke);
 					g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin);
 				}
 			} else {

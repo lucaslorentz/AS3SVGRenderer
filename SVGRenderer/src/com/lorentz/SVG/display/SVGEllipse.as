@@ -71,6 +71,14 @@
 			drawer.arcTo(_rxUnits, _ryUnits, 0, true, false, _cxUnits + _rxUnits, _cyUnits);
 		}
 		
+		override protected function drawToGraphics(graphics:Graphics):void {
+			graphics.drawEllipse(_cxUnits-_rxUnits, _cyUnits-_ryUnits, _rxUnits*2, _ryUnits*2);
+		}
+		
+		override protected function get hasDrawToGraphics():Boolean {
+			return true;
+		}
+		
 		override public function clone(deep:Boolean = true):SVGElement {
 			var c:SVGEllipse = super.clone(deep) as SVGEllipse;
 			c.svgCx = svgCx;

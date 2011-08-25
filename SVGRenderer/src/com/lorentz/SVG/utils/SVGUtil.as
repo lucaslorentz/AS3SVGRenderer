@@ -1,4 +1,6 @@
 ﻿package com.lorentz.SVG.utils {
+	import com.lorentz.SVG.data.style.StyleDeclaration;
+	
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -24,50 +26,6 @@
 			return xmlString;
 		}
 		
-		
-		public static function styleToObject(style:String):Object{
-			style = StringUtil.trim(style);
-			style = StringUtil.rtrim(style, ";");
-			
-			var obj:Object = new Object();
-			for each(var prop:String in style.split(";")){
-				var split:Array = prop.split(":");
-				if(split.length==2)
-					obj[StringUtil.trim(split[0])] = StringUtil.trim(split[1]);
-			}
-			
-			return obj;
-		}
-		
-		public static function objectToStyle(obj_style:Object):String{
-			var style:String = "";
-			
-			for(var p_name:String in obj_style){
-				style += p_name+":"+obj_style[p_name]+ "; ";
-			}
-			
-			return style;
-		}
-		
-		public static function mergeObjects(obja:Object, objb:Object):Object{
-			var temp:Object = new Object();
-			for(var prop:String in obja){
-				temp[prop] = obja[prop];
-			}
-			for(var p:String in objb){
-				temp[p] = objb[p];
-			}			
-			return temp;
-		}
-		
-		public static function cloneObject(obj:Object):Object 
-		{
-			var c:Object = {};
-			for(var p:String in obj)
-				c[p] = obj[p];
-			return c;
-		}
-		
 		protected static const presentationStyles:Array = ["display", "visibility", "opacity", "fill",
 													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
 													 "stroke-width", "stroke-linecap", "stroke-linejoin",
@@ -75,16 +33,17 @@
 													 "font-size", "font-family", "font-weight", "text-anchor",
 													 "dominant-baseline"];
 		
-		public static function presentationStyleToObject(elt:XML):Object{
-			var obj:Object = new Object();
+		public static function presentationStyleToStyleDeclaration(elt:XML, styleDeclaration:StyleDeclaration = null):StyleDeclaration {
+			if(styleDeclaration == null)
+				styleDeclaration = new StyleDeclaration();
 			
 			for each(var styleName:String in presentationStyles){
 				if("@"+styleName in elt){
-					obj[styleName] = elt["@"+styleName];
+					styleDeclaration.setProperty(styleName, elt["@"+styleName]);
 				}
 			}
 			
-			return obj;
+			return styleDeclaration;
 		}
 		
 		
@@ -140,9 +99,7 @@
 			return getUserUnit(s, currentFontSize, viewPortWidth, viewPortHeight, WIDTH);
 		}
 		
-		private static const DPI:Number = 90;
-		
-		public static function getUserUnit(s:String, currentFontSize:Number, viewPortWidth:Number, viewPortHeight:Number, viewPortReference:String):Number {
+		public static function getUserUnit(s:String, referenceFontSize:Number, referenceWidth:Number, referenceHeight:Number, referenceMode:String):Number {
 			var value:Number;
 			
 			if(s.indexOf("pt")!=-1){
@@ -167,18 +124,18 @@
 			//Relative
 			} else if(s.indexOf("em")!=-1){
 				value = Number(StringUtil.remove(s, "em"));
-				return value*currentFontSize;
+				return value*referenceFontSize;
 				
 			//Percentage
 			} else if(s.indexOf("%")!=-1){
 				value = Number(StringUtil.remove(s, "%"));
 				
-				switch(viewPortReference){
-					case WIDTH : return value/100 * viewPortWidth;
+				switch(referenceMode){
+					case WIDTH : return value/100 * referenceWidth;
 							break;
-					case HEIGHT : return value/100 * viewPortHeight;
+					case HEIGHT : return value/100 * referenceHeight;
 							break;
-					default : return value/100 * Math.sqrt(Math.pow(viewPortWidth,2)+Math.pow(viewPortHeight,2))/Math.sqrt(2)
+					default : return value/100 * Math.sqrt(Math.pow(referenceWidth,2)+Math.pow(referenceHeight,2))/Math.sqrt(2)
 							break;
 				}
 			} else {

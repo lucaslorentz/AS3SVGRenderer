@@ -19,13 +19,21 @@
 		
 		protected function draw(drawer:IDrawer):void {
 		}
+		
+		protected function drawToGraphics(graphics:Graphics):void {
+			
+		}
+		
+		protected function get hasDrawToGraphics():Boolean {
+			return false;
+		}
 				
 		override protected function render():void {
 			super.render();
 			
 			_content.graphics.clear();
 			
-			var winding:String = _finalStyles["fill-rule"] == null ? "nonzero" : _finalStyles["fill-rule"];
+			var winding:String = finalStyle.getPropertyValue("fill-rule") || "nonzero";
 			switch (winding.toLowerCase())
 			{
 				case GraphicsPathWinding.EVEN_ODD.toLowerCase():
@@ -44,9 +52,13 @@
 					if(hasStroke && !hasDashedStroke)
 						lineStyle();
 
-					var graphicsPathDrawer:GraphicsPathDrawer = new GraphicsPathDrawer();
-					draw(graphicsPathDrawer);
-					_content.graphics.drawPath(graphicsPathDrawer.commands, graphicsPathDrawer.pathData, winding);
+					if(hasDrawToGraphics){
+						drawToGraphics(_content.graphics);
+					} else {
+						var graphicsPathDrawer:GraphicsPathDrawer = new GraphicsPathDrawer();
+						draw(graphicsPathDrawer);
+						_content.graphics.drawPath(graphicsPathDrawer.commands, graphicsPathDrawer.pathData, winding);
+					}
 					
 					_content.graphics.endFill();
 			}

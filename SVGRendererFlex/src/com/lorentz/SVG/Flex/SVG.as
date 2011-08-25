@@ -3,6 +3,7 @@ package com.lorentz.SVG.Flex
 	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.utils.DisplayUtils;
+	import com.lorentz.processing.ProcessExecutor;
 	
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -12,21 +13,34 @@ package com.lorentz.SVG.Flex
 	import flash.net.URLRequest;
 	
 	import mx.core.UIComponent;
+	import mx.managers.ISystemManager;
 
 	public class SVG extends UIComponent
-	{		
+	{
+		public static function init(systemManager:ISystemManager):void
+		{
+			ProcessExecutor.instance.initialize(systemManager.stage);
+		}
+		
+		public function get percentFrameProcessingTime():Number {
+			return ProcessExecutor.instance.percentFrameProcessingTime;
+		}
+		public function set percentFrameProcessingTime(value:Number):void {
+			ProcessExecutor.instance.percentFrameProcessingTime = value;
+		}
+		
 		private var _svgDocument:SVGDocument;
 		private var _sourceInvalid:Boolean = false;
 		private var _urlLoader:URLLoader;
 		private var _urlLoaderURL:String;
 		private var _isLoading:Boolean = false;
 		
-		override protected function createChildren():void {
-			super.createChildren();
-			
+		public function SVG():void {
 			_svgDocument = new SVGDocument();
 			_svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);
 			this.addChild(_svgDocument);
+			
+			super();
 		}
 		
 		public function get svgDocument():SVGDocument {
@@ -53,32 +67,37 @@ package com.lorentz.SVG.Flex
 			_baseURL = value;
 		}
 		
-		private var _defaultFontName:String = "Verdana";
-		[Bindable]
-		public function get defaultFontName():String {
-			return _defaultFontName;
-		}
-		public function set defaultFontName(value:String):void {
-			_defaultFontName = value;
-		}
-		
-		private var _validateWhileParsing:Boolean = false;
 		[Bindable]
 		public function get validateWhileParsing():Boolean {
-			return _validateWhileParsing;
+			return _svgDocument.validateWhileParsing;
 		}
 		public function set validateWhileParsing(value:Boolean):void {
-			_validateWhileParsing = value;
+			_svgDocument.validateWhileParsing = value;
 		}
 		
-		private var _allowTextSelection:Boolean = true;
 		[Bindable]
 		public function get allowTextSelection():Boolean {
-			return _allowTextSelection;
+			return _svgDocument.allowTextSelection;
 		}
 		public function set allowTextSelection(value:Boolean):void {
-			
-			_allowTextSelection = value;
+			_svgDocument.allowTextSelection = value;
+		}
+		
+		[Bindable]
+		public function get defaultFontName():String {
+			return _svgDocument.defaultFontName;
+		}
+		public function set defaultFontName(value:String):void {
+			_svgDocument.defaultFontName = value;
+		}
+		
+		
+		[Bindable]
+		public function get fontLookup():String {
+			return _svgDocument.fontLookup;
+		}
+		public function set fontLookup(value:String):void {
+			_svgDocument.fontLookup = value;
 		}
 		
 		override protected function commitProperties():void {
@@ -100,28 +119,14 @@ package com.lorentz.SVG.Flex
 		
 		private function isXML(str:String):Boolean {
 			//Check if root node exist
-			return /<(\S*).*<\/\1>\s*$/sg.test(str);
+			return str.match(/<(\w*).*<\/\1>/sig).length > 0;
 		}
 		
 		private function parse(xmlOrXmlString:Object, defaultBaseURL:String):void {
 			//Set baseURL and defaultFont
-			_svgDocument.defaultFont = _defaultFontName;
 			_svgDocument.baseURL = _baseURL == null ? defaultBaseURL : String(_baseURL);
-			_svgDocument.validateWhileParsing = _validateWhileParsing;
-			_svgDocument.allowTextSelection = _allowTextSelection;
 
 			this._svgDocument.parse(xmlOrXmlString);
-		}
-		
-		private function clear():void {
-			if(_isLoading)
-			{
-				_urlLoader.close();
-				_urlLoader = null;
-				_urlLoaderURL = "";
-			}
-			
-			_svgDocument.clear();
 		}
 		
 		private function load(urlOrUrlRequest:Object):void {			

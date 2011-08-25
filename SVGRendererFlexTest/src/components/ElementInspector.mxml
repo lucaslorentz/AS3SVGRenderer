@@ -80,13 +80,12 @@
 					return;
 				}
 				
-				var styles:Object = element.getStyles();				
-				var finalStyles:Object = element.getFinalStyles();
+
 				var stylesList:ArrayCollection = new ArrayCollection();
-				for(var styleName:String in finalStyles)
-				{
-					var inherited:String = styles[styleName] == null ? "yes" : "no";
-					stylesList.addItem( { Style: styleName, Value: finalStyles[styleName], Inherited: inherited } );
+				for(var i:int = 0; i < element.finalStyle.length; i++){
+					var styleName:String = element.finalStyle.item(i);
+					var inherited:String = element.style.hasProperty(styleName) ? "no" : "yes";
+					stylesList.addItem( { Style: styleName, Value: element.finalStyle.getPropertyValue(styleName), Inherited: inherited } );
 				}
 				_stylesList = stylesList;
 			}

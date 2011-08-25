@@ -3,7 +3,7 @@
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
 			   xmlns:Flex="com.lorentz.SVG.Flex.*"
-			   addedToStage="application1_addedToStageHandler(event)" xmlns:components="components.*">
+			   initialize="application1_initializeHandler(event)" xmlns:components="components.*">
 		
 	<fx:Style>
 		@namespace s "library://ns.adobe.com/flex/spark";
@@ -23,33 +23,24 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.lorentz.SVG.display.SVGDocument;
 			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.events.SVGEvent;
 			import com.lorentz.SVG.utils.DisplayUtils;
-			import com.lorentz.processing.ProcessExecutor;
 			
-			import flash.filters.ShaderFilter;
-			import flash.globalization.DateTimeFormatter;
-			import flash.globalization.DateTimeStyle;
-			import flash.globalization.LocaleID;
-			import flash.utils.getTimer;
+			import flash.text.engine.FontLookup;
 			
-			import mx.controls.Alert;
-			import mx.events.FlexEvent;
 			import mx.events.MenuEvent;
-			import mx.graphics.Stroke;
-			import mx.managers.CursorManager;
 			
 			import spark.events.IndexChangeEvent;
 			
 			private var fileReference:FileReference;
 			private var urlLoader:URLLoader;
 			
-			protected function application1_addedToStageHandler(event:Event):void
+			protected function application1_initializeHandler(event:Event):void
 			{
-				ProcessExecutor.instance.initialize(this.stage);
-				
+				SVG.init(systemManager);
+					
+				svg.svgDocument.addEventListener(SVGEvent.PARSE_START, svgDocument_eventHandler);
 				svg.svgDocument.addEventListener(SVGEvent.PARSE_COMPLETE, svgDocument_eventHandler);
 				svg.svgDocument.addEventListener(SVGEvent.ASYNC_VALIDATED, svgDocument_eventHandler);
 				svg.svgDocument.addEventListener(SVGEvent.INVALIDATE, svgDocument_eventHandler);
@@ -63,7 +54,7 @@
 				svgGroup.addEventListener(MouseEvent.CLICK, svgGroup_clickHandler);
 			}
 			
-			protected function svgDocument_eventHandler(e:SVGEvent):void {
+			protected function svgDocument_eventHandler(e:SVGEvent):void {			
 				var message:String = "Event: " + e.type;
 				if(e.target != svg.svgDocument)
 					message += "( Target: "+e.target+" )";
