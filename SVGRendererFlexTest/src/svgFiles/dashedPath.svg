@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <svg xmlns="http://www.w3.org/2000/svg"> 
-  <g transform="scale(0.8)">
-    <text x="10" y="20">Not aligned</text>
+  <g>
+    <text x="200" y="20" text-anchor="middle">Not aligned</text>
 	  <path d="M10,350 l 50,-25
 	        a25,25  -30 0,1 50,-25 l 50,-25
 	        a25,50  -30 0,1 50,-25 l 50,-25
@@ -11,8 +11,8 @@
 	        fill="none" stroke="red" stroke-width="2"
 	        stroke-dasharray="25,10"/>
   </g>
-  <g transform="scale(0.8) translate(400, 0)">
-	<text x="10" y="20">Aligned to corners</text>
+  <g transform="translate(400, 0)">
+	<text x="200" y="20" text-anchor="middle">Aligned to corners</text>
 	  <path d="M10,350 l 50,-25
 	        a25,25  -30 0,1 50,-25 l 50,-25
 	        a25,50  -30 0,1 50,-25 l 50,-25
