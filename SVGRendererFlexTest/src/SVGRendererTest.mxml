@@ -37,17 +37,15 @@
 			private var urlLoader:URLLoader;
 			
 			protected function application1_initializeHandler(event:Event):void
-			{
-				SVG.init(systemManager);
-					
-				svg.svgDocument.addEventListener(SVGEvent.PARSE_START, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.PARSE_COMPLETE, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.ASYNC_VALIDATED, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.INVALIDATE, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.SYNC_VALIDATED, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_eventHandler);
-				/*svg.svgDocument.addEventListener(SVGEvent.ELEMENT_ADDED, svgDocument_eventHandler);
-				svg.svgDocument.addEventListener(SVGEvent.ELEMENT_REMOVED, svgDocument_eventHandler);*/
+			{	
+				svg.addEventListener(SVGEvent.PARSE_START, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.PARSE_COMPLETE, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.ASYNC_VALIDATED, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.INVALIDATE, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.SYNC_VALIDATED, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.VALIDATED, svgDocument_eventHandler);
+				/*svg.addEventListener(SVGEvent.ELEMENT_ADDED, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.ELEMENT_REMOVED, svgDocument_eventHandler);*/
 				
 				svg.addEventListener(MouseEvent.MOUSE_OVER, svg_mouseOverHandler);
 				svg.addEventListener(MouseEvent.MOUSE_OUT, svg_mouseOutHandler);
@@ -56,7 +54,7 @@
 			
 			protected function svgDocument_eventHandler(e:SVGEvent):void {			
 				var message:String = "Event: " + e.type;
-				if(e.target != svg.svgDocument)
+				if(e.target != svg)
 					message += "( Target: "+e.target+" )";
 				log(message);
 			}

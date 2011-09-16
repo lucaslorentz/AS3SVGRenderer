@@ -31,11 +31,12 @@ package com.lorentz.SVG.parser
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
+	[Event(name="complete", type="flash.events.Event")]
 	public class AsyncSVGParser extends EventDispatcher
 	{
-		public static const COMPLETE:String = "complete";
+		protected namespace svg = "http://www.w3.org/2000/svg";
 		
-		private var visitQueue:Vector.<VisitDefinition>;
+		private var _visitQueue:Vector.<VisitDefinition>;
 		private var _svg:XML;
 		private var _target:SVGDocument;
 		private var _process:Process;
@@ -53,8 +54,8 @@ package com.lorentz.SVG.parser
 			for(var selector:String in stylesObj)
 				_target.addStyleDeclaration(selector, stylesObj[selector]);
 			
-			visitQueue = new Vector.<VisitDefinition>();
-			visitQueue.push(new VisitDefinition(_svg));
+			_visitQueue = new Vector.<VisitDefinition>();
+			_visitQueue.push(new VisitDefinition(_svg));
 			
 			_process = new Process(null, executeLoop, parseComplete);
 			_process.start();
@@ -66,12 +67,12 @@ package com.lorentz.SVG.parser
 		}
 		
 		private function executeLoop():int {
-			visitQueue.unshift.apply(this, visit(visitQueue.shift()));		
-			return visitQueue.length == 0 ? Process.COMPLETE : Process.CONTINUE;
+			_visitQueue.unshift.apply(this, visit(_visitQueue.shift()));		
+			return _visitQueue.length == 0 ? Process.COMPLETE : Process.CONTINUE;
 		}
 		
 		private function parseComplete():void {
-			dispatchEvent( new Event( COMPLETE ) );
+			dispatchEvent( new Event( Event.COMPLETE ) );
 			_process = null;
 		}
 		
@@ -114,8 +115,10 @@ package com.lorentz.SVG.parser
 			//Set document
 			if(obj is SVGElement){
 				var element:SVGElement = obj as SVGElement;
-				
+								
 				element.id = elt.@id;
+				
+				element.metadata = elt.svg::metadata[0];
 				
 				//Save in definitions
 				if(element.id != null && element.id != "")
@@ -126,10 +129,10 @@ package com.lorentz.SVG.parser
 					element.style.fromString(elt.@style);
 				
 				if("@class" in elt)
-					element.svgClass = String(elt.@["class"]);
+					element.svgClass = String(elt["@class"]);
 				
 				if("@transform" in elt)
-					element.svgTransform = SVGParserCommon.parseTransformation(elt.@transform);
+					element.svgTransform = String(elt["@transform"]);
 				
 				if("@clip-path" in elt)
 					element.svgClipPath = String(elt["@clip-path"]);

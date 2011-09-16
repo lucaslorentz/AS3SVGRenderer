@@ -15,6 +15,12 @@ package com.lorentz.SVG.Flex
 	import mx.core.UIComponent;
 	import mx.managers.ISystemManager;
 
+	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	[Mixin]
 	public class SVG extends UIComponent
 	{
 		public static function init(systemManager:ISystemManager):void
@@ -35,9 +41,25 @@ package com.lorentz.SVG.Flex
 		private var _urlLoaderURL:String;
 		private var _isLoading:Boolean = false;
 		
+		private static const CLONED_EVENTS:Vector.<String> = new <String>[
+			SVGEvent.PARSE_START,
+			SVGEvent.PARSE_COMPLETE,
+			SVGEvent.ELEMENT_ADDED,
+			SVGEvent.ELEMENT_REMOVED,
+			SVGEvent.INVALIDATE,
+			SVGEvent.SYNC_VALIDATED,
+			SVGEvent.VALIDATED
+		];
+		
 		public function SVG():void {
 			_svgDocument = new SVGDocument();
 			_svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);
+			
+			for each (var eventType:String in CLONED_EVENTS)
+			{
+				_svgDocument.addEventListener(eventType, cloneAndRedispatchEvent);
+			}
+			
 			this.addChild(_svgDocument);
 			
 			super();
@@ -68,6 +90,9 @@ package com.lorentz.SVG.Flex
 		}
 		
 		[Bindable]
+		/**
+		 * @default true
+		 **/
 		public function get validateWhileParsing():Boolean {
 			return _svgDocument.validateWhileParsing;
 		}
@@ -76,6 +101,9 @@ package com.lorentz.SVG.Flex
 		}
 		
 		[Bindable]
+		/**
+		 * @default true
+		 **/
 		public function get allowTextSelection():Boolean {
 			return _svgDocument.allowTextSelection;
 		}
@@ -93,6 +121,10 @@ package com.lorentz.SVG.Flex
 		
 		
 		[Bindable]
+		[Inspectable(enumeration="embeddedCFF,device", defaultValue="embeddedCFF")]
+		/**
+		 * @default FontLookup.EMBEDDED_CFF
+		 **/
 		public function get fontLookup():String {
 			return _svgDocument.fontLookup;
 		}
@@ -115,6 +147,11 @@ package com.lorentz.SVG.Flex
 					this.parse(_source, "");
 				}
 			}
+		}
+		
+		private function cloneAndRedispatchEvent(e:SVGEvent):void
+		{
+			dispatchEvent(e.clone());
 		}
 		
 		private function isXML(str:String):Boolean {

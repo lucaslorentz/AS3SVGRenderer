@@ -93,7 +93,7 @@ package com.lorentz.SVG.display.base
 			
 			format.fontSize = getFontSize(finalStyle.getPropertyValue("font-size") || "medium");
 			format.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
-			format.fontWeight = finalStyle.getPropertyValue("font-weight") ? FontWeight.BOLD : FontWeight.NORMAL;
+			format.fontWeight = finalStyle.getPropertyValue("font-weight") == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
 			format.fontLookup = document.fontLookup;
 			
 			return TextUtils.createTextSprite(text, textFlow, format);

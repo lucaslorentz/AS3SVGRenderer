@@ -3,6 +3,7 @@
 	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
+	import com.lorentz.SVG.parser.SVGParserCommon;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -11,8 +12,6 @@
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import flash.utils.getDefinitionByName;
-	import flash.utils.getQualifiedClassName;
 	
 	use namespace svg_internal;
 	
@@ -50,7 +49,7 @@
 		private var _invalidStyleFlag:Boolean = false;
 		private var _invalidPropertiesFlag:Boolean = false;
 		private var _invalidTransformFlag:Boolean = false;
-		private var runningAsyncValidations:Object = {};
+		private var _runningAsyncValidations:Object = {};
 		private var _displayChanged:Boolean = false;
 		private var _opacityChanged:Boolean = false;
 		
@@ -80,38 +79,75 @@
 		}
 		
 		public function get svgClass():String {
-			return _svgClass;
+			return getAttribute("class");
 		}
 		public function set svgClass(value:String):void {
-			_svgClass = value;
-			invalidateStyle(true);
+			setAttribute("class", value);
 		}
 		
 		public function get svgClipPath():String {
-			return _svgClipPath;
+			return getAttribute("clip-path");
 		}
 		public function set svgClipPath(value:String):void {
-			_svgClipPath = value;
-			_svgClipPathChanged = true;
-			invalidateProperties();
+			setAttribute("clip-path", value);
 		}
 		
 		public function get svgMask():String {
-			return _svgMask;
+			return getAttribute("mask");
 		}
 		public function set svgMask(value:String):void {
-			_svgMask = value;
-			_svgMaskChanged = true;
-			invalidateProperties();
+			setAttribute("mask", value);
 		}
 		
-		public function get svgTransform():Matrix {
-			return _svgTransform;
+		public function get svgTransform():String {
+			return getAttribute("transform");
 		}
-		public function set svgTransform(value:Matrix):void {
-			_svgTransform = value;
-			_invalidTransformFlag = true;
-			invalidateProperties();
+		public function set svgTransform(value:String):void {
+			setAttribute("transform", value);
+		}
+		
+		
+		private var _attributes:Object = {};
+		public function getAttribute(name:String):String {
+			return _attributes[name];
+		}
+		
+		public function setAttribute(name:String, value:String):void {
+			if(_attributes[name] != value){
+				var oldValue:String = _attributes[name];
+				
+				_attributes[name] = value;
+				
+				onAttributeChanged(name, oldValue, value);
+			}
+		}
+		
+		public function removeAttribute(name:String):void {
+			delete _attributes[name];
+		}
+		
+		public function hasAttribute(name:String):Boolean {
+			return name in _attributes;
+		}
+		
+		protected function onAttributeChanged(attributeName:String, oldValue:String, newValue:String):void {
+			switch(attributeName){
+				case "class" :
+					invalidateStyle(true);
+					break;
+				case "clip-path" :
+					_svgClipPathChanged = true;
+					invalidateProperties();
+					break;
+				case "mask" :
+					_svgMaskChanged = true;
+					invalidateProperties();
+					break;
+				case "transform" :
+					_invalidTransformFlag = true;
+					invalidateProperties();
+					break;
+			}
 		}
 		
 		/////////////////////////////
@@ -275,16 +311,16 @@
 		}
 		
 		public function beginASyncValidation(validationId:String):void {
-			if(runningAsyncValidations[validationId] == null){
-				runningAsyncValidations[validationId] = true;
+			if(_runningAsyncValidations[validationId] == null){
+				_runningAsyncValidations[validationId] = true;
 				numRunningAsyncValidations++;
 			}
 		}
 		
 		public function endASyncValidation(validationId:String):void {
-			if(runningAsyncValidations[validationId] != null){
+			if(_runningAsyncValidations[validationId] != null){
 				numRunningAsyncValidations--;
-				delete runningAsyncValidations[validationId];
+				delete _runningAsyncValidations[validationId];
 			}
 		}
 		
@@ -348,8 +384,11 @@
 			mat.rotate(MathUtils.radiusToDegress(rotation));
 			mat.translate(x, y);
 			
-			if(svgTransform != null)
-				mat.concat(svgTransform);
+			if(svgTransform != null){
+				var svgTransformMat:Matrix = SVGParserCommon.parseTransformation(svgTransform);
+				if(svgTransformMat)
+					mat.concat(svgTransformMat);
+			}
 			
 			return mat;
 		}
@@ -463,7 +502,7 @@
 		}
 		
 		public function clone(deep:Boolean = true):SVGElement {
-			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
+			var clazz:Class = Object(this).constructor as Class;
 			
 			var copy:SVGElement = new clazz();
 			
@@ -571,5 +610,12 @@
 				_content.y = viewPortContentMetrics.contentY;
 			}
 		}
+		
+		/**
+		* metadata of the related SVG node as defined in the
+		* original SVG document
+		* @default null
+		**/
+		public var metadata:XML;
 	}
 }

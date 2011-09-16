@@ -73,7 +73,7 @@
 			dispatchEvent( new SVGEvent( SVGEvent.PARSE_START ) );
 			
 			_parser = new AsyncSVGParser(this, svg);
-			_parser.addEventListener(AsyncSVGParser.COMPLETE, parser_completeHandler);
+			_parser.addEventListener(Event.COMPLETE, parser_completeHandler);
 			_parser.parse();
 		}
 
