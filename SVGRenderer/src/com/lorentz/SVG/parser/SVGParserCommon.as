@@ -144,9 +144,9 @@
 								if(args.length > 1){
 									var tx:Number = args.length > 1 ? Number(args[1]) : 0;
 									var ty:Number = args.length > 2 ? Number(args[2]) : 0;
-									mat.translate(tx, ty);
-									mat.rotate(MathUtils.degressToRadius(Number(args[0])));
 									mat.translate(-tx, -ty);
+									mat.rotate(MathUtils.degressToRadius(Number(args[0])));
+									mat.translate(tx, ty);
 								} else {
 									mat.rotate(MathUtils.degressToRadius(Number(args[0])));
 								}
