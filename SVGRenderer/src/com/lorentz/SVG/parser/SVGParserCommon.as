@@ -121,45 +121,47 @@
 			
 			var mat:Matrix = new Matrix();
 			
-			for(var i:int = transformations.length - 1; i >= 0; i--)
-			{
-				var parts:Array = /(\w+?)\s*\(([^)]*)\)/.exec(transformations[i]);
-				if(parts is Array){
-					var name:String = parts[1].toLowerCase();
-					var args:Vector.<String> = splitNumericArgs(parts[2]);
-					
-					if(name=="matrix"){
-						return new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]));
-					}
-					
-					switch(name){
-						case "translate" :
-							mat.translate(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
-							break;
-						case "scale" :
-							mat.scale(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
-							break;
-						case "rotate" :
-							if(args.length > 1){
-								var tx:Number = args.length > 1 ? Number(args[1]) : 0;
-								var ty:Number = args.length > 2 ? Number(args[2]) : 0;
-								mat.translate(tx, ty);
-								mat.rotate(MathUtils.degressToRadius(Number(args[0])));
-								mat.translate(-tx, -ty);
-							} else {
-								mat.rotate(MathUtils.degressToRadius(Number(args[0])));
-							}
-							break;
-						case "skewx" :
-							var skewXMatrix:Matrix = new Matrix();
-							skewXMatrix.c = Math.tan(MathUtils.degressToRadius(Number(args[0])));
-							mat.concat(skewXMatrix);
-							break;
-						case "skewy" :
-							var skewYMatrix:Matrix = new Matrix();
-							skewYMatrix.b = Math.tan(MathUtils.degressToRadius(Number(args[0])));
-							mat.concat(skewYMatrix);
-							break;
+			if(transformations is Array){
+				for(var i:int = transformations.length - 1; i >= 0; i--)
+				{
+					var parts:Array = /(\w+?)\s*\(([^)]*)\)/.exec(transformations[i]);
+					if(parts is Array){
+						var name:String = parts[1].toLowerCase();
+						var args:Vector.<String> = splitNumericArgs(parts[2]);
+						
+						if(name=="matrix"){
+							return new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]));
+						}
+						
+						switch(name){
+							case "translate" :
+								mat.translate(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
+								break;
+							case "scale" :
+								mat.scale(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
+								break;
+							case "rotate" :
+								if(args.length > 1){
+									var tx:Number = args.length > 1 ? Number(args[1]) : 0;
+									var ty:Number = args.length > 2 ? Number(args[2]) : 0;
+									mat.translate(tx, ty);
+									mat.rotate(MathUtils.degressToRadius(Number(args[0])));
+									mat.translate(-tx, -ty);
+								} else {
+									mat.rotate(MathUtils.degressToRadius(Number(args[0])));
+								}
+								break;
+							case "skewx" :
+								var skewXMatrix:Matrix = new Matrix();
+								skewXMatrix.c = Math.tan(MathUtils.degressToRadius(Number(args[0])));
+								mat.concat(skewXMatrix);
+								break;
+							case "skewy" :
+								var skewYMatrix:Matrix = new Matrix();
+								skewYMatrix.b = Math.tan(MathUtils.degressToRadius(Number(args[0])));
+								mat.concat(skewYMatrix);
+								break;
+						}
 					}
 				}
 			}
