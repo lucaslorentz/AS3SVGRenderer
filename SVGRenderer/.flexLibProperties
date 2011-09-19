@@ -3,7 +3,6 @@
   <includeClasses>
     <classEntry path="com.lorentz.SVG.utils.Bezier"/>
     <classEntry path="com.lorentz.SVG.utils.MathUtils"/>
-    <classEntry path="com.lorentz.SVG.utils.MatrixTransformer"/>
     <classEntry path="com.lorentz.SVG.utils.SVGColorUtils"/>
     <classEntry path="com.lorentz.SVG.parser.SVGParserCommon"/>
     <classEntry path="com.lorentz.SVG.utils.SVGUtil"/>
