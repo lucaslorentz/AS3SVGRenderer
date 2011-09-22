@@ -145,6 +145,7 @@
 		</fx:XML>
 		
 		<s:ArrayCollection id="sampleFilesArray">
+			<fx:String>svgFiles/polyline1.svg</fx:String>
 			<fx:String>svgFiles/preserveAspectRatio.svg</fx:String>
 			<fx:String>svgFiles/gradientText.svg</fx:String>
 			<fx:String>svgFiles/maskedText.svg</fx:String>
