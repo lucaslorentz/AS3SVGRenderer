@@ -28,8 +28,6 @@
 				var i:int = 2;
 				while(i < points.length - 1)
 					drawer.lineTo(Number(points[i++]), Number(points[i++]));
-				
-				drawer.lineTo(Number(points[0]), Number(points[1]));
 			}
 		}
 		
