@@ -66,12 +66,9 @@
 		override protected function render():void {
 			super.render();
 			
-			while(this.numChildren > 0)
-				this.removeChildAt(0);
-			
-			if(textOwner.textFlow == null)
-				return;
-			
+			while(_content.numChildren > 0)
+				_content.removeChildAt(0);
+						
 			if(svgX)
 				textOwner.currentX = getUserUnit(svgX, SVGUtil.WIDTH);
 			if(svgY)
@@ -81,46 +78,43 @@
 				textOwner.currentX += getUserUnit(svgDx, SVGUtil.WIDTH);
 			if(svgDy)
 				textOwner.currentY += getUserUnit(svgDy, SVGUtil.HEIGHT);
-			
-			var maskSprite:Sprite = new Sprite();
-			this.addChild(maskSprite);
-			
-			var noMaskSprite:Sprite = new Sprite();
-			this.addChild(noMaskSprite);
+						
+			var fillMask:Sprite = new Sprite();
+			_content.addChild(fillMask);
 			
 			for(var i:int = 0; i < this.numTextElements; i++){
 				var textElement:Object = this.getTextElementAt(i);
 				if(textElement is String){
 					var createdText:Object = createTextSprite( textElement as String, textOwner.textFlow );
 					
-					var fillTextField:Sprite = createdText.sprite;
-					fillTextField.x = textOwner.currentX;
-					fillTextField.y = textOwner.currentY - createdText.height;
+					var textSprite:Sprite = createdText.sprite;
+					textSprite.x = textOwner.currentX;
+					textSprite.y = textOwner.currentY - createdText.height;
 					
-					maskSprite.addChild(fillTextField);
+					fillMask.addChild(textSprite);
 					
 					textOwner.currentX += createdText.xOffset;
-				} else {
+				} else if(textElement is SVGTSpan) {
 					var tspan:SVGTSpan = textElement as SVGTSpan;
+										
+					if(tspan.hasOwnFill())
+						textOwner.textContainer.addChild(tspan);
+					else
+						fillMask.addChild(tspan);
 					
 					tspan.invalidateRender();
 					tspan.validate();
-					
-					if(tspan.hasOwnFill())
-						noMaskSprite.addChild(tspan);
-					else
-						maskSprite.addChild(tspan);
 				}				
 			}
-			
-			var bounds:Rectangle = DisplayUtils.safeGetBounds(maskSprite, this);
-			var fillRect:Sprite = new Sprite();
-			beginFill(fillRect.graphics);
-			fillRect.graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-			fillRect.mask = maskSprite;
-			maskSprite.cacheAsBitmap = true;
-			fillRect.cacheAsBitmap = true;
-			this.addChildAt(fillRect, 0);
+						
+			var bounds:Rectangle = DisplayUtils.safeGetBounds(fillMask, _content);
+			var fill:Sprite = new Sprite();
+			beginFill(fill.graphics);
+			fill.graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			fill.mask = fillMask;
+			fillMask.cacheAsBitmap = true;
+			fill.cacheAsBitmap = true;
+			_content.addChildAt(fill, 0);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

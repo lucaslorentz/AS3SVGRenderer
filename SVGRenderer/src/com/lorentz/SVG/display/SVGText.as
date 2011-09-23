@@ -1,4 +1,5 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGTextContainer;
 	import com.lorentz.SVG.utils.DisplayUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -9,7 +10,6 @@
 	import flashx.textLayout.edit.SelectionManager;
 	import flashx.textLayout.elements.TextFlow;
 	import flashx.textLayout.formats.TextAlign;
-	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGText extends SVGTextContainer {		
 		private var _svgX:String;
@@ -41,6 +41,7 @@
 		public var currentX:Number = 0;
 		public var currentY:Number = 0;
 		public var textFlow:TextFlow;
+		public var textContainer:Sprite;
 		
 		protected override function render():void {
 			super.render();
@@ -50,6 +51,9 @@
 			
 			if(this.numTextElements == 0)
 				return;
+						
+			textContainer = new Sprite();
+			_content.addChild(textContainer);
 			
 			textFlow = new TextFlow();
 			textFlow.textAlign = TextAlign.LEFT;
@@ -61,12 +65,9 @@
 			
 			currentX = startTx;
 			currentY = startTy;
-			
-			var maskSprite:Sprite = new Sprite();
-			this.addChild(maskSprite);
-			
-			var noMaskSprite:Sprite = new Sprite();
-			this.addChild(noMaskSprite);
+						
+			var fillMask:Sprite = new Sprite();
+			textContainer.addChild(fillMask);
 			
 			for(var i:int = 0; i < this.numTextElements; i++){
 				var textElement:Object = this.getTextElementAt(i);
@@ -74,23 +75,23 @@
 				if(textElement is String){
 					var createdText:Object = createTextSprite( textElement as String, textFlow );
 					
-					var fillTextField:Sprite = createdText.sprite;
-					fillTextField.x = currentX;
-					fillTextField.y = currentY - createdText.height;
+					var textSprite:Sprite = createdText.sprite;
+					textSprite.x = currentX;
+					textSprite.y = currentY - createdText.height;
 					
-					maskSprite.addChild(fillTextField);
+					fillMask.addChild(textSprite);
 					
 					currentX += createdText.xOffset;
-				} else {
+				} else if(textElement is SVGTSpan) {
 					var tspan:SVGTSpan = textElement as SVGTSpan;
+															
+					if(tspan.hasOwnFill())
+						textContainer.addChild(tspan);
+					else
+						fillMask.addChild(tspan);
 					
 					tspan.invalidateRender();
 					tspan.validate();
-										
-					if(tspan.hasOwnFill())
-						noMaskSprite.addChild(tspan);
-					else
-						maskSprite.addChild(tspan);
 				}				
 			}
 			
@@ -98,18 +99,18 @@
 			textFlow.flowComposer.updateAllControllers();
 
 			if(textAnchor == "middle")
-				noMaskSprite.x = maskSprite.x -= (currentX - startTx)/2;
+				textContainer.x -= (currentX - startTx)/2;
 			else if(textAnchor == "end")
-				noMaskSprite.x = maskSprite.x -= (currentX - startTx);
+				textContainer.x -= (currentX - startTx);
 
-			var bounds:Rectangle = DisplayUtils.safeGetBounds(maskSprite, this);
-			var fillRect:Sprite = new Sprite();
-			beginFill(fillRect.graphics);
-			fillRect.graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-			fillRect.mask = maskSprite;
-			maskSprite.cacheAsBitmap = true;
-			fillRect.cacheAsBitmap = true;
-			this.addChildAt(fillRect, 0);
+			var bounds:Rectangle = DisplayUtils.safeGetBounds(fillMask, textContainer);
+			var fill:Sprite = new Sprite();
+			beginFill(fill.graphics);
+			fill.graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			fill.mask = fillMask;
+			fillMask.cacheAsBitmap = true;
+			fill.cacheAsBitmap = true;
+			textContainer.addChildAt(fill, 0);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

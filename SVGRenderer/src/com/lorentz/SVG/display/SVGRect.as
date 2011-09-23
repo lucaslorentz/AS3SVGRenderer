@@ -116,13 +116,13 @@
 			} else {
 				drawer.moveTo(_xUnits + _rxUnits, _yUnits);
 				drawer.lineTo(_xUnits + _widthUnits - _rxUnits, _yUnits);			
-				drawer.arcTo(_rxUnits, _ryUnits, 90, false, true, _xUnits + _widthUnits, _yUnits + _ryUnits); 
+				drawer.arcTo(_ryUnits, _rxUnits, 90, false, true, _xUnits + _widthUnits, _yUnits + _ryUnits); 
 				drawer.lineTo(_xUnits + _widthUnits, _yUnits + _heightUnits - _ryUnits);
-				drawer.arcTo(_rxUnits, _ryUnits, 90, false, true, _xUnits + _widthUnits - _rxUnits, _yUnits + _heightUnits);
+				drawer.arcTo(_ryUnits, _rxUnits, 90, false, true, _xUnits + _widthUnits - _rxUnits, _yUnits + _heightUnits);
 				drawer.lineTo(_xUnits + _rxUnits, _yUnits + _heightUnits);
-				drawer.arcTo(_rxUnits, _ryUnits, 90, false, true, _xUnits, _yUnits + _heightUnits - _ryUnits);
+				drawer.arcTo(_ryUnits, _rxUnits, 90, false, true, _xUnits, _yUnits + _heightUnits - _ryUnits);
 				drawer.lineTo(_xUnits, _yUnits + _ryUnits);
-				drawer.arcTo(_rxUnits, _ryUnits, 90, false, true, _xUnits + _rxUnits, _yUnits);
+				drawer.arcTo(_ryUnits, _rxUnits, 90, false, true, _xUnits + _rxUnits, _yUnits);
 			}
 		}
 		

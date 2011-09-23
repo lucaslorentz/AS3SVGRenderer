@@ -28,7 +28,7 @@ package com.lorentz.processing
 		public function ProcessExecutor()
 		{
 			if(!_allowInstantiation)
-				throw new Error("The class 'AsyncProcessManager' is singleton.");
+				throw new Error("The class 'ProcessExecutor' is singleton.");
 		}
 		
 		public function initialize(stage:Stage):void {
@@ -49,7 +49,7 @@ package com.lorentz.processing
 		
 		private function ensureInitialized():void {
 			if(_stage == null)
-				throw new Error("You must initialize the ProcessManager class before, passing it a stage instance.");
+				throw new Error("You must initialize the ProcessExecutor. Ex: ProcessExecutor.instance.initialize(stage)");
 		}
 		
 		public function addProcess(process:IProcess):void {
