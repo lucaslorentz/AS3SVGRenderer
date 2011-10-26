@@ -159,6 +159,8 @@
 			<fx:String>svgFiles/text01.svg</fx:String>
 			<fx:String>svgFiles/tspan01.svg</fx:String>
 			<fx:String>svgFiles/tspan02.svg</fx:String>
+			<fx:String>svgFiles/rtl-text.svg</fx:String>
+			<fx:String>svgFiles/rtl-complex.svg</fx:String>
 			<fx:String>svgFiles/Units.svg</fx:String>
 			<fx:String>svgFiles/lingrad01.svg</fx:String>
 			<fx:String>svgFiles/arcs01.svg</fx:String>
