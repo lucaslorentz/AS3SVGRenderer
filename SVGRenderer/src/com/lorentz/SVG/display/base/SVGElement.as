@@ -592,22 +592,29 @@
 				var w:Number = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
 				var h:Number = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
 				var viewPortBox:Rectangle = new Rectangle(x, y, w, h);
-				
-				var parts:Array = /(?:(defer)\s+)?(\w*)(?:\s+(meet|slice))?/gi.exec(String(viewPort.svgPreserveAspectRatio || "").toLowerCase());					
-				var defer:Boolean = parts[1] != undefined;
-				var align:String = parts[2] || "xmidymid";
-				var meetOrSlice:String = parts[3] || "meet";
-				
-				var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, align, meetOrSlice);
-				
-				if(meetOrSlice == "slice"){
-					this.scrollRect = viewPortBox;
+
+				if(viewPort.svgPreserveAspectRatio != "none"){
+					var parts:Array = /(?:(defer)\s+)?(\w*)(?:\s+(meet|slice))?/gi.exec(String(viewPort.svgPreserveAspectRatio || "").toLowerCase());					
+					var defer:Boolean = parts[1] != undefined;
+					var align:String = parts[2] || "xmidymid";
+					var meetOrSlice:String = parts[3] || "meet";
+					
+					var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, align, meetOrSlice);
+					
+					if(meetOrSlice == "slice"){
+						this.scrollRect = viewPortBox;
+					}
+					
+					_content.scaleX = viewPortContentMetrics.contentScaleX;
+					_content.scaleY = viewPortContentMetrics.contentScaleY;
+					_content.x = viewPortContentMetrics.contentX;
+					_content.y = viewPortContentMetrics.contentY;
+				} else {
+					_content.x = x;
+					_content.y = y;
+					_content.width = w;
+					_content.height = h;
 				}
-				
-				_content.scaleX = viewPortContentMetrics.contentScaleX;
-				_content.scaleY = viewPortContentMetrics.contentScaleY;
-				_content.x = viewPortContentMetrics.contentX;
-				_content.y = viewPortContentMetrics.contentY;
 			}
 		}
 		

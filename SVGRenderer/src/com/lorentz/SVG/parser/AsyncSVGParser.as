@@ -26,6 +26,7 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
+	import com.lorentz.SVG.utils.TextUtils;
 	import com.lorentz.processing.Process;
 	
 	import flash.events.Event;
@@ -289,7 +290,7 @@ package com.lorentz.SVG.parser
 					if(child){
 						if(child is String){
 							var str:String = child as String;
-							str = SVGParserCommon.cleanUpText(str);
+							str = SVGUtil.prepareXMLText(str);
 							
 							if(visitNumber == 0)
 								str = StringUtil.ltrim(str);
@@ -324,12 +325,7 @@ package com.lorentz.SVG.parser
 					if(child){
 						if(child is String){
 							var str:String = child as String;
-							str = SVGParserCommon.cleanUpText(str);
-							
-							if(visitNumber == 0)
-								str = StringUtil.ltrim(str);
-							else if(visitNumber == numChildrenToVisit - 1)
-								str = StringUtil.rtrim(str);
+							str = SVGUtil.prepareXMLText(str);
 							
 							if(StringUtil.trim(str) != "") {
 								obj.addTextElement(str);
@@ -351,6 +347,7 @@ package com.lorentz.SVG.parser
 			obj.svgY = ("@y" in elt) ? elt.@y : null;
 			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
 			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
+			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
 			
 			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
 			var href:String = elt.@xlink::href;

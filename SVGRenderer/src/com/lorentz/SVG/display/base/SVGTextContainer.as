@@ -2,6 +2,7 @@ package com.lorentz.SVG.display.base
 {
 	import com.lorentz.SVG.display.SVGText;
 	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.text.engine.FontWeight;
@@ -96,7 +97,66 @@ package com.lorentz.SVG.display.base
 			format.fontWeight = finalStyle.getPropertyValue("font-weight") == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
 			format.fontLookup = document.fontLookup;
 			
-			return TextUtils.createTextSprite(text, textFlow, format);
+			if(!hasComplexFill)
+				format.color = getFillColor();
+			
+			var textObject:Object = TextUtils.createTextSprite(text, textFlow, format);
+			
+			if(!hasComplexFill){
+				if(hasFill)
+					textObject.sprite.alpha = getFillOpacity();
+				else
+					textObject.sprite.alpha = 0;
+			}
+			
+			return textObject;
+		}
+		
+		protected function get hasComplexFill():Boolean {
+			var fill:String = finalStyle.getPropertyValue("fill");
+			return fill && fill.indexOf("url") != -1;
+		}
+		
+		private function getFillColor():uint {
+			var fill:String = finalStyle.getPropertyValue("fill");
+			
+			if(fill == null || fill.indexOf("url") > -1)
+				return 0x000000;
+			else
+				return SVGColorUtils.parseToUint(fill);
+		}
+		
+		private function getFillOpacity():Number {
+			return Number(finalStyle.getPropertyValue("fill-opacity") || 1);
+		}
+		
+		protected function getDirectionFromStyles():String {
+			var direction:String = finalStyle.getPropertyValue("direction");
+			
+			if(direction){
+				switch(direction){
+					case "ltr" :
+						return "lr";
+					case "tlr" :
+						return "rl";
+				}
+			}
+			
+			var writingMode:String = finalStyle.getPropertyValue("writing-mode");
+			
+			switch(writingMode){
+				case "lr" :
+				case "lr-tb" :
+					return "lr";
+				case "rl" :
+				case "rl-tb" :
+					return "rl";
+				case "tb" :
+				case "tb-rl" :
+					return "tb";
+			}
+			
+			return null;
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

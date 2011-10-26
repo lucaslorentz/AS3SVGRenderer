@@ -18,6 +18,7 @@
 	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
+	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.display.GradientType;
 	import flash.display.SpreadMethod;
@@ -104,14 +105,6 @@
 			return returnData;
 		}
 		
-		public static function cleanUpText(s:String):String
-		{
-			s = s.replace(/\r|\t|\n|\&\#xA;|\&\#xD;/g, "");
-			s = s.replace(/\&nbsp;/g, " ");
-			s = s.replace(/\s+/g, " ");
-			return s;
-		}
-		
 		public static function parseTransformation(m:String):Matrix {
 			if(m.length == 0) {
 				return new Matrix();
@@ -183,7 +176,7 @@
 			var stylesTexts:XMLList = (elt..*::style.text());
 			
 			for each(var styleString:String in stylesTexts){
-				var content:String = cleanUpText(styleString);
+				var content:String = SVGUtil.prepareXMLText(styleString);
 				
 				var parts:Array = content.split("}");
 				for each (var s:String in parts)

@@ -1,12 +1,7 @@
 ﻿package com.lorentz.SVG.utils {
 	import com.lorentz.SVG.data.style.StyleDeclaration;
 	
-	import flash.display.Graphics;
-	import flash.display.Shape;
-	import flash.display.Sprite;
 	import flash.geom.Matrix;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
 		
 	public class SVGUtil {
 		public static function processXMLEntities(xmlString:String):String {
@@ -26,12 +21,54 @@
 			return xmlString;
 		}
 		
+		private static var _specialXMLEntities:Object = {
+			"quot": "\"",
+			"amp" : "&",
+			"apos" : "'",
+			"lt" : "<",
+			"gt" : ">",
+			"nbsp" : " "
+		};
+		
+		public static function processSpecialXMLEntities(s:String):String {
+			for(var entityName:String in _specialXMLEntities)
+				s = s.replace(new RegExp("\\&"+entityName+";", "g"), _specialXMLEntities[entityName]);
+			
+			return s;
+		}
+		
+		public static function replaceCharacterReferences(s:String):String {
+			for each(var hexaUnicode:String in s.match(/&#x[A-Fa-f0-9]+;/g))
+			{
+				var hexaValue:String = /&#x([A-Fa-f0-9]+);/.exec(hexaUnicode)[1];
+				s = s.replace(new RegExp("\\&#x"+hexaValue+";", "g"), String.fromCharCode(int("0x"+hexaValue)));
+			}
+			
+			for each(var decimalUnicode:String in s.match(/&#[0-9]+;/g))
+			{
+				var decimalValue:String = /&#([0-9]+);/.exec(decimalUnicode)[1];
+				s = s.replace(new RegExp("\\&#"+decimalValue+";", "g"), String.fromCharCode(int(decimalValue)));
+			}
+			
+			return s;
+		}
+		
+		public static function prepareXMLText(s:String):String
+		{
+			s = s.replace(/\r|\t|\n/g, "");
+			s = processSpecialXMLEntities(s);
+			//s = replaceCharacterReferences(s); //Flash XML parser already replaces it
+			s = s.replace(/\s+/g, " ");		
+			return s;
+		}
+		
+		
 		protected static const presentationStyles:Array = ["display", "visibility", "opacity", "fill",
 													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
 													 "stroke-width", "stroke-linecap", "stroke-linejoin",
 													 "stroke-dasharray", "stroke-dashoffset", "stroke-dashalign",
 													 "font-size", "font-family", "font-weight", "text-anchor",
-													 "dominant-baseline"];
+													 "dominant-baseline", "direction"];
 		
 		public static function presentationStyleToStyleDeclaration(elt:XML, styleDeclaration:StyleDeclaration = null):StyleDeclaration {
 			if(styleDeclaration == null)
