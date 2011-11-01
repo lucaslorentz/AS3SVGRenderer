@@ -231,7 +231,8 @@
 			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
 			if(xml_grad.@xlink::href.length()>0){
 				var baseGradient:SVGGradient = parseGradient(xml_grad.@xlink::href, svg, storeObject);
-				baseGradient.copyTo(grad);
+				if(baseGradient)
+					baseGradient.copyTo(grad);
 			}
 			//
 			
