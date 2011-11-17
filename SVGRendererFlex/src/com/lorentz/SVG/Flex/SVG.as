@@ -44,10 +44,12 @@ package com.lorentz.SVG.Flex
 		private static const CLONED_EVENTS:Vector.<String> = new <String>[
 			SVGEvent.PARSE_START,
 			SVGEvent.PARSE_COMPLETE,
+			SVGEvent.RENDERED,
 			SVGEvent.ELEMENT_ADDED,
 			SVGEvent.ELEMENT_REMOVED,
 			SVGEvent.INVALIDATE,
 			SVGEvent.SYNC_VALIDATED,
+			SVGEvent.ASYNC_VALIDATED,
 			SVGEvent.VALIDATED
 		];
 		

@@ -9,10 +9,10 @@
 	
 	import flash.events.Event;
 	import flash.text.engine.FontLookup;
-	import flash.text.engine.RenderingMode;
 	
 	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="rendered", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
 	
@@ -22,17 +22,21 @@
 						
 		private var _definitions:Object = {};
 		private var _stylesDeclarations:Object = {};
+		private var _firstValidationAfterParse:Boolean = false;
+		
 		public var gradients:Object = {};
 		
 		public var baseURL:String;
 		
 		public var validateWhileParsing:Boolean = true;
+		public var validateAfterParse:Boolean = true;
 		public var allowTextSelection:Boolean = true;
 		public var defaultFontName:String = "Verdana";
 		public var fontLookup:String = FontLookup.EMBEDDED_CFF;
 		
 		public function SVGDocument(){			
 			super();
+			addEventListener(SVGEvent.VALIDATED, validatedHandler, false, 0, true);
 		}
 		
 		override public function get document():SVGDocument {
@@ -82,6 +86,19 @@
 			_parsing = false;
 			_parser = null;
 			dispatchEvent( new SVGEvent( SVGEvent.PARSE_COMPLETE ) );
+			
+			_firstValidationAfterParse = true;
+			
+			if(validateAfterParse)
+				validate();
+		}
+		
+		protected function validatedHandler(e:Event):void {
+			if(_firstValidationAfterParse)
+			{
+				_firstValidationAfterParse = false;
+				dispatchEvent( new SVGEvent( SVGEvent.RENDERED ) );
+			}
 		}
 		
 		public function clear():void {

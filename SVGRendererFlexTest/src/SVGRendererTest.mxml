@@ -40,6 +40,7 @@
 			{	
 				svg.addEventListener(SVGEvent.PARSE_START, svgDocument_eventHandler);
 				svg.addEventListener(SVGEvent.PARSE_COMPLETE, svgDocument_eventHandler);
+				svg.addEventListener(SVGEvent.RENDERED, svgDocument_eventHandler);
 				svg.addEventListener(SVGEvent.ASYNC_VALIDATED, svgDocument_eventHandler);
 				svg.addEventListener(SVGEvent.INVALIDATE, svgDocument_eventHandler);
 				svg.addEventListener(SVGEvent.SYNC_VALIDATED, svgDocument_eventHandler);

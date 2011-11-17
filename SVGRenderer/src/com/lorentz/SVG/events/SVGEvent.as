@@ -9,6 +9,7 @@
 		public static const SYNC_VALIDATED:String = "syncValidated";
 		public static const ASYNC_VALIDATED:String = "asyncValidated";
 		public static const VALIDATED:String = "validated";
+		public static const RENDERED:String = "rendered";
 		
 		public static const PARSE_START:String = "parseStart";
 		public static const PARSE_COMPLETE:String = "parseComplete";
