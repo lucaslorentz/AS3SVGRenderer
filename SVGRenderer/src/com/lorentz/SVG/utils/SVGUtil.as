@@ -55,10 +55,11 @@
 		
 		public static function prepareXMLText(s:String):String
 		{
-			s = s.replace(/\r|\t|\n/g, "");
 			s = processSpecialXMLEntities(s);
 			//s = replaceCharacterReferences(s); //Flash XML parser already replaces it
-			s = s.replace(/\s+/g, " ");		
+			
+			s = s.replace(/(?:[ ]+(\n|\r)+[ ]*)|(?:[ ]*(\n|\r)+[ ]+)/g, " "); //Replace lines breaks with whitespace around it by single whitespace
+			s = s.replace(/\n|\r|\t/g, ""); //Remove remaining line breaks and tabs
 			return s;
 		}
 		

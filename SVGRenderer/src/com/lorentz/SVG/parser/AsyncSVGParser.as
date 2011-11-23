@@ -1,6 +1,5 @@
 package com.lorentz.SVG.parser
 {
-	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.display.SVG;
 	import com.lorentz.SVG.display.SVGA;
 	import com.lorentz.SVG.display.SVGCircle;
@@ -26,7 +25,6 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
-	import com.lorentz.SVG.utils.TextUtils;
 	import com.lorentz.processing.Process;
 	
 	import flash.events.Event;
