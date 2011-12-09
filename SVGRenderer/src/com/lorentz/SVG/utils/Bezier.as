@@ -11,14 +11,23 @@
     */
     public final class Bezier
     {
-        /**
-            Approximation deviation tolerance.
-
-            Set tolerance to zero to use Timothee Groleau's midpoint method.
-            Or larger than zero to use Robert Penner's recursive approximation method.
-            In Robert Penner's version of getQuadBezier, the last argument is
-            tolerance (1 = very accurate, 25 (eg) = faster, not so accurate)
-        */
+		/**
+		 Approximation deviation tolerance.
+		 Approximation deviation tolerance. Determines how precise bezier curves are approximated.
+		 
+		 Set tolerance to zero to use Timothee Groleau's midpoint method.
+		 Or larger than zero to use Robert Penner's recursive approximation method.
+		 In Robert Penner's version of getQuadBezier, the last argument is
+		 tolerance (1 = very accurate, 25 (eg) = faster, not so accurate)
+		 By default, Robert Penner's recursive approximation method is used for approximation. In such case, this value
+		 determines how many pixels a quadratic can be off the real bezier curve. If this value is set to 1 (the default),
+		 every quadratic will be one pixel off the real bezier curve, or less. This is precise enough for most uses. You can
+		 set this value to 25, for instance, to make the approximation process faster. If you are planning on displaying the
+		 SVG path very large (by scaling it), it might be useful to ensure some extra precision by setting this value to
+		 something less than 1, such as .1.
+		 
+		 If you set this value to 0 (zero), Timothee Groleau's midpoint method will be used for approximation.
+		 */
         public static var tolerance:Number = 1;
 		
 		public static var savedBeziers:Object = new Object();
