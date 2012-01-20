@@ -4,7 +4,7 @@
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
 			   xmlns:Flex="com.lorentz.SVG.Flex.*"
 			   initialize="application1_initializeHandler(event)" xmlns:components="components.*">
-		
+	
 	<fx:Style>
 		@namespace s "library://ns.adobe.com/flex/spark";
 		@namespace mx "library://ns.adobe.com/flex/mx";
@@ -12,26 +12,58 @@
 		
 		@font-face 
 		{
-			src: local("Verdana");
-			fontFamily: Verdana;
+			src: url("bitstream_vera_sans/Vera.ttf");
+			fontFamily: "Bitstream Vera Sans CFF";
+			fontStyle: normal;
+			fontWeight: normal;
+			embedAsCFF: true;
+			advancedAntiAliasing: true;
+		}
+		
+		@font-face 
+		{
+			src: url("bitstream_vera_sans/VeraBd.ttf");
+			fontFamily: "Bitstream Vera Sans CFF";
+			fontStyle: normal;
+			fontWeight: bold;
+			embedAsCFF: true;
+			advancedAntiAliasing: true;
+		}
+		
+		@font-face 
+		{
+			src: url("bitstream_vera_sans/Vera.ttf");
+			fontFamily: "Bitstream Vera Sans";
 			fontStyle: normal;
 			fontWeight: normal;
 			embedAsCFF: false;
 			advancedAntiAliasing: true;
 		}
+		
+		@font-face 
+		{
+			src: url("bitstream_vera_sans/VeraBd.ttf");
+			fontFamily: "Bitstream Vera Sans";
+			fontStyle: normal;
+			fontWeight: bold;
+			embedAsCFF: false;
+			advancedAntiAliasing: true;
+		}
 	</fx:Style>
+	
+
 	
 	<fx:Script>
 		<![CDATA[
+			import com.lorentz.SVG.data.text.SVGTextFormat;
 			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.events.SVGEvent;
+			import com.lorentz.SVG.text.FTESVGTextDrawer;
+			import com.lorentz.SVG.text.TLFSVGTextDrawer;
+			import com.lorentz.SVG.text.TextFieldSVGTextDrawer;
 			import com.lorentz.SVG.utils.DisplayUtils;
 			
-			import flash.text.engine.FontLookup;
-			
 			import mx.events.MenuEvent;
-			
-			import spark.events.IndexChangeEvent;
 			
 			private var fileReference:FileReference;
 			private var urlLoader:URLLoader;
@@ -93,7 +125,7 @@
 					svgElement.transform.colorTransform = new ColorTransform();
 				}
 			}
-						
+			
 			protected function menubar1_itemClickHandler(event:MenuEvent):void
 			{
 				if(event.item.@name == "openSVG"){
@@ -118,10 +150,11 @@
 				svg.source = svgContent; 
 				fileReference = null;
 			}
-
-			protected function sampleList_changeHandler(event:IndexChangeEvent):void
+			
+			protected function updateRender():void
 			{
 				clear();
+				svg.source = null;
 				svg.source = sampleList.selectedItem;
 			}
 			
@@ -132,6 +165,10 @@
 			protected function clear():void {
 				logTextArea.text = "";
 				selectedElement = null;
+			}
+			
+			protected function customChangeTextFormatFunction(textFormat:SVGTextFormat):void {
+				textFormat.fontFamily = textDrawerDropDownList.selectedItem.fontName;
 			}
 		]]>
 	</fx:Script>
@@ -192,6 +229,12 @@
 			<fx:String>svgFiles/image.svg</fx:String>
 			<fx:String>svgFiles/image2.svg</fx:String>
 		</s:ArrayCollection>
+		
+		<s:ArrayList id="textDrawersArrayList">
+			<fx:Object label="FTE (Non-selectable, CFF fonts)" clazz="{FTESVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
+			<fx:Object label="TLF (Flow-selectable, CFF fonts)" clazz="{TLFSVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
+			<fx:Object label="TextField (Selectable, noCFF fonts)" clazz="{TextFieldSVGTextDrawer}" fontName="Bitstream Vera Sans" />
+		</s:ArrayList>
 	</fx:Declarations>
 	
 	
@@ -209,11 +252,18 @@
 					label="Validate while parsing"
 					selected="true"/>
 		
-		<s:CheckBox id="allowTextSelectionCheckBox"
-					label="Allow text selection"
-					selected="true"/>
+		<s:CheckBox id="useEmbeddedFontsCheckBox"
+					label="Use embedded fonts"
+					selected="true"
+					change="updateRender()"/>
+		
+		<s:DropDownList id="textDrawerDropDownList"
+						width="300"
+						selectedIndex="0"
+						dataProvider="{textDrawersArrayList}"
+						change="updateRender()"/>
 	</s:controlBarContent>
-
+	
 	<s:VGroup left="10" right="10" top="10" bottom="10">
 		<s:HGroup width="100%" height="100%">
 			<s:Group width="100%" height="100%">
@@ -222,9 +272,11 @@
 							 width="100%" height="100%"
 							 mouseEnabledWhereTransparent="true">
 						<Flex:SVG id="svg"
-								  defaultFontName="Verdana"
 								  validateWhileParsing="{validateWhileParsingCheckBox.selected}"
-								  allowTextSelection="{allowTextSelectionCheckBox.selected}"/>
+								  defaultFontName="{textDrawerDropDownList.selectedItem.fontName}"
+								  textDrawerClass="{textDrawerDropDownList.selectedItem.clazz}"
+								  useEmbeddedFonts="{useEmbeddedFontsCheckBox.selected}"
+								  changeTextFormatFunction="{customChangeTextFormatFunction}"/>
 						<s:Rect width="{svg.width}" height="{svg.height}"
 								visible="{showSVGBoundsCheckBox.selected}">
 							<s:stroke>
@@ -248,11 +300,11 @@
 				
 				<s:List id="sampleList" width="100%" height="100%"
 						dataProvider="{sampleFilesArray}"
-						change="sampleList_changeHandler(event)">
+						change="updateRender()">
 				</s:List>
 			</s:Panel>
 		</s:HGroup>
-	
+		
 		<s:HGroup width="100%" height="200">
 			<components:ElementInspector width="100%" height="100%"
 										 element="{selectedElement}"/>

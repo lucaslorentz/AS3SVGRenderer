@@ -612,8 +612,8 @@
 				} else {
 					_content.x = x;
 					_content.y = y;
-					_content.width = w;
-					_content.height = h;
+					_content.scaleX = w / _content.width;
+					_content.scaleY = h / _content.height;
 				}
 			}
 		}

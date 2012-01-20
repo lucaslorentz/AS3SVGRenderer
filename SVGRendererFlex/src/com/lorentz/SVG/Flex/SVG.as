@@ -106,11 +106,11 @@ package com.lorentz.SVG.Flex
 		/**
 		 * @default true
 		 **/
-		public function get allowTextSelection():Boolean {
-			return _svgDocument.allowTextSelection;
+		public function get textDrawerClass():Class {
+			return _svgDocument.textDrawerClass;
 		}
-		public function set allowTextSelection(value:Boolean):void {
-			_svgDocument.allowTextSelection = value;
+		public function set textDrawerClass(value:Class):void {
+			_svgDocument.textDrawerClass = value;
 		}
 		
 		[Bindable]
@@ -121,17 +121,30 @@ package com.lorentz.SVG.Flex
 			_svgDocument.defaultFontName = value;
 		}
 		
+		[Bindable]
+		/**
+		 * Function that is called before sending svgTextFormat to TextDrawer, allowing you to change texts formats with your own rule.
+		 * The function can alter any property on textFormat
+		 * Function parameters: function(textFormat:SVGTextFormat):void
+		 * Example: Change all texts inside an svg to a specific embedded font
+		 */
+		public function get changeTextFormatFunction():Function {
+			return _svgDocument.changeTextFormatFunction;
+		}
+		public function set changeTextFormatFunction(value:Function):void {
+			_svgDocument.changeTextFormatFunction = value;
+		}
 		
 		[Bindable]
-		[Inspectable(enumeration="embeddedCFF,device", defaultValue="embeddedCFF")]
+		[Inspectable(defaultValue="false")]
 		/**
-		 * @default FontLookup.EMBEDDED_CFF
-		 **/
-		public function get fontLookup():String {
-			return _svgDocument.fontLookup;
+		 * Determines if the document should use embedded fonts or not 
+		 */		
+		public function get useEmbeddedFonts():Boolean {
+			return _svgDocument.useEmbeddedFonts;
 		}
-		public function set fontLookup(value:String):void {
-			_svgDocument.fontLookup = value;
+		public function set useEmbeddedFonts(value:Boolean):void {
+			_svgDocument.useEmbeddedFonts = value;
 		}
 		
 		override protected function commitProperties():void {

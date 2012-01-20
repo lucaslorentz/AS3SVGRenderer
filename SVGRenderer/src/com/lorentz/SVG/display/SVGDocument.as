@@ -4,11 +4,11 @@
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.parser.AsyncSVGParser;
 	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.text.FTESVGTextDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.Event;
-	import flash.text.engine.FontLookup;
 	
 	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
@@ -16,7 +16,7 @@
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
 	
-	public class SVGDocument extends SVG {			
+	public class SVGDocument extends SVG {		
 		private var _parser:AsyncSVGParser;
 		private var _parsing:Boolean = false;
 						
@@ -26,13 +26,45 @@
 		
 		public var gradients:Object = {};
 		
+		/**
+		 * Url used as a base url to search referenced files on svg. 
+		 */		
 		public var baseURL:String;
 		
+		/**
+		 * Determines that the document should validate rendering during parse.
+		 * Set to true if you want to progressively show the SVG while it is parsing.
+		 * Set to false to improve speed and show it only after parse is complete.
+		 */		
 		public var validateWhileParsing:Boolean = true;
+
+		/**
+		 * Determines if the document should force validation after parse, or should wait the document be on stage.  
+		 */		
 		public var validateAfterParse:Boolean = true;
-		public var allowTextSelection:Boolean = true;
+		
+		/**
+		 * Default value for attribute fontStyle on SVGDocuments, and also is used an embedded font is missing, and missingFontAction on svgDocument is USE_DEFAULT.
+		 */		
 		public var defaultFontName:String = "Verdana";
-		public var fontLookup:String = FontLookup.EMBEDDED_CFF;
+		
+		/**
+		 * Determines if the document should use embedded 
+		 */		
+		public var useEmbeddedFonts:Boolean = true;
+		
+		/**
+		 * Function that is called before sending svgTextFormat to TextDrawer, allowing you to change texts formats with your own rule.
+		 * The function can alter any property on textFormat
+		 * Function parameters: function(textFormat:SVGTextFormat):void
+		 * Example: Change all texts inside an svg to a specific embedded font
+		 */		
+		public var changeTextFormatFunction:Function;
+		
+		/**
+		 * Class used to draw texts 
+		 */		
+		public var textDrawerClass:Class = FTESVGTextDrawer;
 		
 		public function SVGDocument(){			
 			super();

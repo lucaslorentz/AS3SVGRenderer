@@ -1,4 +1,5 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.data.text.SVGDrawnText;
 	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGTextContainer;
 	import com.lorentz.SVG.svg_internal;
@@ -11,29 +12,7 @@
 	
 	use namespace svg_internal;
 	
-	public class SVGTSpan extends SVGTextContainer {	
-		private var _svgX:String;
-		public function get svgX():String {
-			return _svgX;
-		}
-		public function set svgX(value:String):void {
-			if(_svgX != value){
-				_svgX = value;
-				invalidateRender();
-			}
-		}
-		
-		private var _svgY:String;
-		public function get svgY():String {
-			return _svgY;
-		}
-		public function set svgY(value:String):void {
-			if(_svgY != value){
-				_svgY = value;
-				invalidateRender();
-			}
-		}
-		
+	public class SVGTSpan extends SVGTextContainer {		
 		private var _svgDx:String;
 		public function get svgDx():String {
 			return _svgDx;
@@ -59,21 +38,18 @@
 		public function SVGTSpan(){
 			super("tspan");
 		}
-
-		public function hasOwnFill():Boolean {
-			return style.getPropertyValue("fill") != null && style.getPropertyValue("fill") != "" && style.getPropertyValue("fill") != "none";
-		}
 		
-		private var _renderObjects:Vector.<DisplayObject>;
 		private var _start:Number = 0;
 		private var _end:Number = 0;
-		private var _endDirection:String;
 				
 		override protected function render():void {
 			super.render();
 			
 			while(_content.numChildren > 0)
 				_content.removeChildAt(0);
+			
+			if(this.numTextElements == 0)
+				return;
 			
 			var direction:String = getDirectionFromStyles() || "lr";
 			var textDirection:String = direction;
@@ -103,32 +79,31 @@
 			
 			for(var i:int = 0; i < numTextElements; i++){
 				var textElement:Object = getTextElementAt(i);
+				
 				if(textElement is String){
-					var createdText:Object = createTextSprite( textElement as String, textOwner.textFlow );
-					
-					var textSprite:DisplayObject = createdText.sprite;
-					
-					if((createdText.direction || direction) == "lr"){
-						textSprite.x = textOwner.currentX;
-						textSprite.y = textOwner.currentY - createdText.ascent;
-						textOwner.currentX += createdText.width;
+					var drawnText:SVGDrawnText = createTextSprite( textElement as String, textOwner.textDrawer );
+										
+					if((drawnText.direction || direction) == "lr"){
+						drawnText.displayObject.x = textOwner.currentX - drawnText.startX;
+						drawnText.displayObject.y = textOwner.currentY - drawnText.startY;
+						textOwner.currentX += drawnText.textWidth;
 					} else {
-						textSprite.x = textOwner.currentX - createdText.width;
-						textSprite.y = textOwner.currentY - createdText.ascent;
-						textOwner.currentX -= createdText.width;
+						drawnText.displayObject.x = textOwner.currentX - drawnText.textWidth - drawnText.startX;
+						drawnText.displayObject.y = textOwner.currentY - drawnText.startY;
+						textOwner.currentX -= drawnText.textWidth;
 					}
 
-					if(createdText.direction)	
-						textDirection = createdText.direction;
+					if(drawnText.direction)	
+						textDirection = drawnText.direction;
 					
-					fillTextsSprite.addChild(textSprite);
-					_renderObjects.push(textSprite);
-				} else if(textElement is SVGTSpan) {
-					var tspan:SVGTSpan = textElement as SVGTSpan;
+					fillTextsSprite.addChild(drawnText.displayObject);
+					_renderObjects.push(drawnText.displayObject);
+				} else if(textElement is SVGTextContainer) {
+					var tspan:SVGTextContainer = textElement as SVGTextContainer;
 										
 					if(tspan.hasOwnFill()){
 						textOwner.textContainer.addChild(tspan);
-					}else
+					} else
 						fillTextsSprite.addChild(tspan);
 					
 					tspan.invalidateRender();
@@ -141,7 +116,7 @@
 			_end = textOwner.currentX;
 						
 			if(svgX)
-				doAnchorAlign(textDirection);
+				doAnchorAlign(textDirection, _start, _end);
 						
 			if(hasComplexFill && fillTextsSprite.numChildren > 0){
 				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, _content);
@@ -157,46 +132,7 @@
 				_renderObjects.push(fill);
 			}
 		}
-		
-		public function doAnchorAlign(direction:String):void {
-			var textAnchor:String = finalStyle.getPropertyValue("text-anchor") || "start";
-			
-			var anchorX:Number = getUserUnit(svgX, SVGUtil.WIDTH);
-			
-			var offsetX:Number = 0;
-			
-			if(direction == "lr"){
-				if(textAnchor == "start")
-					offsetX += anchorX  - _start;
-				if(textAnchor == "middle")
-					offsetX += anchorX  - (_end + _start)/2;
-				else if(textAnchor == "end")
-					offsetX += anchorX  - _end;
-			} else {
-				if(textAnchor == "start")
-					offsetX += anchorX  - _end;
-				if(textAnchor == "middle")
-					offsetX += anchorX  - (_end + _start)/2;
-				else if(textAnchor == "end")
-					offsetX += anchorX  - _start;
-			}
-			
-			offsetRenderObjects(offsetX);
-		}
-		
-		public function offsetRenderObjects(offsetX:Number):void {
-			for each(var children:DisplayObject in _renderObjects)
-			{
-				if(children is SVGTSpan){
-					var tspan:SVGTSpan = children as SVGTSpan;
-					if(!tspan.svgX)
-						tspan.offsetRenderObjects(offsetX);
-				} else {
-					children.x += offsetX;
-				}
-			}
-		}
-		
+				
 		override public function clone(deep:Boolean = true):SVGElement {
 			var c:SVGTSpan = super.clone(deep) as SVGTSpan;
 			c.svgX = svgX;

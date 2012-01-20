@@ -3,7 +3,6 @@ package com.lorentz.SVG.data.style
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.utils.StringUtil;
 	
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 
 	[Event(name="propertyChange", type="com.lorentz.SVG.events.StyleDeclarationEvent")]

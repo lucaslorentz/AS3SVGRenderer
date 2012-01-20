@@ -1,19 +1,27 @@
 package com.lorentz.SVG.display.base
 {
+	import com.lorentz.SVG.data.text.SVGDrawnText;
+	import com.lorentz.SVG.data.text.SVGTextFormat;
 	import com.lorentz.SVG.display.SVGText;
 	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.SVGColorUtils;
+	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.TextUtils;
 	
-	import flash.text.engine.FontWeight;
-	
-	import flashx.textLayout.elements.TextFlow;
-	import flashx.textLayout.formats.TextLayoutFormat;
+	import flash.display.DisplayObject;
+	import flash.text.Font;
+	import flash.text.FontType;
 
 	use namespace svg_internal;
 
 	public class SVGTextContainer extends SVGGraphicsElement
 	{
+		private var _svgX:String;
+		private var _svgY:String;
+		private var _textOwner:SVGText;
+		protected var _renderObjects:Vector.<DisplayObject>;
+		
 		public function SVGTextContainer(tagName:String) {
 			super(tagName);
 			
@@ -21,7 +29,26 @@ package com.lorentz.SVG.display.base
 				_textOwner = this as SVGText;
 		}
 		
-		private var _textOwner:SVGText;
+		public function get svgX():String {
+			return _svgX;
+		}
+		public function set svgX(value:String):void {
+			if(_svgX != value){
+				_svgX = value;
+				invalidateRender();
+			}
+		}
+		
+		public function get svgY():String {
+			return _svgY;
+		}
+		public function set svgY(value:String):void {
+			if(_svgY != value){
+				_svgY = value;
+				invalidateRender();
+			}
+		}
+		
 		protected function get textOwner():SVGText {
 			return _textOwner;
 		}
@@ -89,27 +116,47 @@ package com.lorentz.SVG.display.base
 			}
 		}
 		
-		protected function createTextSprite(text:String, textFlow:TextFlow):Object {
-			var format:TextLayoutFormat = new TextLayoutFormat();
+		protected function createTextSprite(text:String, textDrawer:ISVGTextDrawer):SVGDrawnText {
+			//Gest last bidiLevel considering overrides
+			var direction:String = TextUtils.getParagraphDirection(text);
 			
+			//Patch text adding direction chars, this will ensure spaces around texts will work properly
+			if(direction == "rl")
+				text = String.fromCharCode(0x200F) + text + String.fromCharCode(0x200F);
+			else if(direction == "lr")
+				text = String.fromCharCode(0x200E) + text + String.fromCharCode(0x200E);
+
+			//Setup text format, to pass to the TextDrawer
+			var format:SVGTextFormat = new SVGTextFormat();
+			
+			format.useEmbeddedFonts = document.useEmbeddedFonts;
 			format.fontSize = getFontSize(finalStyle.getPropertyValue("font-size") || "medium");
 			format.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
-			format.fontWeight = finalStyle.getPropertyValue("font-weight") == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
-			format.fontLookup = document.fontLookup;
+			format.fontWeight = finalStyle.getPropertyValue("font-weight") || "normal";
+			format.fontStyle = finalStyle.getPropertyValue("font-style") || "normal";
 			
+			if(document.changeTextFormatFunction != null)
+				document.changeTextFormatFunction(format);
+			
+			//If need to draw in right color, pass color inside format
 			if(!hasComplexFill)
 				format.color = getFillColor();
 			
-			var textObject:Object = TextUtils.createTextSprite(text, textFlow, format);
-			
+			//Use configured textDrawer to draw text on a displayObject
+			var drawnText:SVGDrawnText = textDrawer.drawText(this, text, format);
+
+			//Change drawnText alpha if needed
 			if(!hasComplexFill){
 				if(hasFill)
-					textObject.sprite.alpha = getFillOpacity();
+					drawnText.displayObject.alpha = getFillOpacity();
 				else
-					textObject.sprite.alpha = 0;
+					drawnText.displayObject.alpha = 0;
 			}
 			
-			return textObject;
+			//Adds direction to drawnTextInformation
+			drawnText.direction = direction;
+			
+			return drawnText;
 		}
 		
 		protected function get hasComplexFill():Boolean {
@@ -157,6 +204,52 @@ package com.lorentz.SVG.display.base
 			}
 			
 			return null;
+		}
+				
+		public function doAnchorAlign(direction:String, textStartX:Number, textEndX:Number):void {
+			var textAnchor:String = finalStyle.getPropertyValue("text-anchor") || "start";
+			
+			var anchorX:Number = getUserUnit(svgX, SVGUtil.WIDTH);
+			
+			var offsetX:Number = 0;
+			
+			if(direction == "lr"){
+				if(textAnchor == "start")
+					offsetX += anchorX  - textStartX;
+				if(textAnchor == "middle")
+					offsetX += anchorX  - (textEndX + textStartX)/2;
+				else if(textAnchor == "end")
+					offsetX += anchorX  - textEndX;
+			} else {
+				if(textAnchor == "start")
+					offsetX += anchorX  - textEndX;
+				if(textAnchor == "middle")
+					offsetX += anchorX  - (textEndX + textStartX)/2;
+				else if(textAnchor == "end")
+					offsetX += anchorX  - textStartX;
+			}
+			
+			offset(offsetX);
+		}
+		
+		public function offset(offsetX:Number):void {
+			if(_renderObjects == null)
+				return;
+			
+			for each(var renderedText:DisplayObject in _renderObjects)
+			{
+				if(renderedText is SVGTextContainer){
+					var textContainer:SVGTextContainer = renderedText as SVGTextContainer;
+					if(!textContainer.svgX)
+						textContainer.offset(offsetX);
+				} else {
+					renderedText.x += offsetX;
+				}
+			}
+		}
+		
+		public function hasOwnFill():Boolean {
+			return style.getPropertyValue("fill") != null && style.getPropertyValue("fill") != "" && style.getPropertyValue("fill") != "none";
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {
