@@ -3,7 +3,9 @@
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
 			   xmlns:Flex="com.lorentz.SVG.Flex.*"
-			   initialize="application1_initializeHandler(event)" xmlns:components="components.*">
+			   initialize="application1_initializeHandler(event)"
+			   enterFrame="application1_enterFrameHandler(event)"
+			   xmlns:components="components.*">
 	
 	<fx:Style>
 		@namespace s "library://ns.adobe.com/flex/spark";
@@ -62,11 +64,19 @@
 			import com.lorentz.SVG.text.TLFSVGTextDrawer;
 			import com.lorentz.SVG.text.TextFieldSVGTextDrawer;
 			import com.lorentz.SVG.utils.DisplayUtils;
+			import com.lorentz.processing.ProcessExecutor;
+			
+			import flash.utils.setInterval;
+			import flash.utils.setTimeout;
 			
 			import mx.events.MenuEvent;
 			
 			private var fileReference:FileReference;
 			private var urlLoader:URLLoader;
+			
+			private var _frameCount:int = 0;
+			[Bindable]
+			private var fps:int = 0;
 			
 			protected function application1_initializeHandler(event:Event):void
 			{	
@@ -83,6 +93,19 @@
 				svg.addEventListener(MouseEvent.MOUSE_OVER, svg_mouseOverHandler);
 				svg.addEventListener(MouseEvent.MOUSE_OUT, svg_mouseOutHandler);
 				svgGroup.addEventListener(MouseEvent.CLICK, svgGroup_clickHandler);
+				
+				ProcessExecutor.instance.percentFrameProcessingTime = 0.99;
+				setInterval(on1000ms, 1000);
+			}
+			
+			protected function application1_enterFrameHandler(event:Event):void
+			{
+				_frameCount++;
+			}
+			
+			protected function on1000ms():void {
+				fps = _frameCount;
+				_frameCount = 0;
 			}
 			
 			protected function svgDocument_eventHandler(e:SVGEvent):void {			
@@ -169,7 +192,7 @@
 			
 			protected function customChangeTextFormatFunction(textFormat:SVGTextFormat):void {
 				textFormat.fontFamily = textDrawerDropDownList.selectedItem.fontName;
-			}
+			}			
 		]]>
 	</fx:Script>
 	
@@ -237,6 +260,10 @@
 		</s:ArrayList>
 	</fx:Declarations>
 	
+	<s:controlBarLayout>
+		<s:HorizontalLayout verticalAlign="baseline" paddingLeft="20" paddingRight="20" paddingTop="5" paddingBottom="5" gap="20"/>
+	</s:controlBarLayout>
+	
 	
 	<s:controlBarContent>		
 		<mx:MenuBar dataProvider="{menuXML}"
@@ -262,6 +289,8 @@
 						selectedIndex="0"
 						dataProvider="{textDrawersArrayList}"
 						change="updateRender()"/>
+		
+		<s:Label text="fps: {fps}"/>
 	</s:controlBarContent>
 	
 	<s:VGroup left="10" right="10" top="10" bottom="10">
