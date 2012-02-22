@@ -87,9 +87,10 @@ package com.lorentz.processing
 		private function executeProcess(process:IProcess, duration:int):void {
 			var endTime:int = getTimer() + duration;
 			var executeFunction:Function = process.executeLoop; 
-			while(getTimer() < endTime)
+			do {
 				if(executeFunction())
 					break;
+			} while(getTimer() < endTime);
 		}
 	}
 }
