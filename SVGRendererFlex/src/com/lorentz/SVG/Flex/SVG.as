@@ -39,7 +39,6 @@ package com.lorentz.SVG.Flex
 		private var _sourceInvalid:Boolean = false;
 		private var _urlLoader:URLLoader;
 		private var _urlLoaderURL:String;
-		private var _isLoading:Boolean = false;
 		
 		private static const CLONED_EVENTS:Vector.<String> = new <String>[
 			SVGEvent.PARSE_START,
@@ -181,7 +180,14 @@ package com.lorentz.SVG.Flex
 			this._svgDocument.parse(xmlOrXmlString);
 		}
 		
-		private function load(urlOrUrlRequest:Object):void {			
+		private function load(urlOrUrlRequest:Object):void {
+			if(_urlLoader != null){
+				try {
+					_urlLoader.close();
+				} catch (e:Error) { }
+				_urlLoader = null;
+			}
+			
 			var urlRequest:URLRequest;
 			
 			if(urlOrUrlRequest is URLRequest)
@@ -197,24 +203,27 @@ package com.lorentz.SVG.Flex
 			_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler, false, 0, true);
 			_urlLoader.load(urlRequest);
 			
-			_isLoading = true;
 			_urlLoaderURL = urlRequest.url;
 		}
 		
 		private function urlLoader_completeHandler(e:Event):void {
+			if(e.currentTarget != _urlLoader)
+				return;
+			
 			var defaultBaseURL:String = _urlLoaderURL.match(/^([^?]*\/)/g)[0]
 			var svgString:String = String(_urlLoader.data);
 			this.parse(svgString, defaultBaseURL);
 			_urlLoader = null;
 			_urlLoaderURL = "";
-			_isLoading = false;
 		}
 		
 		private function urlLoader_ioErrorHandler(e:IOErrorEvent):void {
+			if(e.currentTarget != _urlLoader)
+				return;
+			
 			trace(e.text);
 			_urlLoader = null;
 			_urlLoaderURL = "";
-			_isLoading = false;
 		}
 		
 		private function svgDocument_validatedHandler(e:SVGEvent):void {
