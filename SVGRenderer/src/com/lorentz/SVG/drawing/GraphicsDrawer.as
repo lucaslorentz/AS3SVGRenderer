@@ -47,7 +47,7 @@ package com.lorentz.SVG.drawing
 		{
 			if("cubicCurveTo" in _graphics)
 			{
-				_graphics.cubicCurveTo(cx1, cy1, cx2, cy2, x, y);
+				_graphics["cubicCurveTo"](cx1, cy1, cx2, cy2, x, y);
 				_penX = x; _penY = y;
 			} else {
 				//Convert cubic curve to quadratic curves

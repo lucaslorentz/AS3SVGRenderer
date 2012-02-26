@@ -272,6 +272,10 @@
 			if(this.numInvalidElements > 0)
 				queueValidation();
 		}
+		
+		override protected function get numInvalidElements():int {
+			return super.numInvalidElements;
+		}
 
 		override protected function set numInvalidElements(value:int):void {
 			if(super.numInvalidElements == 0 && value > 0)
