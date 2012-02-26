@@ -45,19 +45,22 @@ package com.lorentz.SVG.drawing
 		
 		public function cubicCurveTo(cx1:Number, cy1:Number, cx2:Number, cy2:Number, x:Number, y:Number):void
 		{
-			_graphics.cubicCurveTo(cx1, cy1, cx2, cy2, x, y);
-			_penX = x; _penY = y;
-			
-			//Convert cubic curve to quadratic curves
-			/*var anchor1:Point = new Point(_penX, _penY);
-			var control1:Point = new Point(cx1, cy1);
-			var control2:Point = new Point(cx2, cy2);
-			var anchor2:Point = new Point(x, y);
-			
-			var bezier:Bezier = new Bezier(anchor1, control1, control2, anchor2);
-			
-			for each (var quadP:Object in bezier.QPts)
-			curveTo(quadP.c.x, quadP.c.y, quadP.p.x, quadP.p.y);*/
+			if("cubicCurveTo" in _graphics)
+			{
+				_graphics.cubicCurveTo(cx1, cy1, cx2, cy2, x, y);
+				_penX = x; _penY = y;
+			} else {
+				//Convert cubic curve to quadratic curves
+				var anchor1:Point = new Point(_penX, _penY);
+				var control1:Point = new Point(cx1, cy1);
+				var control2:Point = new Point(cx2, cy2);
+				var anchor2:Point = new Point(x, y);
+				
+				var bezier:Bezier = new Bezier(anchor1, control1, control2, anchor2);
+				
+				for each (var quadP:Object in bezier.QPts)
+				curveTo(quadP.c.x, quadP.c.y, quadP.p.x, quadP.p.y);
+			}
 		}
 		
 		public function arcTo(rx:Number, ry:Number, angle:Number, largeArcFlag:Boolean, sweepFlag:Boolean, x:Number, y:Number):void
