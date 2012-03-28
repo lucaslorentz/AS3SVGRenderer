@@ -2,6 +2,7 @@ package com.lorentz.SVG.drawing
 {
 	import com.lorentz.SVG.utils.ArcUtils;
 	import com.lorentz.SVG.utils.Bezier;
+	import com.lorentz.SVG.utils.FlashPlayerUtils;
 	
 	import flash.display.Graphics;
 	import flash.geom.Point;
@@ -45,7 +46,7 @@ package com.lorentz.SVG.drawing
 		
 		public function cubicCurveTo(cx1:Number, cy1:Number, cx2:Number, cy2:Number, x:Number, y:Number):void
 		{
-			if("cubicCurveTo" in _graphics)
+			if(FlashPlayerUtils.supportsCubicCurves)
 			{
 				_graphics["cubicCurveTo"](cx1, cy1, cx2, cy2, x, y);
 				_penX = x; _penY = y;

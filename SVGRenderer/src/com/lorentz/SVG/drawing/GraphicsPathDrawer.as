@@ -2,11 +2,9 @@ package com.lorentz.SVG.drawing
 {
 	import com.lorentz.SVG.utils.ArcUtils;
 	import com.lorentz.SVG.utils.Bezier;
-	import com.lorentz.SVG.utils.MathUtils;
+	import com.lorentz.SVG.utils.FlashPlayerUtils;
 	
-	import flash.display.GraphicsPath;
 	import flash.display.GraphicsPathCommand;
-	import flash.display.GraphicsPathWinding;
 	import flash.geom.Point;
 
 	public class GraphicsPathDrawer implements IDrawer
@@ -53,7 +51,7 @@ package com.lorentz.SVG.drawing
 		
 		public function cubicCurveTo(cx1:Number, cy1:Number, cx2:Number, cy2:Number, x:Number, y:Number):void
 		{
-			if("CUBIC_CURVE_TO" in GraphicsPathCommand)
+			if(FlashPlayerUtils.supportsCubicCurves)
 			{
 				commands.push(GraphicsPathCommand["CUBIC_CURVE_TO"]);
 				pathData.push(cx1, cy1, cx2, cy2, x, y);
