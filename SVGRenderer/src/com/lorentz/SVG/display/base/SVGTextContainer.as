@@ -53,8 +53,8 @@ package com.lorentz.SVG.display.base
 			return _textOwner;
 		}
 		
-		override svg_internal function setParentElement(value:SVGElement):void {
-			super.svg_internal::setParentElement(value);
+		override protected function setParentElement(value:SVGElement):void {
+			super.setParentElement(value);
 			
 			if(!(this is SVGText)){
 				var element:SVGElement = value;

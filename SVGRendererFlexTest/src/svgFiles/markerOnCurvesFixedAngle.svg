@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1">
+  <defs
+     id="defs4">
+    <marker
+       orient="90"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Lend"
+       style="overflow:visible;">
+      <path
+         id="path3779"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(1.1) rotate(180) translate(1,0)" />
+    </marker>
+  </defs>
+  <g
+     id="layer1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow2Lend);marker-mid:url(#Arrow2Lend);marker-end:url(#Arrow2Lend)"
+       d="M 130.51048,446.31526 C 527.70901,399.65795 166.76272,242.57835 166.76272,242.57835 -7.8343099,161.31545 -47.177696,237.45681 117.901,51.283377 232.77173,-78.266213 220.353,139.93227 445.7474,301.67761 770.02961,534.38583 247.14814,645.38644 247.14814,645.38644"
+       id="path2985"/>
+  </g>
+</svg>

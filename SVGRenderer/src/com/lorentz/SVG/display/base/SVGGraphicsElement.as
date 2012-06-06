@@ -5,6 +5,7 @@ package com.lorentz.SVG.display.base
 	import com.lorentz.SVG.data.gradients.SVGRadialGradient;
 	import com.lorentz.SVG.display.SVGPattern;
 	import com.lorentz.SVG.drawing.DashedDrawer;
+	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.parser.SVGParserCommon;
 	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -17,6 +18,7 @@ package com.lorentz.SVG.display.base
 	import flash.display.InterpolationMethod;
 	import flash.display.JointStyle;
 	import flash.display.LineScaleMode;
+	import flash.events.Event;
 	import flash.geom.Matrix;
 
 	public class SVGGraphicsElement extends SVGElement {
@@ -54,8 +56,11 @@ package com.lorentz.SVG.display.base
 				case "stroke-dashoffset" :
 				case "stroke-dashalign" :
 				case "fill" :
-					_renderInvalidFlag = true;
-					invalidateProperties();
+				case "marker" :
+				case "marker-start" :
+				case "marker-mid" :
+				case "marker-end" :
+					invalidateRender();
 					break;
 			}
 		}
@@ -96,10 +101,7 @@ package com.lorentz.SVG.display.base
 			dashedDrawer.alignToCorners = dashAlign == "corners";
 		}
 		
-		protected function beginFill(g:Graphics=null):void {
-			if(g==null)
-				g = _content.graphics;
-						
+		protected function beginFill(g:Graphics = null, callBack:Function = null):void {
 			if(hasFill){
 				var fill:String = finalStyle.getPropertyValue("fill");
 				
@@ -108,43 +110,67 @@ package com.lorentz.SVG.display.base
 				if(fill == null){
 					g.beginFill(0x000000, fillOpacity); //Default value to fill is black
 				}
-				else if(fill.indexOf("url")>-1)
+				else if(fill.indexOf("url") > -1)
 				{
 					var id:String = SVGUtil.extractUrlId(fill);
 					
-					var grad:SVGGradient = document.gradients[id];
-					var def:SVGElement = document.getDefinitionClone(id);
-					
+					var grad:SVGGradient = document.getDefinition(id) as SVGGradient;										
 					if(grad != null){
 						switch(grad.type){
-							case GradientType.LINEAR: {
+							case GradientType.LINEAR:
 								doLinearGradient(grad as SVGLinearGradient, g, true);
-								return;
-							}
-							case GradientType.RADIAL: {
+								break;
+
+							case GradientType.RADIAL:
 								var rgrad:SVGRadialGradient = grad as SVGRadialGradient;
 								if(rgrad.r == "0")
 									g.beginFill(grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1]);
 								else
 									doRadialGradient(rgrad, g, true);
-								return;
-							}
+								break;
 						}
-					} else if(def is SVGPattern){
-						var bitmap:BitmapData = (def as SVGPattern).getBitmap();
-						g.beginBitmapFill(bitmap);
+						
+						if(callBack != null)
+							callBack();
+						
+						return;
+					}
+					
+					var pattern:SVGPattern = document.getElementDefinitionClone(id) as SVGPattern;
+					if(pattern){
+						attachElement(pattern);
+						
+						var patternValidated:Function = function(e:Event):void {
+							pattern.removeEventListener(SVGEvent.VALIDATED, patternValidated);
+							
+							var bitmap:BitmapData = pattern.getBitmap();
+							if(bitmap)
+							{
+								var transformMatrix:Matrix = new Matrix();
+								if(pattern.patternTransform)
+									transformMatrix = SVGParserCommon.parseTransformation(pattern.patternTransform);
+								
+								g.beginBitmapFill(bitmap, transformMatrix);
+							}
+							detachElement(pattern);
+							if(callBack != null)
+								callBack();
+						};
+						pattern.addEventListener(SVGEvent.VALIDATED, patternValidated);
+						pattern.validate();
+						return;
 					}
 				} else {
 					var color:uint = SVGColorUtils.parseToUint(fill);
 					g.beginFill(color, fillOpacity);
 				}
 			}
+			
+			if(callBack != null)
+				callBack();
 		}
 		
-		protected function lineStyle(g:Graphics = null):void {
-			if(g == null)
-				g = _content.graphics;
-					
+		protected function lineStyle(g:Graphics):void {
 			if(hasStroke) {
 				var strokeOpacity:Number = Number(finalStyle.getPropertyValue("stroke-opacity") || 1);
 				
@@ -178,11 +204,10 @@ package com.lorentz.SVG.display.base
 				
 				var stroke:String = finalStyle.getPropertyValue("stroke");
 				
-				if(stroke.indexOf("url")>-1){
+				if(stroke.indexOf("url") > -1){
 					var id:String = SVGUtil.extractUrlId(stroke);
 					
-					var grad:SVGGradient = document.gradients[id];
-					var def:SVGElement = document.getDefinitionClone(id);
+					var grad:SVGGradient = document.getDefinition(id) as SVGGradient;
 					
 					if(grad != null){
 						switch(grad.type){
@@ -199,9 +224,6 @@ package com.lorentz.SVG.display.base
 								break;
 							}
 						}
-					} else if(def is SVGPattern){
-						var bitmap:BitmapData = (def as SVGPattern).getBitmap();
-						g.lineBitmapStyle(bitmap);
 					}
 				} else {
 					var color:uint = SVGColorUtils.parseToUint(stroke);

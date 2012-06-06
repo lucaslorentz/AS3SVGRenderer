@@ -70,7 +70,6 @@ package com.lorentz.SVG.drawing
 			
 			var curves:Array = ArcUtils.convertToCurves(ellipticalArc.cx, ellipticalArc.cy, ellipticalArc.startAngle, ellipticalArc.arc, ellipticalArc.radius, ellipticalArc.yRadius, ellipticalArc.xAxisRotation);
 			
-			// Loop for drawing arc segments
 			for (var i:int = 0; i<curves.length; i++) 
 				curveTo(curves[i].c.x, curves[i].c.y, curves[i].p.x, curves[i].p.y);
 		}

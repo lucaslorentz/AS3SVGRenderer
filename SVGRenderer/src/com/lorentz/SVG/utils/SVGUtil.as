@@ -69,7 +69,8 @@
 													 "stroke-width", "stroke-linecap", "stroke-linejoin",
 													 "stroke-dasharray", "stroke-dashoffset", "stroke-dashalign",
 													 "font-size", "font-family", "font-weight", "text-anchor",
-													 "dominant-baseline", "direction"];
+													 "dominant-baseline", "direction", "filter",
+													 "marker", "marker-start", "marker-mid", "marker-end"];
 		
 		public static function presentationStyleToStyleDeclaration(elt:XML, styleDeclaration:StyleDeclaration = null):StyleDeclaration {
 			if(styleDeclaration == null)
@@ -83,7 +84,6 @@
 			
 			return styleDeclaration;
 		}
-		
 		
 		public static function flashRadialGradientMatrix( cx:Number, cy:Number, r:Number, fx:Number, fy:Number ):Matrix { 
 			var d:Number = r*2; 
@@ -117,7 +117,10 @@
         }
 		
 		public static function extractUrlId(url:String):String {
-			return /url\s*\(#(.*?)\)/.exec(url)[1];
+			var matches:Array = /url\s*\(#(.*?)\)/.exec(url);
+			if(matches == null)
+				return null;
+			return matches[1];
 		}
 		
 		public static const WIDTH:String = "width";

@@ -159,7 +159,7 @@ package com.lorentz.SVG.utils{
 		}
 		
 		public static function parseToUint(s:String):uint {
-			if(s==null)
+			if(s == null)
 				return 0x000000;
 				
 			s = StringUtil.trim(s);
@@ -168,16 +168,29 @@ package com.lorentz.SVG.utils{
 				return 0x000000;
 			} else if(s.charAt(0)=="#") {
 				s = s.substring(1);
-				if(s.length<6)
-					s = s.charAt(0)+s.charAt(0)+s.charAt(1)+s.charAt(1)+s.charAt(2)+s.charAt(2);
+				if(s.length < 6)
+					s = s.charAt(0) + s.charAt(0)+ s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2);
 				return new uint("0x" + s);
-			} else if(s.indexOf("(")>-1){
-				s = /\((.*?)\)/.exec(s)[1];
-				var args:Vector.<String> = SVGParserCommon.splitNumericArgs(s);
-				return uint(args[0]) << 16 | uint(args[1]) << 8 | uint(args[2]);
 			} else {
-				return getColorByName(s);
+				var rgb:Array = (/\s*rgb\s*\(\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*\)/g).exec(s);
+				
+				if(rgb != null)
+				{
+					var r:uint = rgbColorPartToUint(rgb[1]);
+					var g:uint = rgbColorPartToUint(rgb[2]);
+					var b:uint = rgbColorPartToUint(rgb[3]);
+					return r << 16 | g << 8 | b;	
+				} else {
+					return getColorByName(s);
+				}
 			}
+		}
+		
+		private static function rgbColorPartToUint(s:String):uint {
+			if(s.indexOf("%") != -1)
+				return Number(s.replace("%", "")) / 100 * 255;
+			else
+				return uint(s);
 		}
 		
 		public static function uintToSVG(color:uint):String{

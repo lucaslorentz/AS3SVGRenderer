@@ -1,5 +1,4 @@
 ﻿package com.lorentz.SVG.drawing{
-	import com.lorentz.SVG.data.path.SVGPathCommand;
 	import com.lorentz.SVG.data.path.SVGArcToCommand;
 	import com.lorentz.SVG.data.path.SVGCurveToCubicCommand;
 	import com.lorentz.SVG.data.path.SVGCurveToCubicSmoothCommand;
@@ -9,6 +8,7 @@
 	import com.lorentz.SVG.data.path.SVGLineToHorizontalCommand;
 	import com.lorentz.SVG.data.path.SVGLineToVerticalCommand;
 	import com.lorentz.SVG.data.path.SVGMoveToCommand;
+	import com.lorentz.SVG.data.path.SVGPathCommand;
 	import com.lorentz.SVG.utils.Bezier;
 	
 	import flash.display.GraphicsPath;
@@ -19,12 +19,12 @@
 
 	public class SVGPathRenderer {
 		private var firstPoint:Point;
-		private var lastControlPoint:Point;//Last control point
+		private var lastControlPoint:Point;
 		
-		private var commands:Vector.<com.lorentz.SVG.data.path.SVGPathCommand>;
+		private var commands:Vector.<SVGPathCommand>;
 		private var _drawer:IDrawer;
 		
-		public function SVGPathRenderer(commands:Vector.<com.lorentz.SVG.data.path.SVGPathCommand>) {
+		public function SVGPathRenderer(commands:Vector.<SVGPathCommand>) {
 			this.commands = commands;
 		}
 		
@@ -34,7 +34,7 @@
 			if(_drawer.penX != 0 || _drawer.penY != 0)
 				_drawer.moveTo(0, 0);
 			
-			for each(var pathCommand:com.lorentz.SVG.data.path.SVGPathCommand in commands){
+			for each(var pathCommand:SVGPathCommand in commands){
 				switch(pathCommand.type){
 					case "M" :
 					case "m" :

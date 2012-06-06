@@ -91,5 +91,31 @@
 		public static function radiusToDegress(angle:Number):Number{
 			return angle*(180/Math.PI);
 		}
+		
+		public static function quadCurveSliceUpTo(sx:Number, sy:Number, cx:Number, cy:Number, ex:Number, ey:Number, t:Number):Array {
+			if (isNaN(t)) t = 1;
+			if (t != 1) {
+				var midx:Number = cx + (ex-cx)*t;
+				var midy:Number = cy + (ey-cy)*t;
+				cx = sx + (cx-sx)*t;
+				cy = sy + (cy-sy)*t;
+				ex = cx + (midx-cx)*t;
+				ey = cy + (midy-cy)*t;
+			}
+			return [sx, sy, cx, cy, ex, ey];
+		}
+		
+		public static function quadCurveSliceFrom(sx:Number, sy:Number, cx:Number, cy:Number, ex:Number, ey:Number, t:Number):Array {
+			if (isNaN(t)) t = 1;
+			if (t != 1) {
+				var midx:Number = sx + (cx-sx)*t;
+				var midy:Number = sy + (cy-sy)*t;
+				cx = cx + (ex-cx)*t;
+				cy = cy + (ey-cy)*t;
+				sx = midx + (cx-midx)*t;
+				sy = midy + (cy-midy)*t;
+			}
+			return [sx, sy, cx, cy, ex, ey];
+		}
     }
 }

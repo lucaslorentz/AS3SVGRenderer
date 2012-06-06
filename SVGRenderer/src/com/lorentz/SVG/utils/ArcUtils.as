@@ -147,7 +147,7 @@ package com.lorentz.SVG.utils
 					x1 = x + (xRadius * cosangle * cosbeta - yRadius * sinangle * sinbeta);
 					y1 = y + (xRadius * cosangle * sinbeta + yRadius * sinangle * cosbeta);
 					
-					curves.push( { c: new Point(cx, cy), p: new Point(x1, y1) } );
+					curves.push( { s: new Point(x, y), c: new Point(cx, cy), p: new Point(x1, y1) } );
 				}
 			}
 			

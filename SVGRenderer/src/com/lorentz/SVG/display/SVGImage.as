@@ -1,21 +1,63 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.display.base.ISVGViewPort;
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.utils.Base64AsyncDecoder;
 	
 	import flash.display.Bitmap;
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import com.lorentz.SVG.display.base.SVGElement;
 
-	public class SVGImage extends SVGElement implements ISVGViewPort {
-		include "includes/SVGViewPortProperties.as"
-		
+	public class SVGImage extends SVGElement implements ISVGViewPort {	
 		private var _svgHrefChanged:Boolean = false;
 		private var _svgHref:String;
+		
+		public function get svgPreserveAspectRatio():String {
+			return getAttribute("preserveAspectRatio") as String;
+		}
+		public function set svgPreserveAspectRatio(value:String):void {
+			setAttribute("preserveAspectRatio", value);
+		}
+		
+		public function get svgX():String {
+			return getAttribute("x") as String;
+		}
+		public function set svgX(value:String):void {
+			setAttribute("x", value);
+		}
+		
+		public function get svgY():String {
+			return getAttribute("y") as String;
+		}
+		public function set svgY(value:String):void {
+			setAttribute("y", value);
+		}
+		
+		public function get svgWidth():String {
+			return getAttribute("width") as String;
+		}
+		public function set svgWidth(value:String):void {
+			setAttribute("width", value);
+		}
+		
+		public function get svgHeight():String {
+			return getAttribute("height") as String;
+		}
+		public function set svgHeight(value:String):void {
+			setAttribute("height", value);
+		}
+		
+		public function get svgOverflow():String {
+			return getAttribute("overflow") as String;
+		}
+		public function set svgOverflow(value:String):void {
+			setAttribute("overflow", value);
+		}		
+		
 		public function get svgHref():String {
 			return _svgHref;
 		}
@@ -37,7 +79,7 @@
 				
 		public function loadURL(url:String):void {
 			if(_loader != null){
-				_content.removeChild(_loader);
+				content.removeChild(_loader);
 				_loader = null;
 			}
 			
@@ -46,7 +88,7 @@
 				_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete);
 				_loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
 				_loader.load(new URLRequest(url));
-				_content.addChild(_loader);
+				content.addChild(_loader);
 			}
 		}
 		
@@ -73,7 +115,7 @@
 		
 		public function loadBytes(byteArray:ByteArray):void {
 			if(_loader!=null){
-				_content.removeChild(_loader);
+				content.removeChild(_loader);
 				_loader = null;
 			}
 			
@@ -82,7 +124,7 @@
 				_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete);
 				_loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, loadError);
 				_loader.loadBytes(byteArray);
-				_content.addChild(_loader);
+				content.addChild(_loader);
 			}
 		}
 		
@@ -109,14 +151,14 @@
 			if(_loader.content is Bitmap)
 				(_loader.content as Bitmap).smoothing = true;
 				
-			updateViewPort();
+			adjustContentToViewPort();
 			
 			endASyncValidation("loadImage");
 		}
 		
 		private function loadError(e:IOErrorEvent):void {
 			trace("Failed to load image");
-			updateViewPort();
+			adjustContentToViewPort();
 			
 			endASyncValidation("loadImage");
 		}

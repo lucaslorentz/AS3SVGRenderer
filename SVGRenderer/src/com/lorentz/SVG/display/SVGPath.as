@@ -10,28 +10,29 @@
 	public class SVGPath extends SVGShape {
 		private var _invalidPathFlag:Boolean = false;
 		private var _pathRenderer:SVGPathRenderer;
+		private var _path:Vector.<SVGPathCommand>;
 		
 		public function SVGPath(){
 			super("path");
 		}
 		
 		public function get svgPath():String {
-			return getAttribute("path");
+			return getAttribute("path") as String;
 		}
 		public function set svgPath(value:String):void {
 			setAttribute("path", value);
 		}
 		
-		private var _path:Vector.<SVGPathCommand>;
 		public function get path():Vector.<SVGPathCommand> {
 			return _path;
 		}
 		public function set path(value:Vector.<SVGPathCommand>):void {
 			_path = value;
+			_pathRenderer = null;
 			invalidateRender();
 		}
 		
-		override protected function onAttributeChanged(attributeName:String, oldValue:String, newValue:String):void {
+		override protected function onAttributeChanged(attributeName:String, oldValue:Object, newValue:Object):void {
 			super.onAttributeChanged(attributeName, oldValue, newValue);
 			
 			switch(attributeName){
@@ -51,13 +52,12 @@
 			}
 		}
 		
-		override protected function render():void {
+		override protected function beforeDraw():void {
+			super.beforeDraw();
 			_pathRenderer = new SVGPathRenderer(path); 
-			super.render();
-			_pathRenderer = null;
 		}
 		
-		override protected function draw(drawer:IDrawer):void {
+		override protected function drawToDrawer(drawer:IDrawer):void {
 			_pathRenderer.render(drawer);
 		}
 		

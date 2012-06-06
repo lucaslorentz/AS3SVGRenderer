@@ -25,11 +25,11 @@ package com.lorentz.SVG.display.base
 			if(_invalidElements){
 				_invalidElements = false;
 				
-				while(_content.numChildren > 0)
-					_content.removeChildAt(0);
+				while(content.numChildren > 0)
+					content.removeChildAt(0);
 				
 				for each(var element:SVGElement in _elements){
-					_content.addChild(element);
+					content.addChild(element);
 				}
 			}
 		}

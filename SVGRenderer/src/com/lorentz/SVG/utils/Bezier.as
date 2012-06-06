@@ -126,7 +126,7 @@
                  var Pa_3:Point = Point.interpolate(Pc_3, Pc_4, 0.5);
 
                  // save the four quadratic subsegments
-                 this.QPts = [{p:Pa_1, c:Pc_1}, {p:Pa_2, c:Pc_2}, {p:Pa_3, c:Pc_3}, {p:P3, c:Pc_4}];
+                 this.QPts = [{s:P0,p:Pa_1, c:Pc_1}, {s:Pa_1,p:Pa_2, c:Pc_2}, {s:Pa_2,p:Pa_3, c:Pc_3}, {s:Pa_3,p:P3, c:Pc_4}];
         }
 
         /**
@@ -154,13 +154,13 @@
 				// split curve if the quadratic isn't close enough
 				if (dx*dx + dy*dy <= tolerance*tolerance) {
 					// end recursion by saving points
-					this.QPts.push({p:d,c:s});
+					this.QPts.push({s:a,p:d,c:s});
 					return;
 				}
 			} else {
 				var mp:Point = Point.interpolate(a, d, 0.5);
 				if(Point.distance(a, mp)<=tolerance){
-					this.QPts.push({p:d,c:mp});
+					this.QPts.push({s:a,p:d,c:mp});
 					return;
 				}
 			}

@@ -1,6 +1,7 @@
 package com.lorentz.SVG.data.style
 {
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
+	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.EventDispatcher;
@@ -81,21 +82,24 @@ package com.lorentz.SVG.data.style
 				removeProperty(item(0));
 		}
 		
-		public function copyTo(target:StyleDeclaration, merge:Boolean = true):void {
+		public function copyStyles(target:StyleDeclaration):void {
+			for each(var propertyName:String in _indexedProperties){
+				target.setProperty(propertyName, getPropertyValue(propertyName));
+			}
+		}
+		
+		public function cloneOn(target:StyleDeclaration):void {
 			var propertyName:String;
 			
 			for each(propertyName in _indexedProperties){
 				target.setProperty(propertyName, getPropertyValue(propertyName));
 			}
 			
-			if(!merge)
+			for(var i:int = 0; i < target.length; i++)
 			{
-				for(var i:int = 0; i < target.length; i++)
-				{
-					propertyName = target.item(i);
-					if(!hasProperty(propertyName))
-						target.removeProperty(propertyName);
-				}
+				propertyName = target.item(i);
+				if(!hasProperty(propertyName))
+					target.removeProperty(propertyName);
 			}
 		}
 		

@@ -4,7 +4,14 @@
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.display.base.SVGElement;
 	
-	public class SVGRect extends SVGShape {	
+	public class SVGRect extends SVGShape {
+		private var _xUnits:Number;
+		private var _yUnits:Number;
+		private var _widthUnits:Number;
+		private var _heightUnits:Number;
+		private var _rxUnits:Number;
+		private var _ryUnits:Number;
+		
 		public function SVGRect(){
 			super("rect");
 		}
@@ -75,15 +82,10 @@
 				invalidateRender();
 			}
 		}
-		
-		private var _xUnits:Number;
-		private var _yUnits:Number;
-		private var _widthUnits:Number;
-		private var _heightUnits:Number;
-		private var _rxUnits:Number;
-		private var _ryUnits:Number;
 
-		override protected function render():void {
+		override protected function beforeDraw():void {
+			super.beforeDraw();
+			
 			_xUnits = getUserUnit(svgX, SVGUtil.WIDTH);
 			_yUnits = getUserUnit(svgY, SVGUtil.HEIGHT);
 			_widthUnits = getUserUnit(svgWidth, SVGUtil.WIDTH);
@@ -102,11 +104,9 @@
 				if(!svgRx)
 					_rxUnits = _ryUnits;
 			}
-			
-			super.render();
 		}
 
-		override protected function draw(drawer:IDrawer):void {
+		override protected function drawToDrawer(drawer:IDrawer):void {
 			if(isNaN(_rxUnits) || isNaN(_ryUnits)){
 				drawer.moveTo(_xUnits, _yUnits);
 				drawer.lineTo(_xUnits + _widthUnits, _yUnits);			

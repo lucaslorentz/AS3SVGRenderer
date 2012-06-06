@@ -16,10 +16,6 @@ package com.lorentz.SVG.drawing
 			initDash(_dashOffset);
 		}
 		
-		/**
-		 * A value representing the accuracy used in determining the length
-		 * of curveTo curves.
-		 */	
 		public function get penX():Number {
 			return _baseDrawer.penX;
 		}
@@ -34,7 +30,7 @@ package com.lorentz.SVG.drawing
 		private var _totalLength:Number = 20; //Total length of dashArray
 		private var _alignToCorners:Boolean = false;
 		
-		public var _curveAccuracy:Number = 6;
+		private var _curveAccuracy:Number = 6;
 		private var isLine:Boolean = true;
 		private var _dashIndex:uint = 0; //where are we in the _dashArray currently
 		private var _dashDrawnLength:Number = 0; //The length of the curent dash
@@ -202,12 +198,12 @@ package com.lorentz.SVG.drawing
 				if(lengthToDraw < curveLength){ //Draw part of the curve
 					var splitCurveFactor:Number = lengthToDraw / curveLength;
 					
-					var curveToDraw:Array = curveSliceUpTo(penX, penY, cx, cy, x, y, splitCurveFactor);
+					var curveToDraw:Array = MathUtils.quadCurveSliceUpTo(penX, penY, cx, cy, x, y, splitCurveFactor);
 					
 					newCX = curveToDraw[2]; newCY = curveToDraw[3];
 					newX = curveToDraw[4]; newY = curveToDraw[5];
 					
-					var otherCurve:Array = curveSliceFrom(penX, penY, cx, cy, x, y, splitCurveFactor);
+					var otherCurve:Array = MathUtils.quadCurveSliceFrom(penX, penY, cx, cy, x, y, splitCurveFactor);
 					
 					//Update variables of the next curve
 					cx = otherCurve[2]; cy = otherCurve[3];
@@ -253,12 +249,10 @@ package com.lorentz.SVG.drawing
 			
 			var curves:Array = ArcUtils.convertToCurves(ellipticalArc.cx, ellipticalArc.cy, ellipticalArc.startAngle, ellipticalArc.arc, ellipticalArc.radius, ellipticalArc.yRadius, ellipticalArc.xAxisRotation);
 			
-			// Loop for drawing arc segments
 			for (var i:int = 0; i<curves.length; i++) 
 				curveTo(curves[i].c.x, curves[i].c.y, curves[i].p.x, curves[i].p.y);
 		}
-		
-		// private methods				
+				
 		private function lineLength(sx:Number, sy:Number, ex:Number=0, ey:Number=0):Number {
 			if (arguments.length == 2) return Math.sqrt(sx*sx + sy*sy);
 			var dx:Number = ex - sx;
@@ -315,32 +309,6 @@ package com.lorentz.SVG.drawing
 			}
 			
 			return length;
-		}
-		
-		private function curveSliceUpTo(sx:Number, sy:Number, cx:Number, cy:Number, ex:Number, ey:Number, t:Number):Array {
-			if (isNaN(t)) t = 1;
-			if (t != 1) {
-				var midx:Number = cx + (ex-cx)*t;
-				var midy:Number = cy + (ey-cy)*t;
-				cx = sx + (cx-sx)*t;
-				cy = sy + (cy-sy)*t;
-				ex = cx + (midx-cx)*t;
-				ey = cy + (midy-cy)*t;
-			}
-			return [sx, sy, cx, cy, ex, ey];
-		}
-		
-		private function curveSliceFrom(sx:Number, sy:Number, cx:Number, cy:Number, ex:Number, ey:Number, t:Number):Array {
-			if (isNaN(t)) t = 1;
-			if (t != 1) {
-				var midx:Number = sx + (cx-sx)*t;
-				var midy:Number = sy + (cy-sy)*t;
-				cx = cx + (ex-cx)*t;
-				cy = cy + (ey-cy)*t;
-				sx = midx + (cx-midx)*t;
-				sy = midy + (cy-midy)*t;
-			}
-			return [sx, sy, cx, cy, ex, ey];
 		}
 	}
 }

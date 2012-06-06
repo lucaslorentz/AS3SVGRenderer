@@ -17,7 +17,7 @@
 			invalidateRender();
 		}
 		
-		override protected function draw(drawer:IDrawer):void {
+		override protected function drawToDrawer(drawer:IDrawer):void {
 			if(points.length>2){
 				drawer.moveTo(Number(points[0]), Number(points[1]));
 				

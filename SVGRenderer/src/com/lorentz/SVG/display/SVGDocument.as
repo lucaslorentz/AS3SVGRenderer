@@ -1,5 +1,6 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.data.style.StyleDeclaration;
+	import com.lorentz.SVG.display.base.SVGContainer;
 	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.parser.AsyncSVGParser;
@@ -9,6 +10,10 @@
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
+	import flash.net.URLRequest;
 	
 	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
@@ -16,7 +21,9 @@
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
 	
-	public class SVGDocument extends SVG {		
+	public class SVGDocument extends SVGContainer {
+		private var _urlLoader:URLLoader;
+		
 		private var _parser:AsyncSVGParser;
 		private var _parsing:Boolean = false;
 						
@@ -24,7 +31,15 @@
 		private var _stylesDeclarations:Object = {};
 		private var _firstValidationAfterParse:Boolean = false;
 		
-		public var gradients:Object = {};
+		private var _defaultBaseUrl:String;
+		
+		/**
+		 *  Computed base URL considering the svg path, is null when the svg was not loaded by the library
+		 *  That property is used to load svg references, but it can be overriden using the property baseURL
+		 */
+		public function get defaultBaseUrl():String {
+			return _defaultBaseUrl;
+		}
 		
 		/**
 		 * Url used as a base url to search referenced files on svg. 
@@ -67,18 +82,58 @@
 		public var textDrawerClass:Class = FTESVGTextDrawer;
 		
 		public function SVGDocument(){			
-			super();
-			addEventListener(SVGEvent.VALIDATED, validatedHandler, false, 0, true);
+			super("document");
 		}
 		
-		override public function get document():SVGDocument {
-			return this;
+		public function load(urlOrUrlRequest:Object):void {
+			if(_urlLoader != null){
+				try {
+					_urlLoader.close();
+				} catch (e:Error) { }
+				_urlLoader = null;
+			}
+			
+			var urlRequest:URLRequest;
+			
+			if(urlOrUrlRequest is URLRequest)
+				urlRequest = urlOrUrlRequest as URLRequest;
+			else if(urlOrUrlRequest is String)
+				urlRequest = new URLRequest(String(urlOrUrlRequest));
+			else
+				throw new Error("Invalid param 'urlOrUrlRequest'.");
+			
+			_defaultBaseUrl = urlRequest.url.match(/^([^?]*\/)/g)[0]
+			
+			_urlLoader = new URLLoader();
+			_urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			_urlLoader.addEventListener(Event.COMPLETE, urlLoader_completeHandler, false, 0, true);
+			_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler, false, 0, true);
+			_urlLoader.load(urlRequest);
 		}
 		
-		override public function setSVGDocument(value:SVGDocument):void {
+		private function urlLoader_completeHandler(e:Event):void {
+			if(e.currentTarget != _urlLoader)
+				return;
+			
+			var svgString:String = String(_urlLoader.data);
+			parseInternal(svgString);
+			_urlLoader = null;
+		}
+		
+		private function urlLoader_ioErrorHandler(e:IOErrorEvent):void {
+			if(e.currentTarget != _urlLoader)
+				return;
+			
+			trace(e.text);
+			_urlLoader = null;
 		}
 		
 		public function parse(xmlOrXmlString:Object):void {
+			_defaultBaseUrl = null;
+			parseInternal(xmlOrXmlString);
+		}
+		
+		private function parseInternal(xmlOrXmlString:Object):void {
 			var xml:XML;
 			
 			if(xmlOrXmlString is String)
@@ -125,27 +180,24 @@
 				validate();
 		}
 		
-		protected function validatedHandler(e:Event):void {
+		override protected function onValidated():void {
+			super.onValidated();
+			
 			if(_firstValidationAfterParse)
 			{
 				_firstValidationAfterParse = false;
 				dispatchEvent( new SVGEvent( SVGEvent.RENDERED ) );
-			}
+			}	
 		}
 		
 		public function clear():void {
 			id = null;
 			svgClass = null;
 			svgClipPath = null;
-			
-			svgViewBox = null;
-			svgX = null;
-			svgY = null;
-			svgWidth = null;
-			svgHeight = null;
+			svgMask = null;
+			svgTransform = null;
 			
 			_stylesDeclarations = {};
-			gradients = {};
 			
 			style.clear();
 			
@@ -155,11 +207,11 @@
 			while(numElements > 0)
 				removeElementAt(0);
 			
-			while(_content.numChildren > 0)
-				_content.removeChildAt(0);
+			while(content.numChildren > 0)
+				content.removeChildAt(0);
 				
-			_content.scaleX = 1;
-			_content.scaleY = 1;
+			content.scaleX = 1;
+			content.scaleY = 1;
 		}
 		
 		public function listStyleDeclarations():Vector.<String> {
@@ -190,27 +242,30 @@
 			return definitionsList;
 		}
 		
-		public function addDefinition(id:String, element:SVGElement):void {
+		public function addDefinition(id:String, object:Object):void {
 			if(!_definitions[id]){
-				_definitions[id] = element;
-				element.setSVGDocument(this);
+				_definitions[id] = object;
 			}
 		}
+		
+		public function hasDefinition(id:String):Boolean {
+			return _definitions[id] != null;
+		}
 				
-		public function getDefinitionClone(id:String):SVGElement {
-			if(_definitions[id] == null)
+		public function getDefinition(id:String):Object {
+			return _definitions[id];
+		}
+		
+		public function getElementDefinitionClone(id:String):SVGElement {
+			if(!hasDefinition(id))
 				return null;
-				
-			return _definitions[id].clone(true);
+			
+			return (getDefinition(id) as SVGElement).clone(true);
 		}
 		
 		public function removeDefinition(id:String):void {
 			if(_definitions[id])
-			{
-				var element:SVGElement = _definitions[id] as SVGElement;
-				element.setSVGDocument(null);
 				_definitions[id] = null;
-			}
 		}
 		
 		svg_internal function onElementAdded(element:SVGElement):void {
@@ -223,37 +278,39 @@
 
 		public function resolveURL(url:String):String
 		{
-			if (url != null && !isHttpURL(url) && baseURL!=null)
+			var baseUrlFinal:String = baseURL || defaultBaseUrl;
+			
+			if (url != null && !isHttpURL(url) && baseUrlFinal)
 			{
 				if (url.indexOf("./") == 0)
 					url = url.substring(2);
 
-				if (isHttpURL(baseURL))
+				if (isHttpURL(baseUrlFinal))
 				{
 					var slashPos:Number;
 	
 					if (url.charAt(0) == '/')
 					{
 						// non-relative path, "/dev/foo.bar".
-						slashPos = baseURL.indexOf("/", 8);
+						slashPos = baseUrlFinal.indexOf("/", 8);
 						if (slashPos == -1)
-							slashPos = baseURL.length;
+							slashPos = baseUrlFinal.length;
 					}
 					else
 					{
 						// relative path, "dev/foo.bar".
-						slashPos = baseURL.lastIndexOf("/") + 1;
+						slashPos = baseUrlFinal.lastIndexOf("/") + 1;
 						if (slashPos <= 8)
 						{
-							baseURL += "/";
-							slashPos = baseURL.length;
+							baseUrlFinal += "/";
+							slashPos = baseUrlFinal.length;
 						}
 					}
 	
 					if (slashPos > 0)
-						url = baseURL.substring(0, slashPos) + url;
+						url = baseUrlFinal.substring(0, slashPos) + url;
 				} else {
-					url = StringUtil.rtrim(baseURL, "/") + "/" + url;
+					url = StringUtil.rtrim(baseUrlFinal, "/") + "/" + url;
 				}
 			}
 	

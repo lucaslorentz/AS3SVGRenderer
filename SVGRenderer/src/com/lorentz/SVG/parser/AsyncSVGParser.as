@@ -1,5 +1,13 @@
 package com.lorentz.SVG.parser
 {
+	import com.lorentz.SVG.data.filters.ISVGFilter;
+	import com.lorentz.SVG.data.filters.SVGColorMatrix;
+	import com.lorentz.SVG.data.filters.SVGFilterCollection;
+	import com.lorentz.SVG.data.filters.SVGGaussianBlur;
+	import com.lorentz.SVG.data.gradients.SVGGradient;
+	import com.lorentz.SVG.data.gradients.SVGLinearGradient;
+	import com.lorentz.SVG.data.gradients.SVGRadialGradient;
+	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.display.SVG;
 	import com.lorentz.SVG.display.SVGA;
 	import com.lorentz.SVG.display.SVGCircle;
@@ -9,6 +17,7 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.SVGG;
 	import com.lorentz.SVG.display.SVGImage;
 	import com.lorentz.SVG.display.SVGLine;
+	import com.lorentz.SVG.display.SVGMarker;
 	import com.lorentz.SVG.display.SVGMask;
 	import com.lorentz.SVG.display.SVGPath;
 	import com.lorentz.SVG.display.SVGPattern;
@@ -20,13 +29,17 @@ package com.lorentz.SVG.parser
 	import com.lorentz.SVG.display.SVGTSpan;
 	import com.lorentz.SVG.display.SVGText;
 	import com.lorentz.SVG.display.SVGUse;
+	import com.lorentz.SVG.display.base.ISVGPreserveAspectRatio;
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.SVGContainer;
 	import com.lorentz.SVG.display.base.SVGElement;
+	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.processing.Process;
 	
+	import flash.display.GradientType;
+	import flash.display.SpreadMethod;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
@@ -47,14 +60,14 @@ package com.lorentz.SVG.parser
 		}
 		
 		public function parse():void {
-			_target.gradients = SVGParserCommon.parseGradients(_svg);
-			
-			var stylesObj:Object = SVGParserCommon.parseStyles(_svg);
-			for(var selector:String in stylesObj)
-				_target.addStyleDeclaration(selector, stylesObj[selector]);
+			parseStyles(_svg);
+			parseGradients(_svg);
+			parseFilters(_svg);
 			
 			_visitQueue = new Vector.<VisitDefinition>();
-			_visitQueue.push(new VisitDefinition(_svg));
+			_visitQueue.push(new VisitDefinition(_svg, function(obj:SVGElement):void {
+				_target.addElement(obj);
+			}));
 			
 			_process = new Process(null, executeLoop, parseComplete);
 			_process.start();
@@ -100,6 +113,7 @@ package com.lorentz.SVG.parser
 					case 'g': obj = visitG(elt); break;
 					case 'clippath': obj = visitClipPath(elt); break;
 					case 'symbol' : obj = visitSymbol(elt); break;
+					case 'marker' : obj = visitMarker(elt); break;
 					case 'mask' : obj = visitMask(elt); break;
 					case 'text': obj = visitText(elt, childVisits); break;
 					case 'tspan': obj = visitTspan(elt, childVisits); break;
@@ -111,7 +125,6 @@ package com.lorentz.SVG.parser
 				}
 			}
 			
-			//Set document
 			if(obj is SVGElement){
 				var element:SVGElement = obj as SVGElement;
 								
@@ -131,13 +144,16 @@ package com.lorentz.SVG.parser
 					element.svgClass = String(elt["@class"]);
 				
 				if("@transform" in elt)
-					element.svgTransform = String(elt["@transform"]);
+					element.svgTransform = String(elt.@transform);
 				
 				if("@clip-path" in elt)
 					element.svgClipPath = String(elt["@clip-path"]);
 				
 				if("@mask" in elt)
-					element.svgMask = String(elt["@mask"]);
+					element.svgMask = String(elt.@mask);
+				
+				if(element is ISVGPreserveAspectRatio)
+					(element as ISVGPreserveAspectRatio).svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null; 
 				
 				if(element is ISVGViewBox)
 					(element as ISVGViewBox).svgViewBox = SVGParserCommon.parseViewBox(elt.@viewBox);
@@ -161,16 +177,12 @@ package com.lorentz.SVG.parser
 		}
 		
 		private function visitSvg(elt:XML):SVG {
-			var obj:SVG = elt == _svg ? _target : new SVG();
-			
-			if(obj==null)
-				obj = new SVG();
+			var obj:SVG = new SVG();
 			
 			obj.svgX = ("@x" in elt) ? elt.@x : null;
 			obj.svgY = ("@y" in elt) ? elt.@y : null;
 			obj.svgWidth = ("@width" in elt) ? elt.@width : "100%";
 			obj.svgHeight = ("@height" in elt) ? elt.@height : "100%";
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
 			
 			return obj;
 		}
@@ -264,8 +276,17 @@ package com.lorentz.SVG.parser
 		}
 		
 		private function visitSymbol(elt:XML):SVGSymbol {
-			var obj:SVGSymbol = new SVGSymbol();
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;			
+			return new SVGSymbol();
+		}
+		
+		private function visitMarker(elt:XML):SVGMarker {
+			var obj:SVGMarker = new SVGMarker();
+			obj.svgRefX = elt.@refX;
+			obj.svgRefY = elt.@refY;
+			obj.svgMarkerWidth = elt.@markerWidth;
+			obj.svgMarkerHeight = elt.@markerHeight;
+			obj.svgOrient = elt.@orient;
+						
 			return obj;
 		}
 		
@@ -345,7 +366,6 @@ package com.lorentz.SVG.parser
 			obj.svgY = ("@y" in elt) ? elt.@y : null;
 			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
 			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
 			
 			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
 			var href:String = elt.@xlink::href;
@@ -360,7 +380,6 @@ package com.lorentz.SVG.parser
 			obj.svgY = ("@y" in elt) ? elt.@y : null;
 			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
 			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
-			obj.svgPreserveAspectRatio = ("@preserveAspectRatio" in elt) ? elt.@preserveAspectRatio : null;
 			
 			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
 			var href:String = elt.@xlink::href;
@@ -375,6 +394,7 @@ package com.lorentz.SVG.parser
 			obj.svgY = ("@y" in elt) ? elt.@y : null;
 			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
 			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
+			obj.patternTransform = ("@patternTransform" in elt) ? elt.@patternTransform : null;
 			return obj;
 		}
 		
@@ -383,5 +403,234 @@ package com.lorentz.SVG.parser
 			return obj;
 		}
 		
+		private function parseStyles(elt:XML):void {
+			var stylesTexts:XMLList = (elt..*::style.text());
+			
+			for each(var styleString:String in stylesTexts){
+				var content:String = SVGUtil.prepareXMLText(styleString);
+				
+				var parts:Array = content.split("}");
+				for each (var s:String in parts)
+				{
+					s = StringUtil.trim(s);
+					if (s.indexOf("{") > -1)
+					{
+						var subparts:Array = s.split("{");
+						
+						var names:Array = StringUtil.trim(subparts[0]).split(" ");
+						for each(var n:String in names){
+							var style_text:String = StringUtil.trim(subparts[1]);
+							_target.addStyleDeclaration(n, StyleDeclaration.createFromString(style_text));
+						}
+					}
+				}
+			}
+		}
+				
+		private function parseGradients(svg:XML):void {
+			var nodes:XMLList = svg..*::*.(localName().toLowerCase() == "lineargradient" || localName().toLowerCase() == "radialgradient");
+			for each(var node:XML in nodes){
+				parseGradient(node.@id, svg);
+			}
+		}
+		
+		private function parseGradient(id:String, svg:XML):SVGGradient {
+			id = StringUtil.ltrim(id, "#");
+			
+			if(_target.hasDefinition(id))
+				return _target.getDefinition(id) as SVGGradient;
+			
+			var xml_grad:XML = svg..*.(attribute("id")==id)[0];
+			
+			if(xml_grad == null)
+				return null;
+			
+			var grad:SVGGradient;
+			
+			switch(xml_grad.localName().toLowerCase()){
+				case "lineargradient": 
+					grad = new SVGLinearGradient(); break;
+				case "radialgradient" :
+					grad = new SVGRadialGradient(); break;
+			}
+			
+			//Inherits the href reference
+			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
+			if(xml_grad.@xlink::href.length() > 0){
+				var baseGradient:SVGGradient = parseGradient(xml_grad.@xlink::href, svg);
+				if(baseGradient)
+					baseGradient.copyTo(grad);
+			}
+			//
+			
+			if("@gradientUnits" in xml_grad)
+				grad.gradientUnits = xml_grad.@gradientUnits;
+			else
+				grad.gradientUnits = "objectBoundingBox";
+			
+			if("@gradientTransform" in xml_grad)
+				grad.transform = SVGParserCommon.parseTransformation(xml_grad.@gradientTransform);
+			
+			switch(grad.type){
+				case GradientType.LINEAR : {
+					var linearGrad:SVGLinearGradient = grad as SVGLinearGradient;
+					
+					if("@x1" in xml_grad)
+						linearGrad.x1 = xml_grad.@x1;
+					else if(linearGrad.x1 == null)
+						linearGrad.x1 = "0%";
+					
+					if("@y1" in xml_grad)
+						linearGrad.y1 = xml_grad.@y1;
+					else if(linearGrad.y1 == null)
+						linearGrad.y1 = "0%";
+					
+					if("@x2" in xml_grad)
+						linearGrad.x2 = xml_grad.@x2;
+					else if(linearGrad.x2 == null)
+						linearGrad.x2 = "100%";
+					
+					if("@y2" in xml_grad)
+						linearGrad.y2 = xml_grad.@y2;
+					else if(linearGrad.y2 == null)
+						linearGrad.y2 = "0%";
+					
+					break;
+				}
+				case GradientType.RADIAL : {
+					var radialGrad:SVGRadialGradient = grad as SVGRadialGradient;
+					
+					if("@cx" in xml_grad)
+						radialGrad.cx = xml_grad.@cx;
+					else if(radialGrad.cx==null)
+						radialGrad.cx = "50%";
+					
+					if("@cy" in xml_grad)
+						radialGrad.cy = xml_grad.@cy;
+					else if(radialGrad.cy==null)
+						radialGrad.cy = "50%";
+					
+					if("@r" in xml_grad)
+						radialGrad.r = xml_grad.@r;
+					else if(radialGrad.r == null)
+						radialGrad.r = "50%";
+					
+					if("@fx" in xml_grad)
+						radialGrad.fx = xml_grad.@fx;
+					else if(radialGrad.fx==null)
+						radialGrad.fx = radialGrad.cx;
+					
+					if("@fy" in xml_grad)
+						radialGrad.fy = xml_grad.@fy;
+					else if(radialGrad.fy==null)
+						radialGrad.fy = radialGrad.cy;
+					
+					break;
+				}
+			}
+			
+			switch(xml_grad.@spreadMethod){
+				case "pad" : grad.spreadMethod = SpreadMethod.PAD; break;
+				case "reflect" : grad.spreadMethod = SpreadMethod.REFLECT; break;
+				case "repeat" : grad.spreadMethod = SpreadMethod.REPEAT; break;
+				default: grad.spreadMethod = SpreadMethod.PAD; break
+			}
+			
+			if(grad.colors == null)
+				grad.colors = new Array();
+			
+			if(grad.alphas==null)
+				grad.alphas = new Array();
+			
+			if(grad.ratios==null)
+				grad.ratios = new Array();
+			
+			for each(var stop:XML in xml_grad.*::stop){
+				var stopStyle:StyleDeclaration = new StyleDeclaration();
+				
+				if("@stop-opacity" in stop)
+					stopStyle.setProperty("stop-opacity", stop.@["stop-opacity"]);
+				
+				if("@stop-color" in stop)
+					stopStyle.setProperty("stop-color", stop.@["stop-color"]);
+				
+				if("@style" in stop){
+					stopStyle.fromString(stop.@style);
+				}
+				
+				grad.colors.push( SVGColorUtils.parseToUint(stopStyle.getPropertyValue("stop-color")) );
+				grad.alphas.push( stopStyle.getPropertyValue("stop-opacity" ) != null ? Number(stopStyle.getPropertyValue("stop-opacity")) : 1 );
+				
+				var offset:Number = Number(StringUtil.rtrim(stop.@offset, "%"));
+				if(String(stop.@offset).indexOf("%") > -1){
+					offset/=100;
+				}
+				grad.ratios.push( offset*255 );
+			}
+			
+			//Save the gradient definition
+			_target.addDefinition(id, grad);
+			
+			return grad;
+		}
+		
+		private function parseFilters(svg:XML):void
+		{
+			var nodes:XMLList = svg..*::*.(localName().toLowerCase() == "filter");
+			for each(var node:XML in nodes){
+				parseFilterCollection(node);
+			}
+		}
+		
+		private function parseFilterCollection(node:XML):void {			
+			var filterCollection:SVGFilterCollection = new SVGFilterCollection();
+			for each(var childNode:XML in node.elements()){
+				var filter:ISVGFilter = parseFilter(childNode);
+				if(filter)
+					filterCollection.svgFilters.push(filter);
+			}
+			
+			var id:String = StringUtil.ltrim(node.@id, "#");
+			_target.addDefinition(id, filterCollection);
+		}
+		
+		private function parseFilter(node:XML):ISVGFilter {
+			var localName:String = String(node.localName()).toLowerCase();
+			
+			switch(localName)
+			{
+				case "fegaussianblur" : return parseFilterGaussianBlur(node);
+				case "fecolormatrix" : return parseFilterColorMatrix(node);
+			}
+			
+			return null;
+		}
+		
+		private function parseFilterGaussianBlur(node:XML):SVGGaussianBlur {
+			var obj:SVGGaussianBlur = new SVGGaussianBlur();
+			
+			if(("@stdDeviation" in node))
+			{	
+				var parts:Array = String(node.@stdDeviation).split(/\s,/);
+				obj.stdDeviationX = Number(parts[0]);
+				obj.stdDeviationY = parts.length > 1 ? Number(parts[1]) : Number(parts[0]);
+			}
+			
+			return obj;
+		}
+		
+		private function parseFilterColorMatrix(node:XML):SVGColorMatrix {
+			var obj:SVGColorMatrix = new SVGColorMatrix();
+			
+			obj.type = ("@type" in node) ? node.@type : "matrix";
+			
+			var valuesString:String = ("@values" in node) ? node.@values : "";
+			var values:Array = [];
+			for each(var v:String in SVGParserCommon.splitNumericArgs(valuesString)){
+				values.push(Number(v));
+			}
+			obj.values = values;
+			return obj;
+		}
 	}
 }

@@ -6,7 +6,12 @@
 	import flash.display.Graphics;
 	import com.lorentz.SVG.display.base.SVGElement;
 	
-	public class SVGLine extends SVGShape {	
+	public class SVGLine extends SVGShape {
+		private var _x1Units:Number;
+		private var _y1Units:Number;
+		private var _x2Units:Number;
+		private var _y2Units:Number;
+		
 		public function SVGLine(){
 			super("line");
 		}
@@ -60,22 +65,17 @@
 		override protected function get hasFill():Boolean {
 			return false;
 		}
-
-		private var _x1Units:Number;
-		private var _y1Units:Number;
-		private var _x2Units:Number;
-		private var _y2Units:Number;
 		
-		override protected function render():void {
+		override protected function beforeDraw():void {
+			super.beforeDraw();
+			
 			_x1Units = getUserUnit(svgX1, SVGUtil.WIDTH);
 			_y1Units = getUserUnit(svgY1, SVGUtil.HEIGHT);
 			_x2Units = getUserUnit(svgX2, SVGUtil.WIDTH);
 			_y2Units = getUserUnit(svgY2, SVGUtil.HEIGHT);
-			
-			super.render();
 		}
 		
-		override protected function draw(drawer:IDrawer):void {			
+		override protected function drawToDrawer(drawer:IDrawer):void {			
 			drawer.moveTo(_x1Units, _y1Units);
 			drawer.lineTo(_x2Units, _y2Units);
 		}

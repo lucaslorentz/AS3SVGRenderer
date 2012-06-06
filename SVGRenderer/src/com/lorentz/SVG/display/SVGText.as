@@ -26,13 +26,13 @@
 		protected override function render():void {
 			super.render();
 			
-			while(_content.numChildren > 0)
-				_content.removeChildAt(0);
+			while(content.numChildren > 0)
+				content.removeChildAt(0);
 			
 			if(this.numTextElements == 0)
 				return;
 						
-			textContainer = _content;
+			textContainer = content;
 			
 			textDrawer = new document.textDrawerClass();
 			textDrawer.start();
@@ -99,7 +99,7 @@
 			textDrawer.end();
 
 			if(hasComplexFill && fillTextsSprite.numChildren > 0){
-				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, _content);
+				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, content);
 				bounds.inflate(2, 2);
 				var fill:Sprite = new Sprite();
 				beginFill(fill.graphics);

@@ -1,4 +1,5 @@
 ﻿package com.lorentz.SVG.display.base {
+	import com.lorentz.SVG.data.filters.SVGFilterCollection;
 	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
@@ -22,26 +23,23 @@
 	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
 	
 	public class SVGElement extends Sprite {
-		protected var _content:Sprite;
+		protected var content:Sprite;
 		private var _mask:SVGElement;
 		
-		protected var _viewPortElement:ISVGViewPort;
 		private var _currentFontSize:Number = Number.NaN;
 		
 		private var _type:String;
 		private var _id:String;
 		
-		private var _svgClass:String;
 		private var _svgClipPathChanged:Boolean = false;
-		private var _svgClipPath:String;
 		private var _svgMaskChanged:Boolean = false;
-		private var _svgMask:String;
-		private var _svgTransform:Matrix;
+		private var _svgFilterChanged:Boolean = false;
 		
 		private var _style:StyleDeclaration;
 		private var _finalStyle:StyleDeclaration;
 		
 		private var _parentElement:SVGElement;
+		private var _viewPortElement:ISVGViewPort;
 		private var _document:SVGDocument;
 		private var _numInvalidElements:int = 0;
 		private var _numRunningAsyncValidations:int = 0;
@@ -52,6 +50,7 @@
 		private var _runningAsyncValidations:Object = {};
 		private var _displayChanged:Boolean = false;
 		private var _opacityChanged:Boolean = false;
+		private var _attributes:Object = {};
 		
 		public function SVGElement(tagName:String){
 			_type = tagName;
@@ -63,8 +62,8 @@
 			_finalStyle = new StyleDeclaration();
 			_finalStyle.addEventListener(StyleDeclarationEvent.PROPERTY_CHANGE, finalStyle_propertyChangeHandler, false, 0, true);
 			
-			_content = new Sprite();
-			addChild(_content);
+			content = new Sprite();
+			addChild(content);
 		}
 		
 		public function get type():String {
@@ -79,42 +78,40 @@
 		}
 		
 		public function get svgClass():String {
-			return getAttribute("class");
+			return getAttribute("class") as String;
 		}
 		public function set svgClass(value:String):void {
 			setAttribute("class", value);
 		}
 		
 		public function get svgClipPath():String {
-			return getAttribute("clip-path");
+			return getAttribute("clip-path") as String;
 		}
 		public function set svgClipPath(value:String):void {
 			setAttribute("clip-path", value);
 		}
 		
 		public function get svgMask():String {
-			return getAttribute("mask");
+			return getAttribute("mask") as String;
 		}
 		public function set svgMask(value:String):void {
 			setAttribute("mask", value);
 		}
 		
 		public function get svgTransform():String {
-			return getAttribute("transform");
+			return getAttribute("transform") as String;
 		}
 		public function set svgTransform(value:String):void {
 			setAttribute("transform", value);
 		}
 		
-		
-		private var _attributes:Object = {};
-		public function getAttribute(name:String):String {
+		public function getAttribute(name:String):Object {
 			return _attributes[name];
 		}
 		
-		public function setAttribute(name:String, value:String):void {
+		public function setAttribute(name:String, value:Object):void {
 			if(_attributes[name] != value){
-				var oldValue:String = _attributes[name];
+				var oldValue:Object = _attributes[name];
 				
 				_attributes[name] = value;
 				
@@ -130,7 +127,7 @@
 			return name in _attributes;
 		}
 		
-		protected function onAttributeChanged(attributeName:String, oldValue:String, newValue:String):void {
+		protected function onAttributeChanged(attributeName:String, oldValue:Object, newValue:Object):void {
 			switch(attributeName){
 				case "class" :
 					invalidateStyle(true);
@@ -157,14 +154,14 @@
 		protected function attachElement(element:SVGElement):void {
 			if(_elementsAttached.indexOf(element) == -1){
 				_elementsAttached.push(element);
-				element.svg_internal::setParentElement(this);
+				element.setParentElement(this);
 			}
 		}
 		protected function detachElement(element:SVGElement):void {
 			var index:int = _elementsAttached.indexOf(element);
 			if(index != -1){
 				_elementsAttached.splice(index, 1);
-				element.svg_internal::setParentElement(null);
+				element.setParentElement(null);
 			}
 		}
 		
@@ -183,7 +180,7 @@
 			return _parentElement;
 		}
 		
-		svg_internal function setParentElement(value:SVGElement):void {
+		protected function setParentElement(value:SVGElement):void {
 			if(_parentElement != value){
 				if(_parentElement != null) {
 					_parentElement.numInvalidElements -= _numInvalidElements;
@@ -197,16 +194,14 @@
 					_parentElement.numRunningAsyncValidations += _numRunningAsyncValidations;
 				}
 				
-				setSVGDocument(_parentElement != null ? parentElement.document : null);
+				setSVGDocument(_parentElement != null ? _parentElement.document : null);
+				setViewPortElement(_parentElement != null ? _parentElement.viewPortElement : null);
 				
 				invalidateStyle();
 			}
-		}
+		}		
 		
-		public function get document():SVGDocument {
-			return _document;
-		}
-		public function setSVGDocument(value:SVGDocument):void {
+		private function setSVGDocument(value:SVGDocument):void {
 			if(_document != value){
 				if(_document)
 					_document.onElementRemoved(this);
@@ -224,6 +219,24 @@
 			}
 		}
 		
+		private function setViewPortElement(value:ISVGViewPort):void {
+			if(_viewPortElement != value){
+				_viewPortElement = value;
+				
+				for each(var element:SVGElement in _elementsAttached){
+					element.setViewPortElement(value);
+				}
+			}
+		}
+		
+		public function get document():SVGDocument {
+			return this is SVGDocument ? this as SVGDocument : _document;
+		}
+		
+		public function get viewPortElement():ISVGViewPort {
+			return this is ISVGViewPort ? this as ISVGViewPort : _viewPortElement;
+		}
+		
 		protected function get numInvalidElements():int {
 			return _numInvalidElements;
 		}
@@ -236,8 +249,15 @@
 			if(_numInvalidElements == 0 && d != 0){
 				dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
 				if(_numRunningAsyncValidations == 0)
+				{
 					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
+					onValidated();
+				}
 			}
+		}
+		
+		protected function onValidated():void {
+			
 		}
 		
 		protected function get numRunningAsyncValidations():int {
@@ -256,7 +276,7 @@
 			}
 		}
 		
-		private function invalidate():void {
+		protected function invalidate():void {
 			if(!_invalidFlag){											
 				_invalidFlag = true;
 				
@@ -289,7 +309,6 @@
 			if(_invalidStyleFlag)
 				updateStyles();
 			
-			updateViewPortElement();
 			updateCurrentFontSize();
 			
 			if(_invalidPropertiesFlag)
@@ -307,7 +326,7 @@
 			}
 			
 			if(this is ISVGViewPort)
-				updateViewPort();
+				adjustContentToViewPort();
 		}
 		
 		public function beginASyncValidation(validationId:String):void {
@@ -324,33 +343,38 @@
 			}
 		}
 		
+		protected function getElementToInheritStyles():SVGElement {
+			return parentElement;
+		}
+		
 		protected function updateStyles():void {
 			_invalidStyleFlag = false;
 			
 			var newFinalStyle:StyleDeclaration = new StyleDeclaration();
 			
-			if(_parentElement){
-				_parentElement.finalStyle.copyTo(newFinalStyle);
+			var inheritFrom:SVGElement = getElementToInheritStyles();
+			if(inheritFrom){
+				inheritFrom.finalStyle.copyStyles(newFinalStyle);
 			}
 			
 			var typeStyle:StyleDeclaration = document.getStyleDeclaration(_type);
 			if(typeStyle){ //Merge with elements styles
-				typeStyle.copyTo(newFinalStyle);
+				typeStyle.copyStyles(newFinalStyle);
 			}
 			
 			if(svgClass){ //Merge with classes styles
 				for each(var className:String in svgClass.split(" ")){
 					var classStyle:StyleDeclaration = document.getStyleDeclaration("."+className);
 					if(classStyle)
-						classStyle.copyTo(newFinalStyle);
+						classStyle.copyStyles(newFinalStyle);
 				}
 			}
 			
 			//Merge all styles with the style attribute
-			_style.copyTo(newFinalStyle);
+			_style.copyStyles(newFinalStyle);
 			
 			//Apply new finalStyle
-			newFinalStyle.copyTo(_finalStyle, false);
+			newFinalStyle.cloneOn(_finalStyle);
 		}
 		
 		private function finalStyle_propertyChangeHandler(e:StyleDeclarationEvent):void {
@@ -365,6 +389,10 @@
 					break;
 				case "opacity" :
 					_opacityChanged = true;
+					invalidateProperties();
+					break;
+				case "filter" :
+					_svgFilterChanged = true;
 					invalidateProperties();
 					break;
 			}
@@ -393,15 +421,6 @@
 			return mat;
 		}
 		
-		protected function updateViewPortElement():void {			
-			if(this is ISVGViewPort)
-				_viewPortElement = this as ISVGViewPort;
-			else if(_parentElement != null)
-				_viewPortElement = _parentElement._viewPortElement;
-			else
-				_viewPortElement = null;
-		}
-		
 		protected function updateCurrentFontSize():void {
 			var fontSize:String = finalStyle.getPropertyValue("font-size");
 			
@@ -416,14 +435,14 @@
 			
 			if(_invalidTransformFlag){
 				_invalidTransformFlag = false;
-				this.transform.matrix = computeTransformMatrix();
+				transform.matrix = computeTransformMatrix();
 			}
 			
 			if(_svgClipPathChanged){
 				_svgClipPathChanged = false;
 				if(_mask != null) { //Clear mask
-					_content.mask = null;
-					_content.cacheAsBitmap = false;
+					content.mask = null;
+					content.cacheAsBitmap = false;
 					removeChild(_mask);
 					detachElement(_mask);
 					_mask = null;
@@ -432,18 +451,18 @@
 				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
 					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
 					
-					_mask = document.getDefinitionClone(clipPathId);
+					_mask = document.getElementDefinitionClone(clipPathId);
 					attachElement(_mask);
 					addChild(_mask);
-					_content.mask = _mask;
+					content.mask = _mask;
 				}
 			}
 			
 			if(_svgMaskChanged){
 				_svgMaskChanged = false;
 				if(_mask != null) { //Clear mask
-					_content.mask = null;
-					_content.cacheAsBitmap = false;
+					content.mask = null;
+					content.cacheAsBitmap = false;
 					removeChild(_mask);
 					detachElement(_mask);
 					_mask = null;
@@ -452,14 +471,14 @@
 				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Clip Path
 					var maskId:String = SVGUtil.extractUrlId(svgMask);
 					
-					_mask = document.getDefinitionClone(maskId);
+					_mask = document.getElementDefinitionClone(maskId);
 					attachElement(_mask);
 					_mask.cacheAsBitmap = true;
-					_content.cacheAsBitmap = true;
+					content.cacheAsBitmap = true;
 					addChild(_mask);
-					_content.mask = _mask;
+					content.mask = _mask;
 				}
-			}	
+			}
 			
 			if(_displayChanged){
 				_displayChanged = false;
@@ -468,7 +487,23 @@
 			
 			if(_opacityChanged){
 				_opacityChanged = false;
-				_content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
+				content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
+			}
+			
+			if(_svgFilterChanged){
+				_svgFilterChanged = false;
+				
+				var filters:Array = [];
+				
+				var filterLink:String = finalStyle.getPropertyValue("filter");
+				if(filterLink){
+					var filterId:String = SVGUtil.extractUrlId(filterLink);
+					var filterCollection:SVGFilterCollection = document.getDefinition(filterId) as SVGFilterCollection;
+					if(filterCollection)
+						filters = filterCollection.getFlashFilters();
+				}
+				
+				this.filters = filters;
 			}
 			
 			if(this is ISVGViewPort)
@@ -479,10 +514,10 @@
 			var viewPortWidth:Number = 0;
 			var viewPortHeight:Number = 0;
 			
-			if(_viewPortElement != null)
+			if(viewPortElement != null)
 			{
-				viewPortWidth = _viewPortElement.viewPortWidth;
-				viewPortHeight = _viewPortElement.viewPortHeight;
+				viewPortWidth = viewPortElement.viewPortWidth;
+				viewPortHeight = viewPortElement.viewPortHeight;
 			}
 			
 			return SVGUtil.getFontSize(s, _currentFontSize, viewPortWidth, viewPortHeight);
@@ -492,10 +527,10 @@
 			var viewPortWidth:Number = 0;
 			var viewPortHeight:Number = 0;
 			
-			if(_viewPortElement != null)
+			if(viewPortElement != null)
 			{
-				viewPortWidth = _viewPortElement.viewPortWidth;
-				viewPortHeight = _viewPortElement.viewPortHeight;
+				viewPortWidth = viewPortElement.viewPortWidth;
+				viewPortHeight = viewPortElement.viewPortHeight;
 			}
 			
 			return SVGUtil.getUserUnit(s, _currentFontSize, viewPortWidth, viewPortHeight, viewPortReference);
@@ -509,7 +544,7 @@
 			copy.svgClass = svgClass;
 			copy.svgClipPath = svgClipPath;
 			copy.svgMask = svgMask;
-			_style.copyTo(copy.style);
+			_style.cloneOn(copy.style);
 			
 			copy.svgTransform = svgTransform;
 			
@@ -568,17 +603,17 @@
 			return null;
 		}
 		
-		protected function updateViewPort():void {
+		protected function adjustContentToViewPort():void {
 			var viewPort:ISVGViewPort = this as ISVGViewPort;
 			
 			if(viewPort == null)
 				throw new Error("Element '"+type+"' isn't a viewPort.");
 			
-			this.scrollRect = null;
-			_content.scaleX = 1;
-			_content.scaleY = 1;
-			_content.x = 0;
-			_content.y = 0;
+			scrollRect = null;
+			content.scaleX = 1;
+			content.scaleY = 1;
+			content.x = 0;
+			content.y = 0;
 			
 			var box:Rectangle;
 			if(this is ISVGViewBox)
@@ -591,38 +626,36 @@
 				var y:Number = viewPort.svgY ? getUserUnit(viewPort.svgY, SVGUtil.HEIGHT) : 0;				
 				var w:Number = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
 				var h:Number = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
-				var viewPortBox:Rectangle = new Rectangle(x, y, w, h);
-
+				
 				if(viewPort.svgPreserveAspectRatio != "none"){
-					var parts:Array = /(?:(defer)\s+)?(\w*)(?:\s+(meet|slice))?/gi.exec(String(viewPort.svgPreserveAspectRatio || "").toLowerCase());					
-					var defer:Boolean = parts[1] != undefined;
-					var align:String = parts[2] || "xmidymid";
-					var meetOrSlice:String = parts[3] || "meet";
+					var viewPortBox:Rectangle = new Rectangle(x, y, w, h);
 					
-					var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, align, meetOrSlice);
+					var preserveAspectRatio:Object = SVGParserCommon.parsePreserveAspectRatio(String(viewPort.svgPreserveAspectRatio || ""));
 					
-					if(meetOrSlice == "slice"){
+					var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, preserveAspectRatio.align, preserveAspectRatio.meetOrSlice);
+					
+					if(preserveAspectRatio.meetOrSlice == "slice"){
 						this.scrollRect = viewPortBox;
 					}
 					
-					_content.scaleX = viewPortContentMetrics.contentScaleX;
-					_content.scaleY = viewPortContentMetrics.contentScaleY;
-					_content.x = viewPortContentMetrics.contentX;
-					_content.y = viewPortContentMetrics.contentY;
+					content.scaleX = viewPortContentMetrics.contentScaleX;
+					content.scaleY = viewPortContentMetrics.contentScaleY;
+					content.x = viewPortContentMetrics.contentX;
+					content.y = viewPortContentMetrics.contentY;
 				} else {
-					_content.x = x;
-					_content.y = y;
-					_content.scaleX = w / _content.width;
-					_content.scaleY = h / _content.height;
+					content.x = x;
+					content.y = y;
+					content.scaleX = w / content.width;
+					content.scaleY = h / content.height;
 				}
 			}
 		}
 		
 		/**
-		* metadata of the related SVG node as defined in the
-		* original SVG document
-		* @default null
-		**/
+		 * metadata of the related SVG node as defined in the
+		 * original SVG document
+		 * @default null
+		 **/
 		public var metadata:XML;
 	}
 }

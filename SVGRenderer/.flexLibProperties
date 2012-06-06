@@ -71,6 +71,14 @@
     <classEntry path="com.lorentz.processing.Process"/>
     <classEntry path="com.lorentz.processing.ProcessExecutor"/>
     <classEntry path="com.lorentz.SVG.data.text.SVGDrawnText"/>
+    <classEntry path="com.lorentz.SVG.utils.FlashPlayerUtils"/>
+    <classEntry path="com.lorentz.SVG.data.filters.SVGFilterCollection"/>
+    <classEntry path="com.lorentz.SVG.data.filters.SVGGaussianBlur"/>
+    <classEntry path="com.lorentz.SVG.data.filters.ISVGFilter"/>
+    <classEntry path="com.lorentz.SVG.display.SVGMarker"/>
+    <classEntry path="com.lorentz.SVG.drawing.MarkersPlacesCapturerDrawer"/>
+    <classEntry path="com.lorentz.SVG.data.MarkerPlace"/>
+    <classEntry path="com.lorentz.SVG.data.MarkerType"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

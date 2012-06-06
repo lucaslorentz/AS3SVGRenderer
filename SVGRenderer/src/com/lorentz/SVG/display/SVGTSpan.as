@@ -45,8 +45,8 @@
 		override protected function render():void {
 			super.render();
 			
-			while(_content.numChildren > 0)
-				_content.removeChildAt(0);
+			while(content.numChildren > 0)
+				content.removeChildAt(0);
 			
 			if(this.numTextElements == 0)
 				return;
@@ -72,9 +72,9 @@
 			if(hasComplexFill)
 			{
 				fillTextsSprite = new Sprite();
-				_content.addChild(fillTextsSprite);
+				content.addChild(fillTextsSprite);
 			} else {
-				fillTextsSprite = _content;				
+				fillTextsSprite = content;				
 			}
 			
 			for(var i:int = 0; i < numTextElements; i++){
@@ -119,7 +119,7 @@
 				doAnchorAlign(textDirection, _start, _end);
 						
 			if(hasComplexFill && fillTextsSprite.numChildren > 0){
-				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, _content);
+				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, content);
 				bounds.inflate(2, 2);
 				var fill:Sprite = new Sprite();
 				beginFill(fill.graphics);
@@ -127,7 +127,7 @@
 				fill.mask = fillTextsSprite;
 				fillTextsSprite.cacheAsBitmap = true;
 				fill.cacheAsBitmap = true;
-				_content.addChildAt(fill, 0);
+				content.addChildAt(fill, 0);
 				
 				_renderObjects.push(fill);
 			}

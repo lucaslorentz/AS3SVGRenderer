@@ -6,7 +6,11 @@
 	import flash.display.Graphics;
 	import com.lorentz.SVG.display.base.SVGElement;
 	
-	public class SVGCircle extends SVGShape {	
+	public class SVGCircle extends SVGShape {
+		private var _cxUnits:Number;
+		private var _cyUnits:Number;
+		private var _rUnits:Number;
+		
 		public function SVGCircle(){
 			super("circle");
 		}
@@ -42,29 +46,25 @@
 			invalidateRender();
 		}
 		
-		private var _cxUnits:Number;
-		private var _cyUnits:Number;
-		private var _rUnits:Number;
+		override protected function beforeDraw():void {
+			super.beforeDraw();
 		
-		override protected function render():void {
 			_cxUnits = getUserUnit(svgCx, SVGUtil.WIDTH);
 			_cyUnits = getUserUnit(svgCy, SVGUtil.HEIGHT);
 			_rUnits = getUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
-			
-			super.render();
 		}
 		
-		override protected function draw(drawer:IDrawer):void {
+		override protected function drawToDrawer(drawer:IDrawer):void {
 			drawer.moveTo(_cxUnits + _rUnits, _cyUnits);
 			drawer.arcTo(_rUnits, _rUnits, 0, true, false, _cxUnits - _rUnits, _cyUnits);
 			drawer.arcTo(_rUnits, _rUnits, 0, true, false, _cxUnits + _rUnits, _cyUnits);
 		}
 		
-		override protected function drawToGraphics(graphics:Graphics):void {
+		override protected function drawDirectlyToGraphics(graphics:Graphics):void {
 			graphics.drawCircle(_cxUnits, _cyUnits, _rUnits);
 		}
 		
-		override protected function get hasDrawToGraphics():Boolean {
+		override protected function get hasDrawDirectlyToGraphics():Boolean {
 			return true;
 		}
 		

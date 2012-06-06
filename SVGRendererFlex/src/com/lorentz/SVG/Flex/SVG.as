@@ -37,8 +37,6 @@ package com.lorentz.SVG.Flex
 		
 		private var _svgDocument:SVGDocument;
 		private var _sourceInvalid:Boolean = false;
-		private var _urlLoader:URLLoader;
-		private var _urlLoaderURL:String;
 		
 		private static const CLONED_EVENTS:Vector.<String> = new <String>[
 			SVGEvent.PARSE_START,
@@ -81,13 +79,12 @@ package com.lorentz.SVG.Flex
 			invalidateProperties();
 		}
 		
-		private var _baseURL:Object;
 		[Bindable]
-		public function get baseURL():Object {
-			return _baseURL;
+		public function get baseURL():String {
+			return _svgDocument.baseURL;
 		}
-		public function set baseURL(value:Object):void {
-			_baseURL = value;
+		public function set baseURL(value:String):void {
+			_svgDocument.baseURL = value;
 		}
 		
 		[Bindable]
@@ -154,11 +151,11 @@ package com.lorentz.SVG.Flex
 				
 				if((_source is String && !isXML(String(_source))) || _source is URLRequest)
 				{
-					this.load(_source);
+					_svgDocument.load(_source);
 				}
 				else if(_source is String || _source is XML)
 				{
-					this.parse(_source, "");
+					_svgDocument.parse(_source);
 				}
 			}
 		}
@@ -171,59 +168,6 @@ package com.lorentz.SVG.Flex
 		private function isXML(str:String):Boolean {
 			//Check if root node exist
 			return str.match(/<(\w*).*<\/\1>/sig).length > 0;
-		}
-		
-		private function parse(xmlOrXmlString:Object, defaultBaseURL:String):void {
-			//Set baseURL and defaultFont
-			_svgDocument.baseURL = _baseURL == null ? defaultBaseURL : String(_baseURL);
-
-			this._svgDocument.parse(xmlOrXmlString);
-		}
-		
-		private function load(urlOrUrlRequest:Object):void {
-			if(_urlLoader != null){
-				try {
-					_urlLoader.close();
-				} catch (e:Error) { }
-				_urlLoader = null;
-			}
-			
-			var urlRequest:URLRequest;
-			
-			if(urlOrUrlRequest is URLRequest)
-				urlRequest = urlOrUrlRequest as URLRequest;
-			else if(urlOrUrlRequest is String)
-				urlRequest = new URLRequest(String(urlOrUrlRequest));
-			else
-				throw new Error("Invalid param 'urlOrUrlRequest'.");
-						
-			_urlLoader = new URLLoader();
-			_urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
-			_urlLoader.addEventListener(Event.COMPLETE, urlLoader_completeHandler, false, 0, true);
-			_urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler, false, 0, true);
-			_urlLoader.load(urlRequest);
-			
-			_urlLoaderURL = urlRequest.url;
-		}
-		
-		private function urlLoader_completeHandler(e:Event):void {
-			if(e.currentTarget != _urlLoader)
-				return;
-			
-			var defaultBaseURL:String = _urlLoaderURL.match(/^([^?]*\/)/g)[0]
-			var svgString:String = String(_urlLoader.data);
-			this.parse(svgString, defaultBaseURL);
-			_urlLoader = null;
-			_urlLoaderURL = "";
-		}
-		
-		private function urlLoader_ioErrorHandler(e:IOErrorEvent):void {
-			if(e.currentTarget != _urlLoader)
-				return;
-			
-			trace(e.text);
-			_urlLoader = null;
-			_urlLoaderURL = "";
 		}
 		
 		private function svgDocument_validatedHandler(e:SVGEvent):void {

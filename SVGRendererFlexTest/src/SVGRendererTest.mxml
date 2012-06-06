@@ -53,7 +53,7 @@
 		}
 	</fx:Style>
 	
-
+	
 	
 	<fx:Script>
 		<![CDATA[
@@ -66,6 +66,7 @@
 			import com.lorentz.SVG.utils.DisplayUtils;
 			import com.lorentz.processing.ProcessExecutor;
 			
+			import flash.utils.getTimer;
 			import flash.utils.setInterval;
 			import flash.utils.setTimeout;
 			
@@ -73,6 +74,8 @@
 			
 			private var fileReference:FileReference;
 			private var urlLoader:URLLoader;
+			
+			private var _startTime:int = 0;
 			
 			private var _frameCount:int = 0;
 			[Bindable]
@@ -170,8 +173,9 @@
 				clear();
 				
 				var svgContent:String = fileReference.data.readUTFBytes(fileReference.data.length);
-				svg.source = svgContent; 
 				fileReference = null;
+				svg.source = svgContent;
+				_startTime = getTimer();
 			}
 			
 			protected function updateRender():void
@@ -179,10 +183,11 @@
 				clear();
 				svg.source = null;
 				svg.source = sampleList.selectedItem;
+				_startTime = getTimer();
 			}
 			
 			protected function log(message:String):void {
-				logTextArea.appendText(getTimer() + " - " + message + "\n");
+				logTextArea.appendText((getTimer() - _startTime) + " - " + message + "\n");
 			}
 			
 			protected function clear():void {
@@ -213,6 +218,8 @@
 			<fx:String>svgFiles/dashedPath.svg</fx:String>
 			<fx:String>svgFiles/dashedRect.svg</fx:String>
 			<fx:String>svgFiles/marker.svg</fx:String>
+			<fx:String>svgFiles/markerOnCurves.svg</fx:String>
+			<fx:String>svgFiles/markerOnCurvesFixedAngle.svg</fx:String>
 			<fx:String>svgFiles/opacity01.svg</fx:String>
 			<fx:String>svgFiles/viewbox.svg</fx:String>
 			<fx:String>svgFiles/viewbox2.svg</fx:String>
