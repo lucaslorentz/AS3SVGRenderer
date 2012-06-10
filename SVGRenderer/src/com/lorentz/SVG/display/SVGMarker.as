@@ -14,7 +14,7 @@ package com.lorentz.SVG.display
 
 	public class SVGMarker extends SVGContainer implements ISVGViewBox, ISVGPreserveAspectRatio {
 		private var _invalidPlacement:Boolean = true;
-		private var _markerInfo:MarkerPlace;
+		private var _markerPlace:MarkerPlace;
 		
 		public function SVGMarker(){
 			super("marker");
@@ -91,11 +91,11 @@ package com.lorentz.SVG.display
 			return parentElement.parentElement;
 		}
 				
-		public function get markerInfo():MarkerPlace {
-			return _markerInfo;
+		public function get markerPlace():MarkerPlace {
+			return _markerPlace;
 		}
-		public function set markerInfo(markerInfo:MarkerPlace):void {		
-			_markerInfo = markerInfo;
+		public function set markerPlace(value:MarkerPlace):void {		
+			_markerPlace = value;
 			invalidatePlacement();
 		}
 		
@@ -153,15 +153,15 @@ package com.lorentz.SVG.display
 				if(svgRefY)
 					refY = getUserUnit(svgRefY, SVGUtil.HEIGHT);
 				
-				rotation = !svgOrient || svgOrient == "auto" ? markerInfo.angle : Number(svgOrient);
-				scaleX = markerInfo.strokeWidth;
-				scaleY = markerInfo.strokeWidth;
+				rotation = !svgOrient || svgOrient == "auto" ? markerPlace.angle : Number(svgOrient);
+				scaleX = markerPlace.strokeWidth;
+				scaleY = markerPlace.strokeWidth;
 				
 				var referenceGlobal:Point = content.localToGlobal(new Point(refX, refY));
 				var referencePointOnParentObject:Point = parent.globalToLocal(referenceGlobal);
 				
-				x = markerInfo.position.x - referencePointOnParentObject.x - x;
-				y = markerInfo.position.y - referencePointOnParentObject.y - y;
+				x = markerPlace.position.x - referencePointOnParentObject.x - x;
+				y = markerPlace.position.y - referencePointOnParentObject.y - y;
 			}
 		}
 		

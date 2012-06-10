@@ -115,8 +115,8 @@
 			}
 			
 			if(_markersPlaces){
-				for each(var markerInfo:MarkerPlace in _markersPlaces){
-					var markerStyle:String = "marker-" + markerInfo.type;
+				for each(var markerPlace:MarkerPlace in _markersPlaces){
+					var markerStyle:String = "marker-" + markerPlace.type;
 					
 					var markerLink:String = finalStyle.getPropertyValue(markerStyle) || finalStyle.getPropertyValue("marker");
 					
@@ -136,8 +136,8 @@
 					if(finalStyle.getPropertyValue("stroke-width"))
 						strokeWidth = getUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
 					
-					markerInfo.strokeWidth = strokeWidth;
-					marker.markerInfo = markerInfo;
+					markerPlace.strokeWidth = strokeWidth;
+					marker.markerPlace = markerPlace;
 					content.addChild(marker);
 					attachElement(marker);
 					_markers.push(marker);
