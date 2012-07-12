@@ -49,9 +49,9 @@
 		override protected function beforeDraw():void {
 			super.beforeDraw();
 		
-			_cxUnits = getUserUnit(svgCx, SVGUtil.WIDTH);
-			_cyUnits = getUserUnit(svgCy, SVGUtil.HEIGHT);
-			_rUnits = getUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
+			_cxUnits = getViewPortUserUnit(svgCx, SVGUtil.WIDTH);
+			_cyUnits = getViewPortUserUnit(svgCy, SVGUtil.HEIGHT);
+			_rUnits = getViewPortUserUnit(svgR, SVGUtil.WIDTH); //Its based on width?
 		}
 		
 		override protected function drawToDrawer(drawer:IDrawer):void {

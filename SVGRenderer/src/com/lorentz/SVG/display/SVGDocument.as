@@ -6,6 +6,7 @@
 	import com.lorentz.SVG.parser.AsyncSVGParser;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.text.FTESVGTextDrawer;
+	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
@@ -69,17 +70,17 @@
 		public var useEmbeddedFonts:Boolean = true;
 		
 		/**
-		 * Function that is called before sending svgTextFormat to TextDrawer, allowing you to change texts formats with your own rule.
+		 * Function that is called before sending svgTextToDraw to TextDrawer, allowing you to change texts formats with your own rule.
 		 * The function can alter any property on textFormat
 		 * Function parameters: function(textFormat:SVGTextFormat):void
 		 * Example: Change all texts inside an svg to a specific embedded font
 		 */		
-		public var changeTextFormatFunction:Function;
+		public var textDrawingInterceptor:Function;
 		
 		/**
-		 * Class used to draw texts 
+		 * Object used to draw texts 
 		 */		
-		public var textDrawerClass:Class = FTESVGTextDrawer;
+		public var textDrawer:ISVGTextDrawer = new FTESVGTextDrawer();
 		
 		public function SVGDocument(){			
 			super("document");

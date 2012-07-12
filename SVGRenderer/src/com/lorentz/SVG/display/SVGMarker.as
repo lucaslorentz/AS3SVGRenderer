@@ -114,11 +114,11 @@ package com.lorentz.SVG.display
 				
 				var markerWidth:Number = 3;
 				if(svgMarkerWidth)
-					markerWidth = getUserUnit(svgMarkerWidth, SVGUtil.WIDTH);
+					markerWidth = getViewPortUserUnit(svgMarkerWidth, SVGUtil.WIDTH);
 				
 				var markerHeight:Number = 3;
 				if(svgMarkerHeight)
-					markerHeight = getUserUnit(svgMarkerHeight, SVGUtil.HEIGHT);
+					markerHeight = getViewPortUserUnit(svgMarkerHeight, SVGUtil.HEIGHT);
 								
 				if(svgViewBox != null){					
 					if(svgPreserveAspectRatio != "none"){
@@ -147,11 +147,11 @@ package com.lorentz.SVG.display
 				//Position and so on
 				var refX:Number = 0;
 				if(svgRefX)
-					refX = getUserUnit(svgRefX, SVGUtil.WIDTH);
+					refX = getViewPortUserUnit(svgRefX, SVGUtil.WIDTH);
 				
 				var refY:Number = 0;
 				if(svgRefY)
-					refY = getUserUnit(svgRefY, SVGUtil.HEIGHT);
+					refY = getViewPortUserUnit(svgRefY, SVGUtil.HEIGHT);
 				
 				rotation = !svgOrient || svgOrient == "auto" ? markerPlace.angle : Number(svgOrient);
 				scaleX = markerPlace.strokeWidth;

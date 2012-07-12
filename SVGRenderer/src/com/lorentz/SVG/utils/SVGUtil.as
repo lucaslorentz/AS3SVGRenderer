@@ -64,13 +64,34 @@
 		}
 		
 		
-		protected static const presentationStyles:Array = ["display", "visibility", "opacity", "fill",
-													 "fill-opacity", "fill-rule", "stroke", "stroke-opacity",
-													 "stroke-width", "stroke-linecap", "stroke-linejoin",
-													 "stroke-dasharray", "stroke-dashoffset", "stroke-dashalign",
-													 "font-size", "font-family", "font-weight", "text-anchor",
-													 "dominant-baseline", "direction", "filter",
-													 "marker", "marker-start", "marker-mid", "marker-end"];
+		protected static const presentationStyles:Array = [
+			"display",
+			"visibility",
+			"opacity",
+			"fill",
+			"fill-opacity",
+			"fill-rule",
+			"stroke",
+			"stroke-opacity",
+			"stroke-width",
+			"stroke-linecap",
+			"stroke-linejoin",
+			"stroke-dasharray",
+			"stroke-dashoffset",
+			"stroke-dashalign",
+			"font-size",
+			"font-family",
+			"font-weight",
+			"text-anchor",
+			"letter-spacing",
+			"dominant-baseline",
+			"direction",
+			"filter",
+			"marker",
+			"marker-start",
+			"marker-mid",
+			"marker-end"
+		];
 		
 		public static function presentationStyleToStyleDeclaration(elt:XML, styleDeclaration:StyleDeclaration = null):StyleDeclaration {
 			if(styleDeclaration == null)
@@ -126,6 +147,7 @@
 		public static const WIDTH:String = "width";
 		public static const HEIGHT:String = "height";
 		public static const WIDTH_HEIGHT:String = "width_height";
+		public static const FONT_SIZE:String = "font_size";
 		
 		public static function getFontSize(s:String, currentFontSize:Number, viewPortWidth:Number, viewPortHeight:Number):Number{
 			switch(s){
@@ -172,12 +194,14 @@
 				value = Number(StringUtil.remove(s, "%"));
 				
 				switch(referenceMode){
-					case WIDTH : return value/100 * referenceWidth;
-							break;
-					case HEIGHT : return value/100 * referenceHeight;
-							break;
-					default : return value/100 * Math.sqrt(Math.pow(referenceWidth,2)+Math.pow(referenceHeight,2))/Math.sqrt(2)
-							break;
+					case WIDTH :
+						return value/100 * referenceWidth;
+					case HEIGHT :
+						return value/100 * referenceHeight;
+					case FONT_SIZE :
+						return value/100 * referenceFontSize;
+					default :
+						return value/100 * Math.sqrt(Math.pow(referenceWidth,2)+Math.pow(referenceHeight,2))/Math.sqrt(2)
 				}
 			} else {
 				return Number(s);

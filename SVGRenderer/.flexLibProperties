@@ -55,7 +55,7 @@
     <classEntry path="com.lorentz.SVG.parser.VisitDefinition"/>
     <classEntry path="com.lorentz.SVG.text.FTESVGTextDrawer"/>
     <classEntry path="com.lorentz.SVG.text.ISVGTextDrawer"/>
-    <classEntry path="com.lorentz.SVG.data.text.SVGTextFormat"/>
+    <classEntry path="com.lorentz.SVG.data.text.SVGTextToDraw"/>
     <classEntry path="com.lorentz.SVG.text.TextFieldSVGTextDrawer"/>
     <classEntry path="com.lorentz.SVG.utils.ArcUtils"/>
     <classEntry path="com.lorentz.SVG.utils.Base64AsyncDecoder"/>

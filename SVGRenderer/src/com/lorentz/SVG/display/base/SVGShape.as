@@ -2,13 +2,14 @@
 	import com.lorentz.SVG.data.MarkerPlace;
 	import com.lorentz.SVG.display.SVGMarker;
 	import com.lorentz.SVG.drawing.DashedDrawer;
-	import com.lorentz.SVG.drawing.MarkersPlacesCapturerDrawer;
 	import com.lorentz.SVG.drawing.GraphicsPathDrawer;
 	import com.lorentz.SVG.drawing.IDrawer;
+	import com.lorentz.SVG.drawing.MarkersPlacesCapturerDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
 	
 	import flash.display.Graphics;
 	import flash.display.GraphicsPathWinding;
+	import flash.geom.Rectangle;
 
 	public class SVGShape extends SVGGraphicsElement {
 		private var _markers:Vector.<SVGMarker> = new Vector.<SVGMarker>();		
@@ -134,7 +135,7 @@
 					
 					var strokeWidth:Number = 1;
 					if(finalStyle.getPropertyValue("stroke-width"))
-						strokeWidth = getUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
+						strokeWidth = getViewPortUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
 					
 					markerPlace.strokeWidth = strokeWidth;
 					marker.markerPlace = markerPlace;
@@ -143,6 +144,12 @@
 					_markers.push(marker);
 				}
 			}
+		}
+		
+		override protected function getObjectBounds():Rectangle {
+			graphics.beginFill(0);
+			drawWithAppropriateMethod();
+			return content.getBounds(this);
 		}
 	}
 }

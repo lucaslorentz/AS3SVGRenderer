@@ -30,19 +30,19 @@
 			
 			var _x:Number = 0;
 			if(svgX)
-				_x = getUserUnit(svgX, SVGUtil.WIDTH);
+				_x = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
 			
 			var _y:Number = 0;
 			if(svgY)
-				_y = getUserUnit(svgY, SVGUtil.HEIGHT);
+				_y = getViewPortUserUnit(svgY, SVGUtil.HEIGHT);
 			
 			var w:Number = 0;
 			if(svgWidth)
-				w = getUserUnit(svgWidth, SVGUtil.WIDTH);
+				w = getViewPortUserUnit(svgWidth, SVGUtil.WIDTH);
 			
 			var h:Number = 0;
 			if(svgHeight)
-				h = getUserUnit(svgHeight, SVGUtil.HEIGHT);
+				h = getViewPortUserUnit(svgHeight, SVGUtil.HEIGHT);
 			
 			content.scaleX = w/content.width;
 			content.scaleY = h/content.height;

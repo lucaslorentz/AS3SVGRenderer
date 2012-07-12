@@ -57,7 +57,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.lorentz.SVG.data.text.SVGTextFormat;
+			import com.lorentz.SVG.data.text.SVGTextToDraw;
 			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.events.SVGEvent;
 			import com.lorentz.SVG.text.FTESVGTextDrawer;
@@ -65,10 +65,6 @@
 			import com.lorentz.SVG.text.TextFieldSVGTextDrawer;
 			import com.lorentz.SVG.utils.DisplayUtils;
 			import com.lorentz.processing.ProcessExecutor;
-			
-			import flash.utils.getTimer;
-			import flash.utils.setInterval;
-			import flash.utils.setTimeout;
 			
 			import mx.events.MenuEvent;
 			
@@ -195,7 +191,7 @@
 				selectedElement = null;
 			}
 			
-			protected function customChangeTextFormatFunction(textFormat:SVGTextFormat):void {
+			protected function textDrawingInterceptor(textFormat:SVGTextToDraw):void {
 				textFormat.fontFamily = textDrawerDropDownList.selectedItem.fontName;
 			}			
 		]]>
@@ -261,9 +257,9 @@
 		</s:ArrayCollection>
 		
 		<s:ArrayList id="textDrawersArrayList">
-			<fx:Object label="FTE (Non-selectable, CFF fonts)" clazz="{FTESVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
-			<fx:Object label="TLF (Flow-selectable, CFF fonts)" clazz="{TLFSVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
-			<fx:Object label="TextField (Selectable, noCFF fonts)" clazz="{TextFieldSVGTextDrawer}" fontName="Bitstream Vera Sans" />
+			<fx:Object label="FTE (Non-selectable, CFF fonts)" textDrawer="{new FTESVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
+			<fx:Object label="TLF (Flow-selectable, CFF fonts)" textDrawer="{new TLFSVGTextDrawer}" fontName="Bitstream Vera Sans CFF" />
+			<fx:Object label="TextField (Selectable, noCFF fonts)" textDrawer="{new TextFieldSVGTextDrawer}" fontName="Bitstream Vera Sans" />
 		</s:ArrayList>
 	</fx:Declarations>
 	
@@ -310,9 +306,9 @@
 						<Flex:SVG id="svg"
 								  validateWhileParsing="{validateWhileParsingCheckBox.selected}"
 								  defaultFontName="{textDrawerDropDownList.selectedItem.fontName}"
-								  textDrawerClass="{textDrawerDropDownList.selectedItem.clazz}"
+								  textDrawer="{textDrawerDropDownList.selectedItem.textDrawer}"
 								  useEmbeddedFonts="{useEmbeddedFontsCheckBox.selected}"
-								  changeTextFormatFunction="{customChangeTextFormatFunction}"/>
+								  textDrawingInterceptor="{textDrawingInterceptor}"/>
 						<s:Rect width="{svg.width}" height="{svg.height}"
 								visible="{showSVGBoundsCheckBox.selected}">
 							<s:stroke>

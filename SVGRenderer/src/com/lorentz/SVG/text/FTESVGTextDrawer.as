@@ -1,18 +1,14 @@
 package com.lorentz.SVG.text
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.data.text.SVGTextFormat;
-	import com.lorentz.SVG.display.base.SVGTextContainer;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	
-	import flash.display.Sprite;
-	import flash.geom.Rectangle;
-	import flash.text.Font;
-	import flash.text.FontType;
 	import flash.text.engine.ElementFormat;
 	import flash.text.engine.FontDescription;
 	import flash.text.engine.FontLookup;
 	import flash.text.engine.FontPosture;
 	import flash.text.engine.FontWeight;
+	import flash.text.engine.TextBaseline;
 	import flash.text.engine.TextBlock;
 	import flash.text.engine.TextElement;
 	import flash.text.engine.TextLine;
@@ -22,42 +18,41 @@ package com.lorentz.SVG.text
 		public function start():void {
 		}
 		
-		public function drawText(element:SVGTextContainer, text:String, svgFormat:SVGTextFormat):SVGDrawnText {
+		public function drawText(data:SVGTextToDraw):SVGDrawnText {
 			var fontDescription:FontDescription = new FontDescription();
-			fontDescription.fontLookup = svgFormat.useEmbeddedFonts ? FontLookup.EMBEDDED_CFF : FontLookup.DEVICE;
-			fontDescription.fontName = svgFormat.fontFamily;
-			fontDescription.fontWeight = svgFormat.fontWeight == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
-			fontDescription.fontPosture = svgFormat.fontStyle == "italic" ? FontPosture.ITALIC : FontPosture.NORMAL;
+			fontDescription.fontLookup = data.useEmbeddedFonts ? FontLookup.EMBEDDED_CFF : FontLookup.DEVICE;
+			fontDescription.fontName = data.fontFamily;
+			fontDescription.fontWeight = data.fontWeight == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
+			fontDescription.fontPosture = data.fontStyle == "italic" ? FontPosture.ITALIC : FontPosture.NORMAL;
 			
 			var elementFormat:ElementFormat = new ElementFormat(fontDescription);
-			elementFormat.fontSize = svgFormat.fontSize;
-			elementFormat.color = svgFormat.color;
+			elementFormat.fontSize = data.fontSize;
+			elementFormat.color = data.color;
+			elementFormat.trackingRight = Math.round(data.letterSpacing);
 			
-			var textBlock:TextBlock = new TextBlock(new TextElement(text, elementFormat));
-			
-			var sprite:Sprite = new Sprite();
+			var textBlock:TextBlock = new TextBlock(new TextElement(data.text, elementFormat));
 			var textLine:TextLine = textBlock.createTextLine(null);
-			sprite.addChild(textLine);
 			
-			var lastAtomIndex:int = textLine.atomCount - 1;
+			var baseLinePosition:Number = 0;
+			var textBaseLine:String = getTextBaseLine(data);
+			if(textBaseLine)
+				baseLinePosition = textLine.getBaselinePosition(textBaseLine);
 			
-			// Don't consider the size of the PARAGRAPH_SEPARATOR Atom,
-			// It will always be the last atom because the current text is always the last text of the paragraph
-			var char:String;
-			while(true){
-				char = text.charAt(lastAtomIndex);
-				if(char.charCodeAt() == 8233 || char == "\n"){
-					lastAtomIndex--;
-				} else
-					break;
-			}
-			
-			var lastAtomBounds:Rectangle = textLine.getAtomBounds(lastAtomIndex);
-			
-			return new SVGDrawnText(sprite, lastAtomBounds.right, 0, 0);
+			return new SVGDrawnText(textLine, textLine.width, 0, -baseLinePosition);
 		}
 		
 		public function end():void {
+		}
+		
+		private function getTextBaseLine(svgFormat:SVGTextToDraw):String {
+			switch(svgFormat.baselineShift.toLowerCase()){
+				case "sub" :
+					return TextBaseline.DESCENT
+				case "super" :
+					return TextBaseline.ASCENT;
+			}
+			
+			return null;
 		}
 	}
 }

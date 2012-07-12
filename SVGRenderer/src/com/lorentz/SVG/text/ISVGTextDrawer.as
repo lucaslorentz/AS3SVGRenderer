@@ -1,6 +1,6 @@
 package com.lorentz.SVG.text
 {
-	import com.lorentz.SVG.data.text.SVGTextFormat;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	import com.lorentz.SVG.data.text.SVGDrawnText;
 	import com.lorentz.SVG.display.base.SVGTextContainer;
 
@@ -8,7 +8,7 @@ package com.lorentz.SVG.text
 	{
 		function start():void;
 		
-		function drawText(element:SVGTextContainer, text:String, svgFormat:SVGTextFormat):SVGDrawnText;
+		function drawText(data:SVGTextToDraw):SVGDrawnText;
 		
 		function end():void;
 	}

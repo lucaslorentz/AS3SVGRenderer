@@ -20,6 +20,7 @@ package com.lorentz.SVG.display.base
 	import flash.display.LineScaleMode;
 	import flash.events.Event;
 	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 
 	public class SVGGraphicsElement extends SVGElement {
 		private var _renderInvalidFlag:Boolean = false;
@@ -90,7 +91,7 @@ package com.lorentz.SVG.display.base
 			
 			var strokeDashArray:Array = [];
 			for each(var length:String in SVGParserCommon.splitNumericArgs(finalStyle.getPropertyValue("stroke-dasharray"))){
-				strokeDashArray.push(getUserUnit(length, SVGUtil.WIDTH_HEIGHT));
+				strokeDashArray.push(getViewPortUserUnit(length, SVGUtil.WIDTH_HEIGHT));
 			}
 			
 			dashedDrawer.dashArray = strokeDashArray;
@@ -176,7 +177,7 @@ package com.lorentz.SVG.display.base
 				
 				var strokeWidth:Number = 1;
 				if(finalStyle.getPropertyValue("stroke-width"))
-					strokeWidth = getUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
+					strokeWidth = getViewPortUserUnit(finalStyle.getPropertyValue("stroke-width"), SVGUtil.WIDTH_HEIGHT);
 				
 				var strokeLineCap:String = CapsStyle.NONE;
 				if(finalStyle.getPropertyValue("stroke-linecap")){
@@ -234,11 +235,29 @@ package com.lorentz.SVG.display.base
 			}
 		}
 		
+		protected function getObjectBounds():Rectangle {
+			return new Rectangle();
+		}
+		
 		private function doLinearGradient(grad:SVGLinearGradient, g:Graphics, fill:Boolean = true):void {
-			var x1:Number = getUserUnit(grad.x1, SVGUtil.WIDTH);
-			var y1:Number = getUserUnit(grad.y1, SVGUtil.HEIGHT);
-			var x2:Number = getUserUnit(grad.x2, SVGUtil.WIDTH);
-			var y2:Number = getUserUnit(grad.y2, SVGUtil.HEIGHT);
+			var x1:Number;
+			var y1:Number;
+			var x2:Number;
+			var y2:Number;
+			
+			if(grad.gradientUnits.toLowerCase() == "objectboundingbox") {
+				var bounds:Rectangle = getObjectBounds();
+				
+				x1 = SVGUtil.getUserUnit(grad.x1, currentFontSize, bounds.width, bounds.height, SVGUtil.WIDTH) + bounds.x;
+				y1 = SVGUtil.getUserUnit(grad.y1, currentFontSize, bounds.width, bounds.height, SVGUtil.HEIGHT) + bounds.y;
+				x2 = SVGUtil.getUserUnit(grad.x2, currentFontSize, bounds.width, bounds.height, SVGUtil.WIDTH) + bounds.x;
+				y2 = SVGUtil.getUserUnit(grad.y2, currentFontSize, bounds.width, bounds.height, SVGUtil.HEIGHT) + bounds.y;
+			} else {
+				x1 = getViewPortUserUnit(grad.x1, SVGUtil.WIDTH);
+				y1 = getViewPortUserUnit(grad.y1, SVGUtil.HEIGHT);
+				x2 = getViewPortUserUnit(grad.x2, SVGUtil.WIDTH);
+				y2 = getViewPortUserUnit(grad.y2, SVGUtil.HEIGHT);
+			}
 			
 			var mat:Matrix = SVGUtil.flashLinearGradientMatrix(x1, y1, x2, y2);
 			if(grad.transform)
@@ -251,11 +270,11 @@ package com.lorentz.SVG.display.base
 		}
 		
 		private function doRadialGradient(grad:SVGRadialGradient, g:Graphics, fill:Boolean = true):void {			
-			var cx:Number = getUserUnit(grad.cx, SVGUtil.WIDTH);
-			var cy:Number = getUserUnit(grad.cy, SVGUtil.HEIGHT);
-			var r:Number = getUserUnit(grad.r, SVGUtil.WIDTH);
-			var fx:Number = getUserUnit(grad.fx, SVGUtil.WIDTH);
-			var fy:Number = getUserUnit(grad.fy, SVGUtil.HEIGHT);
+			var cx:Number = getViewPortUserUnit(grad.cx, SVGUtil.WIDTH);
+			var cy:Number = getViewPortUserUnit(grad.cy, SVGUtil.HEIGHT);
+			var r:Number = getViewPortUserUnit(grad.r, SVGUtil.WIDTH);
+			var fx:Number = getViewPortUserUnit(grad.fx, SVGUtil.WIDTH);
+			var fy:Number = getViewPortUserUnit(grad.fy, SVGUtil.HEIGHT);
 			
 			var mat:Matrix = SVGUtil.flashRadialGradientMatrix(cx, cy, r, fx, fy);
 			if(grad.transform)

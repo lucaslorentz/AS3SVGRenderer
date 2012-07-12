@@ -69,10 +69,10 @@
 		override protected function beforeDraw():void {
 			super.beforeDraw();
 			
-			_x1Units = getUserUnit(svgX1, SVGUtil.WIDTH);
-			_y1Units = getUserUnit(svgY1, SVGUtil.HEIGHT);
-			_x2Units = getUserUnit(svgX2, SVGUtil.WIDTH);
-			_y2Units = getUserUnit(svgY2, SVGUtil.HEIGHT);
+			_x1Units = getViewPortUserUnit(svgX1, SVGUtil.WIDTH);
+			_y1Units = getViewPortUserUnit(svgY1, SVGUtil.HEIGHT);
+			_x2Units = getViewPortUserUnit(svgX2, SVGUtil.WIDTH);
+			_y2Units = getViewPortUserUnit(svgY2, SVGUtil.HEIGHT);
 		}
 		
 		override protected function drawToDrawer(drawer:IDrawer):void {			

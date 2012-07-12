@@ -17,11 +17,11 @@
 		
 		public var currentX:Number = 0;
 		public var currentY:Number = 0;
-		public var textDrawer:ISVGTextDrawer;
 		public var textContainer:Sprite;
 		
 		private var _start:Number = 0;
 		private var _end:Number = 0;
+		private var fillTextsSprite:Sprite;
 				
 		protected override function render():void {
 			super.render();
@@ -34,20 +34,17 @@
 						
 			textContainer = content;
 			
-			textDrawer = new document.textDrawerClass();
-			textDrawer.start();
+			document.textDrawer.start();
 			
 			var direction:String = getDirectionFromStyles() || "lr";
 			var textDirection:String = direction;
 			
-			currentX = getUserUnit(svgX, SVGUtil.WIDTH);
-			currentY = getUserUnit(svgY, SVGUtil.HEIGHT);
+			currentX = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
+			currentY = getViewPortUserUnit(svgY, SVGUtil.HEIGHT);
 					
 			_start = currentX;
 			_renderObjects = new Vector.<DisplayObject>();
-			
-			var fillTextsSprite:Sprite;
-			
+						
 			if(hasComplexFill)
 			{
 				fillTextsSprite = new Sprite();
@@ -60,7 +57,7 @@
 				var textElement:Object = getTextElementAt(i);
 				
 				if(textElement is String){
-					var drawnText:SVGDrawnText = createTextSprite( textElement as String, textDrawer );
+					var drawnText:SVGDrawnText = createTextSprite( textElement as String, document.textDrawer );
 										
 					if((drawnText.direction || direction) == "lr"){
 						drawnText.displayObject.x = currentX - drawnText.startX;
@@ -96,7 +93,7 @@
 			
 			doAnchorAlign(textDirection, _start, _end);
 			
-			textDrawer.end();
+			document.textDrawer.end();
 
 			if(hasComplexFill && fillTextsSprite.numChildren > 0){
 				var bounds:Rectangle = DisplayUtils.safeGetBounds(fillTextsSprite, content);
@@ -111,6 +108,10 @@
 				
 				_renderObjects.push(fill);
 			}
+		}
+		
+		override protected function getObjectBounds():Rectangle {
+			return content.getBounds(this);
 		}
 		
 		override public function clone(deep:Boolean = true):SVGElement {

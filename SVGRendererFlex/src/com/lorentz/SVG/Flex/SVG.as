@@ -2,6 +2,7 @@ package com.lorentz.SVG.Flex
 {
 	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
+	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.DisplayUtils;
 	import com.lorentz.processing.ProcessExecutor;
 	
@@ -99,14 +100,11 @@ package com.lorentz.SVG.Flex
 		}
 		
 		[Bindable]
-		/**
-		 * @default true
-		 **/
-		public function get textDrawerClass():Class {
-			return _svgDocument.textDrawerClass;
+		public function get textDrawer():ISVGTextDrawer {
+			return _svgDocument.textDrawer;
 		}
-		public function set textDrawerClass(value:Class):void {
-			_svgDocument.textDrawerClass = value;
+		public function set textDrawer(value:ISVGTextDrawer):void {
+			_svgDocument.textDrawer = value;
 		}
 		
 		[Bindable]
@@ -119,16 +117,16 @@ package com.lorentz.SVG.Flex
 		
 		[Bindable]
 		/**
-		 * Function that is called before sending svgTextFormat to TextDrawer, allowing you to change texts formats with your own rule.
+		 * Function that is called before sending svgTextToDraw to TextDrawer, allowing you to change texts formats with your own rule.
 		 * The function can alter any property on textFormat
 		 * Function parameters: function(textFormat:SVGTextFormat):void
 		 * Example: Change all texts inside an svg to a specific embedded font
 		 */
-		public function get changeTextFormatFunction():Function {
-			return _svgDocument.changeTextFormatFunction;
+		public function get textDrawingInterceptor():Function {
+			return _svgDocument.textDrawingInterceptor;
 		}
-		public function set changeTextFormatFunction(value:Function):void {
-			_svgDocument.changeTextFormatFunction = value;
+		public function set textDrawingInterceptor(value:Function):void {
+			_svgDocument.textDrawingInterceptor = value;
 		}
 		
 		[Bindable]

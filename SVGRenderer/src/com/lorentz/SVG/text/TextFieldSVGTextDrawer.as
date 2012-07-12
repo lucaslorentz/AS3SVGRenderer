@@ -1,8 +1,7 @@
 package com.lorentz.SVG.text
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.data.text.SVGTextFormat;
-	import com.lorentz.SVG.display.base.SVGTextContainer;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
@@ -15,19 +14,20 @@ package com.lorentz.SVG.text
 		{
 		}
 		
-		public function drawText(element:SVGTextContainer, text:String, svgFormat:SVGTextFormat):SVGDrawnText
+		public function drawText(data:SVGTextToDraw):SVGDrawnText
 		{
 			var textField:TextField = new TextField();
 			textField.autoSize = TextFieldAutoSize.LEFT;
-			textField.text = text;
-			textField.embedFonts = svgFormat.useEmbeddedFonts;
+			textField.text = data.text;
+			textField.embedFonts = data.useEmbeddedFonts;
 			
 			var textFormat:TextFormat = new TextFormat();
-			textFormat.font = svgFormat.fontFamily;
-			textFormat.size = svgFormat.fontSize;
-			textFormat.bold = svgFormat.fontWeight == "bold";
-			textFormat.italic = svgFormat.fontStyle == "italic";
-			textFormat.color = svgFormat.color;
+			textFormat.font = data.fontFamily;
+			textFormat.size = data.fontSize;
+			textFormat.bold = data.fontWeight == "bold";
+			textFormat.italic = data.fontStyle == "italic";
+			textFormat.color = data.color;
+			textFormat.letterSpacing = data.letterSpacing;
 			textField.setTextFormat(textFormat);
 			
 			var lineMetrics:TextLineMetrics = textField.getLineMetrics(0);

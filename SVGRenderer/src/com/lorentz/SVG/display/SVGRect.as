@@ -86,21 +86,21 @@
 		override protected function beforeDraw():void {
 			super.beforeDraw();
 			
-			_xUnits = getUserUnit(svgX, SVGUtil.WIDTH);
-			_yUnits = getUserUnit(svgY, SVGUtil.HEIGHT);
-			_widthUnits = getUserUnit(svgWidth, SVGUtil.WIDTH);
-			_heightUnits = getUserUnit(svgHeight, SVGUtil.HEIGHT);
+			_xUnits = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
+			_yUnits = getViewPortUserUnit(svgY, SVGUtil.HEIGHT);
+			_widthUnits = getViewPortUserUnit(svgWidth, SVGUtil.WIDTH);
+			_heightUnits = getViewPortUserUnit(svgHeight, SVGUtil.HEIGHT);
 			
 			_rxUnits = Number.NaN;
 			_ryUnits = Number.NaN;
 			
 			if(svgRx){
-				_rxUnits = getUserUnit(svgRx, SVGUtil.WIDTH);
+				_rxUnits = getViewPortUserUnit(svgRx, SVGUtil.WIDTH);
 				if(!svgRy)
 					_ryUnits = _rxUnits;
 			}
 			if(svgRy){
-				_ryUnits = getUserUnit(svgRy, SVGUtil.HEIGHT);
+				_ryUnits = getViewPortUserUnit(svgRy, SVGUtil.HEIGHT);
 				if(!svgRx)
 					_rxUnits = _ryUnits;
 			}

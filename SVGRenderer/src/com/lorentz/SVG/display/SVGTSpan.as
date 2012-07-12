@@ -55,17 +55,17 @@
 			var textDirection:String = direction;
 						
 			if(svgX)
-				textOwner.currentX = getUserUnit(svgX, SVGUtil.WIDTH);
+				textOwner.currentX = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
 			if(svgY)
-				textOwner.currentY = getUserUnit(svgY, SVGUtil.HEIGHT);
+				textOwner.currentY = getViewPortUserUnit(svgY, SVGUtil.HEIGHT);
 			
 			_start = textOwner.currentX;
 			_renderObjects = new Vector.<DisplayObject>();
 			
 			if(svgDx)
-				textOwner.currentX += getUserUnit(svgDx, SVGUtil.WIDTH);
+				textOwner.currentX += getViewPortUserUnit(svgDx, SVGUtil.WIDTH);
 			if(svgDy)
-				textOwner.currentY += getUserUnit(svgDy, SVGUtil.HEIGHT);
+				textOwner.currentY += getViewPortUserUnit(svgDy, SVGUtil.HEIGHT);
 						
 			var fillTextsSprite:Sprite;
 			
@@ -81,7 +81,7 @@
 				var textElement:Object = getTextElementAt(i);
 				
 				if(textElement is String){
-					var drawnText:SVGDrawnText = createTextSprite( textElement as String, textOwner.textDrawer );
+					var drawnText:SVGDrawnText = createTextSprite( textElement as String, document.textDrawer );
 										
 					if((drawnText.direction || direction) == "lr"){
 						drawnText.displayObject.x = textOwner.currentX - drawnText.startX;

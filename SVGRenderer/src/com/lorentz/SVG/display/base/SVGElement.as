@@ -421,13 +421,22 @@
 			return mat;
 		}
 		
-		protected function updateCurrentFontSize():void {
-			var fontSize:String = finalStyle.getPropertyValue("font-size");
+		public function get currentFontSize():Number {
+			return _currentFontSize;
+		}
+		
+		protected function updateCurrentFontSize():void {			
+			_currentFontSize = Number.NaN;
 			
+			if(parentElement)
+				_currentFontSize = parentElement.currentFontSize;
+						
+			var fontSize:String = finalStyle.getPropertyValue("font-size");
 			if(fontSize)
-				_currentFontSize = getUserUnit(fontSize, SVGUtil.HEIGHT);
-			else
-				_currentFontSize = Number.NaN;
+				_currentFontSize = SVGUtil.getFontSize(fontSize, _currentFontSize, viewPortWidth, viewPortHeight);
+			
+			if(isNaN(_currentFontSize))
+				_currentFontSize = SVGUtil.getFontSize("medium", currentFontSize, viewPortWidth, viewPortHeight);
 		}
 		
 		protected function commitProperties():void {
@@ -510,7 +519,7 @@
 				updateViewPortSize();
 		}
 		
-		protected function getFontSize(s:String):Number{
+		protected function getViewPortUserUnit(s:String, reference:String):Number {
 			var viewPortWidth:Number = 0;
 			var viewPortHeight:Number = 0;
 			
@@ -520,20 +529,7 @@
 				viewPortHeight = viewPortElement.viewPortHeight;
 			}
 			
-			return SVGUtil.getFontSize(s, _currentFontSize, viewPortWidth, viewPortHeight);
-		}
-		
-		protected function getUserUnit(s:String, viewPortReference:String):Number {
-			var viewPortWidth:Number = 0;
-			var viewPortHeight:Number = 0;
-			
-			if(viewPortElement != null)
-			{
-				viewPortWidth = viewPortElement.viewPortWidth;
-				viewPortHeight = viewPortElement.viewPortHeight;
-			}
-			
-			return SVGUtil.getUserUnit(s, _currentFontSize, viewPortWidth, viewPortHeight, viewPortReference);
+			return SVGUtil.getUserUnit(s, _currentFontSize, viewPortWidth, viewPortHeight, reference);
 		}
 		
 		public function clone(deep:Boolean = true):SVGElement {
@@ -593,9 +589,9 @@
 				_viewPortHeight = (this as ISVGViewBox).svgViewBox.height;
 			} else {
 				if(viewPort.svgWidth)
-					_viewPortWidth = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
+					_viewPortWidth = getViewPortUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
 				if(viewPort.svgHeight)
-					_viewPortHeight = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
+					_viewPortHeight = getViewPortUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
 			}
 		}
 		
@@ -622,10 +618,10 @@
 				box = getViewPortContentBox();
 			
 			if(box != null && viewPort.svgWidth != null && viewPort.svgHeight != null) {
-				var x:Number = viewPort.svgX ? getUserUnit(viewPort.svgX, SVGUtil.WIDTH) : 0;
-				var y:Number = viewPort.svgY ? getUserUnit(viewPort.svgY, SVGUtil.HEIGHT) : 0;				
-				var w:Number = getUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
-				var h:Number = getUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
+				var x:Number = viewPort.svgX ? getViewPortUserUnit(viewPort.svgX, SVGUtil.WIDTH) : 0;
+				var y:Number = viewPort.svgY ? getViewPortUserUnit(viewPort.svgY, SVGUtil.HEIGHT) : 0;				
+				var w:Number = getViewPortUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
+				var h:Number = getViewPortUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
 				
 				if(viewPort.svgPreserveAspectRatio != "none"){
 					var viewPortBox:Rectangle = new Rectangle(x, y, w, h);

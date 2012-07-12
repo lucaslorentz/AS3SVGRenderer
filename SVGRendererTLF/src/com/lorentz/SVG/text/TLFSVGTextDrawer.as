@@ -1,15 +1,14 @@
 package com.lorentz.SVG.text
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.data.text.SVGTextFormat;
-	import com.lorentz.SVG.display.base.SVGTextContainer;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
 	import flash.text.engine.FontLookup;
 	import flash.text.engine.FontPosture;
 	import flash.text.engine.FontWeight;
-	import flash.text.engine.RenderingMode;
+	import flash.text.engine.TextBaseline;
 	import flash.text.engine.TextLine;
 	
 	import flashx.textLayout.compose.TextFlowLine;
@@ -20,7 +19,6 @@ package com.lorentz.SVG.text
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.elements.TextFlow;
 	import flashx.textLayout.formats.TextAlign;
-	import flashx.textLayout.formats.TextLayoutFormat;
 	
 	public class TLFSVGTextDrawer implements ISVGTextDrawer
 	{
@@ -30,18 +28,8 @@ package com.lorentz.SVG.text
 			textFlow = new TextFlow();
 			textFlow.textAlign = TextAlign.START;
 		}
-		
-		public function drawText(element:SVGTextContainer, text:String, svgFormat:SVGTextFormat):SVGDrawnText {
-			var format:TextLayoutFormat = new TextLayoutFormat();
-			textFlow.fontFamily = svgFormat.fontFamily;
-			textFlow.fontWeight = svgFormat.fontWeight == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
-			textFlow.fontStyle = svgFormat.fontStyle == "italic" ? FontPosture.ITALIC : FontPosture.NORMAL;
-			
-			textFlow.fontSize = svgFormat.fontSize;
-			textFlow.color = svgFormat.color;
-			
-			textFlow.fontLookup = svgFormat.useEmbeddedFonts ? FontLookup.EMBEDDED_CFF : FontLookup.DEVICE;
-			
+				
+		public function drawText(data:SVGTextToDraw):SVGDrawnText {			
 			// Create a sprite to place the text
 			var textSprite:Sprite = new Sprite();
 			
@@ -51,8 +39,14 @@ package com.lorentz.SVG.text
 			
 			// Create the textSpan with the text
 			var spanElementTarget:SpanElement = new SpanElement();
-			spanElementTarget.format = format;
-			spanElementTarget.text = text;
+			spanElementTarget.text = data.text;
+			spanElementTarget.fontFamily = data.fontFamily;
+			spanElementTarget.fontLookup = data.useEmbeddedFonts ? FontLookup.EMBEDDED_CFF : FontLookup.DEVICE;
+			spanElementTarget.fontSize = data.fontSize;
+			spanElementTarget.color = data.color;
+			spanElementTarget.fontWeight = data.fontWeight == "bold" ? FontWeight.BOLD : FontWeight.NORMAL;
+			spanElementTarget.fontStyle = data.fontStyle == "italic" ? FontPosture.ITALIC : FontPosture.NORMAL;
+			spanElementTarget.trackingRight = data.letterSpacing;
 			paragraphElement.addChild(spanElementTarget);
 			
 			// Create a controller to place the text inside sprite
@@ -83,13 +77,29 @@ package com.lorentz.SVG.text
 			var lastAtomBounds:Rectangle = textLine.getAtomBounds(lastAtomIndex);
 			containerController.setCompositionSize(lastAtomBounds.right, textFlowLine.textHeight);
 			
-			return new SVGDrawnText(textSprite, lastAtomBounds.right, 0, textLine.ascent);
+			var baseLinePosition:Number = 0;
+			var textBaseLine:String = getTextBaseLine(data);
+			if(textBaseLine)
+				baseLinePosition = textLine.getBaselinePosition(textBaseLine);
+			
+			return new SVGDrawnText(textSprite, lastAtomBounds.right, 0, textLine.ascent - baseLinePosition);
 		}
 		
 		public function end():void {
 			textFlow.interactionManager = new SelectionManager();
 			textFlow.flowComposer.updateAllControllers();
 			textFlow = null;
+		}
+		
+		private function getTextBaseLine(svgFormat:SVGTextToDraw):String {
+			switch(svgFormat.baselineShift.toLowerCase()){
+				case "sub" :
+					return TextBaseline.DESCENT
+				case "super" :
+					return TextBaseline.ASCENT;
+			}
+			
+			return null;
 		}
 	}
 }

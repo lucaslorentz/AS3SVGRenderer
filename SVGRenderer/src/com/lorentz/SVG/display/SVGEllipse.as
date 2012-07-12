@@ -1,10 +1,10 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGShape;
 	import com.lorentz.SVG.drawing.IDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
 	
 	import flash.display.Graphics;
-	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGEllipse extends SVGShape {
 		private var _cxUnits:Number;
@@ -59,10 +59,10 @@
 		override protected function beforeDraw():void {
 			super.beforeDraw();
 			
-			_cxUnits = getUserUnit(svgCx, SVGUtil.WIDTH);
-			_cyUnits = getUserUnit(svgCy, SVGUtil.HEIGHT);
-			_rxUnits = getUserUnit(svgRx, SVGUtil.WIDTH);
-			_ryUnits = getUserUnit(svgRy, SVGUtil.HEIGHT);
+			_cxUnits = getViewPortUserUnit(svgCx, SVGUtil.WIDTH);
+			_cyUnits = getViewPortUserUnit(svgCy, SVGUtil.HEIGHT);
+			_rxUnits = getViewPortUserUnit(svgRx, SVGUtil.WIDTH);
+			_ryUnits = getViewPortUserUnit(svgRy, SVGUtil.HEIGHT);
 		}
 		
 		override protected function drawToDrawer(drawer:IDrawer):void {

@@ -1,7 +1,7 @@
 package com.lorentz.SVG.display.base
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.data.text.SVGTextFormat;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	import com.lorentz.SVG.display.SVGText;
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.text.ISVGTextDrawer;
@@ -10,8 +10,6 @@ package com.lorentz.SVG.display.base
 	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.display.DisplayObject;
-	import flash.text.Font;
-	import flash.text.FontType;
 
 	use namespace svg_internal;
 
@@ -127,23 +125,30 @@ package com.lorentz.SVG.display.base
 				text = String.fromCharCode(0x200E) + text + String.fromCharCode(0x200E);
 
 			//Setup text format, to pass to the TextDrawer
-			var format:SVGTextFormat = new SVGTextFormat();
+			var textToDraw:SVGTextToDraw = new SVGTextToDraw();
 			
-			format.useEmbeddedFonts = document.useEmbeddedFonts;
-			format.fontSize = getFontSize(finalStyle.getPropertyValue("font-size") || "medium");
-			format.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
-			format.fontWeight = finalStyle.getPropertyValue("font-weight") || "normal";
-			format.fontStyle = finalStyle.getPropertyValue("font-style") || "normal";
+			textToDraw.text = text;
 			
-			if(document.changeTextFormatFunction != null)
-				document.changeTextFormatFunction(format);
+			textToDraw.useEmbeddedFonts = document.useEmbeddedFonts;
+			textToDraw.fontSize = currentFontSize;
+			textToDraw.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
+			textToDraw.fontWeight = finalStyle.getPropertyValue("font-weight") || "normal";
+			textToDraw.fontStyle = finalStyle.getPropertyValue("font-style") || "normal";
+			textToDraw.baselineShift = finalStyle.getPropertyValue("baseline-shift") || "baseline";
+			
+			var letterSpacing:String = finalStyle.getPropertyValue("letter-spacing") || "normal";
+			if(letterSpacing && letterSpacing.toLowerCase() != "normal")
+				textToDraw.letterSpacing = SVGUtil.getUserUnit(letterSpacing, currentFontSize, viewPortWidth, viewPortHeight, SVGUtil.FONT_SIZE);
+			
+			if(document.textDrawingInterceptor != null)
+				document.textDrawingInterceptor(textToDraw);
 			
 			//If need to draw in right color, pass color inside format
 			if(!hasComplexFill)
-				format.color = getFillColor();
+				textToDraw.color = getFillColor();
 			
 			//Use configured textDrawer to draw text on a displayObject
-			var drawnText:SVGDrawnText = textDrawer.drawText(this, text, format);
+			var drawnText:SVGDrawnText = textDrawer.drawText(textToDraw);
 
 			//Change drawnText alpha if needed
 			if(!hasComplexFill){
@@ -209,7 +214,7 @@ package com.lorentz.SVG.display.base
 		public function doAnchorAlign(direction:String, textStartX:Number, textEndX:Number):void {
 			var textAnchor:String = finalStyle.getPropertyValue("text-anchor") || "start";
 			
-			var anchorX:Number = getUserUnit(svgX, SVGUtil.WIDTH);
+			var anchorX:Number = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
 			
 			var offsetX:Number = 0;
 			
