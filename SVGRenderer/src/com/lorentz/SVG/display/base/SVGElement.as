@@ -398,11 +398,15 @@
 			}
 		}
 		
+		protected function get shouldApplySvgTransform():Boolean {
+			return true;
+		}
+		
 		private function computeTransformMatrix():Matrix {
 			var mat:Matrix = null;
 			
-			if(this.transform.matrix){
-				mat = this.transform.matrix;
+			if(transform.matrix){
+				mat = transform.matrix;
 				mat.identity();
 			} else {
 				mat = new Matrix();
@@ -412,7 +416,7 @@
 			mat.rotate(MathUtils.radiusToDegress(rotation));
 			mat.translate(x, y);
 			
-			if(svgTransform != null){
+			if(shouldApplySvgTransform && svgTransform != null){
 				var svgTransformMat:Matrix = SVGParserCommon.parseTransformation(svgTransform);
 				if(svgTransformMat)
 					mat.concat(svgTransformMat);

@@ -111,12 +111,11 @@
 					if(parts is Array){
 						var name:String = parts[1].toLowerCase();
 						var args:Vector.<String> = splitNumericArgs(parts[2]);
-						
-						if(name=="matrix"){
-							return new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5]));
-						}
-						
+
 						switch(name){
+							case "matrix" :
+								mat.concat(new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5])));
+								break;
 							case "translate" :
 								mat.translate(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
 								break;
