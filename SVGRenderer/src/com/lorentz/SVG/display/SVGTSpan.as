@@ -85,11 +85,11 @@
 										
 					if((drawnText.direction || direction) == "lr"){
 						drawnText.displayObject.x = textOwner.currentX - drawnText.startX;
-						drawnText.displayObject.y = textOwner.currentY - drawnText.startY;
+						drawnText.displayObject.y = textOwner.currentY - drawnText.startY - drawnText.baseLineShift;
 						textOwner.currentX += drawnText.textWidth;
 					} else {
 						drawnText.displayObject.x = textOwner.currentX - drawnText.textWidth - drawnText.startX;
-						drawnText.displayObject.y = textOwner.currentY - drawnText.startY;
+						drawnText.displayObject.y = textOwner.currentY - drawnText.startY - drawnText.baseLineShift;
 						textOwner.currentX -= drawnText.textWidth;
 					}
 

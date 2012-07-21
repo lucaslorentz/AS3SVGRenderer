@@ -3,6 +3,7 @@ package com.lorentz.SVG.data.text
 	public class SVGTextToDraw
 	{
 		public var text:String;
+		public var parentFontSize:Number;
 		public var fontSize:Number;
 		public var fontFamily:String;
 		public var fontWeight:String;
@@ -15,6 +16,7 @@ package com.lorentz.SVG.data.text
 		public function clone():SVGTextToDraw {
 			var copy:SVGTextToDraw = new SVGTextToDraw();
 			copy.text = text;
+			copy.parentFontSize = parentFontSize;
 			copy.fontSize = fontSize;
 			copy.fontFamily = fontFamily;
 			copy.fontWeight = fontWeight;

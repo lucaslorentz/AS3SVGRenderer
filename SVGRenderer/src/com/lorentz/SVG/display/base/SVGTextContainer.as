@@ -130,6 +130,7 @@ package com.lorentz.SVG.display.base
 			textToDraw.text = text;
 			
 			textToDraw.useEmbeddedFonts = document.useEmbeddedFonts;
+			textToDraw.parentFontSize = parentElement ? parentElement.currentFontSize : currentFontSize;
 			textToDraw.fontSize = currentFontSize;
 			textToDraw.fontFamily = String(finalStyle.getPropertyValue("font-family") || document.defaultFontName);
 			textToDraw.fontWeight = finalStyle.getPropertyValue("font-weight") || "normal";

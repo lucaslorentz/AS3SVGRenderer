@@ -77,29 +77,24 @@ package com.lorentz.SVG.text
 			var lastAtomBounds:Rectangle = textLine.getAtomBounds(lastAtomIndex);
 			containerController.setCompositionSize(lastAtomBounds.right, textFlowLine.textHeight);
 			
-			var baseLinePosition:Number = 0;
-			var textBaseLine:String = getTextBaseLine(data);
-			if(textBaseLine)
-				baseLinePosition = textLine.getBaselinePosition(textBaseLine);
+			var baseLineShift:Number = 0;
+			switch(data.baselineShift.toLowerCase())
+			{
+				case "super" :
+					baseLineShift = Math.abs(spanElementTarget.getComputedFontMetrics().superscriptOffset) * data.parentFontSize;
+					break;
+				case "sub" :
+					baseLineShift = -Math.abs(spanElementTarget.getComputedFontMetrics().subscriptOffset) * data.parentFontSize;
+					break;
+			}
 			
-			return new SVGDrawnText(textSprite, lastAtomBounds.right, 0, textLine.ascent - baseLinePosition);
+			return new SVGDrawnText(textSprite, lastAtomBounds.right, 0, textLine.ascent, baseLineShift);
 		}
 		
 		public function end():void {
 			textFlow.interactionManager = new SelectionManager();
 			textFlow.flowComposer.updateAllControllers();
 			textFlow = null;
-		}
-		
-		private function getTextBaseLine(svgFormat:SVGTextToDraw):String {
-			switch(svgFormat.baselineShift.toLowerCase()){
-				case "sub" :
-					return TextBaseline.DESCENT
-				case "super" :
-					return TextBaseline.ASCENT;
-			}
-			
-			return null;
 		}
 	}
 }

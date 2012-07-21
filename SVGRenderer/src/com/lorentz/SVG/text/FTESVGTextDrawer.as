@@ -8,7 +8,6 @@ package com.lorentz.SVG.text
 	import flash.text.engine.FontLookup;
 	import flash.text.engine.FontPosture;
 	import flash.text.engine.FontWeight;
-	import flash.text.engine.TextBaseline;
 	import flash.text.engine.TextBlock;
 	import flash.text.engine.TextElement;
 	import flash.text.engine.TextLine;
@@ -33,26 +32,21 @@ package com.lorentz.SVG.text
 			var textBlock:TextBlock = new TextBlock(new TextElement(data.text, elementFormat));
 			var textLine:TextLine = textBlock.createTextLine(null);
 			
-			var baseLinePosition:Number = 0;
-			var textBaseLine:String = getTextBaseLine(data);
-			if(textBaseLine)
-				baseLinePosition = textLine.getBaselinePosition(textBaseLine);
+			var baseLineShift:Number = 0;
+			switch(data.baselineShift.toLowerCase())
+			{
+				case "super" :
+					baseLineShift = Math.abs(elementFormat.getFontMetrics().superscriptOffset) * data.parentFontSize;
+					break;
+				case "sub" :
+					baseLineShift = -Math.abs(elementFormat.getFontMetrics().subscriptOffset) * data.parentFontSize;
+					break;
+			}
 			
-			return new SVGDrawnText(textLine, textLine.width, 0, -baseLinePosition);
+			return new SVGDrawnText(textLine, textLine.width, 0, 0, baseLineShift);
 		}
 		
 		public function end():void {
-		}
-		
-		private function getTextBaseLine(svgFormat:SVGTextToDraw):String {
-			switch(svgFormat.baselineShift.toLowerCase()){
-				case "sub" :
-					return TextBaseline.DESCENT
-				case "super" :
-					return TextBaseline.ASCENT;
-			}
-			
-			return null;
 		}
 	}
 }
