@@ -2,6 +2,9 @@ package com.lorentz.SVG.utils
 {	
 	public class TextUtils
 	{
+		public static const SUPERSCRIPT_OFFSET:Number = 0.33;
+		public static const SUBSCRIPT_OFFSET:Number = 0.2;
+		
 		public static function getParagraphDirection(text:String):String {
 			for(var i:int = text.length - 1; i >=0; i--){
 				var type:String = getBidiCharacterType(text.charAt(i));

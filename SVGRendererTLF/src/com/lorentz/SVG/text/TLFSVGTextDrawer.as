@@ -2,6 +2,7 @@ package com.lorentz.SVG.text
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
 	import com.lorentz.SVG.data.text.SVGTextToDraw;
+	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
@@ -81,10 +82,10 @@ package com.lorentz.SVG.text
 			switch(data.baselineShift.toLowerCase())
 			{
 				case "super" :
-					baseLineShift = Math.abs(spanElementTarget.getComputedFontMetrics().superscriptOffset) * data.parentFontSize;
+					baseLineShift = Math.abs(spanElementTarget.getComputedFontMetrics().superscriptOffset || TextUtils.SUPERSCRIPT_OFFSET) * data.parentFontSize;
 					break;
 				case "sub" :
-					baseLineShift = -Math.abs(spanElementTarget.getComputedFontMetrics().subscriptOffset) * data.parentFontSize;
+					baseLineShift = -Math.abs(spanElementTarget.getComputedFontMetrics().subscriptOffset || TextUtils.SUBSCRIPT_OFFSET) * data.parentFontSize;
 					break;
 			}
 			

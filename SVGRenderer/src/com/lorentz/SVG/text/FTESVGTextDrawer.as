@@ -2,6 +2,7 @@ package com.lorentz.SVG.text
 {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
 	import com.lorentz.SVG.data.text.SVGTextToDraw;
+	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.text.engine.ElementFormat;
 	import flash.text.engine.FontDescription;
@@ -36,10 +37,10 @@ package com.lorentz.SVG.text
 			switch(data.baselineShift.toLowerCase())
 			{
 				case "super" :
-					baseLineShift = Math.abs(elementFormat.getFontMetrics().superscriptOffset) * data.parentFontSize;
+					baseLineShift = Math.abs(elementFormat.getFontMetrics().superscriptOffset || TextUtils.SUPERSCRIPT_OFFSET) * data.parentFontSize;
 					break;
 				case "sub" :
-					baseLineShift = -Math.abs(elementFormat.getFontMetrics().subscriptOffset) * data.parentFontSize;
+					baseLineShift = -Math.abs(elementFormat.getFontMetrics().subscriptOffset || TextUtils.SUBSCRIPT_OFFSET) * data.parentFontSize;
 					break;
 			}
 			
