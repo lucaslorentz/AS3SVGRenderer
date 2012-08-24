@@ -4,6 +4,7 @@
 	public class SVGClipPath extends SVGG {	
 		public function SVGClipPath(){
 			super();
+			style.setProperty("fill", "black");
 		}
 	}
 }

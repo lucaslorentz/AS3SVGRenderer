@@ -159,7 +159,7 @@
 				case "x-large" : s = "17.28pt"; break;
 				case "xx-large" : s = "20.736pt"; break;
 			}
-			return getUserUnit(s, currentFontSize, viewPortWidth, viewPortHeight, WIDTH);
+			return getUserUnit(s, currentFontSize, viewPortWidth, viewPortHeight, FONT_SIZE);
 		}
 		
 		public static function getUserUnit(s:String, referenceFontSize:Number, referenceWidth:Number, referenceHeight:Number, referenceMode:String):Number {
