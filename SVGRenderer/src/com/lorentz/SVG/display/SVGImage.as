@@ -152,14 +152,13 @@
 				(_loader.content as Bitmap).smoothing = true;
 				
 			adjustContentToViewPort();
-			
 			endASyncValidation("loadImage");
 		}
 		
 		private function loadError(e:IOErrorEvent):void {
-			trace("Failed to load image");
-			adjustContentToViewPort();
+			trace("Failed to load image" + e.text);
 			
+			adjustContentToViewPort();
 			endASyncValidation("loadImage");
 		}
 		
