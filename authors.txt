@@ -1,4 +1,0 @@
-(no author) = Lucas Lorentz <lucaslorentzlara@hotmail.com>
-lucaslorentzlara = Lucas Lorentz <lucaslorentzlara@hotmail.com>
-lucaslorentzlara@gmail.com = Lucas Lorentz <lucaslorentzlara@hotmail.com>
-charles.m.dietrich = Lucas Lorentz <lucaslorentzlara@hotmail.com>
