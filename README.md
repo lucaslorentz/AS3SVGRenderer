@@ -30,17 +30,12 @@ Missing features:
 INTRODUCTION
 ==============
 
-The library has classes that represents each SVG element.
-
-Those classes and the SVG element has similar properties and styles.
-
-The SVGDocument class is the class responsible to hold the SVG display object tree.
-
-The library has an asynchronously parser that processes the SVG file and create all necessary display objects.
-
-The library also uses deferred rendering. So, the graphics will only have the final rendering after RENDERED event, not after PARSE_COMPLETE event.
-
-You can listen to the RENDERED event to know when graphics was completely rendered for the first time.
+The library has classes that represents each SVG element.  
+Those classes and the SVG element has similar properties and styles.  
+The SVGDocument class is the class responsible to hold the SVG display object tree.  
+The library has an asynchronously parser that processes the SVG file and create all necessary display objects.  
+The library also uses deferred rendering. So, the graphics will only have the final rendering after RENDERED event, not after PARSE_COMPLETE event.  
+You can listen to the RENDERED event to know when graphics was completely rendered for the first time.  
 
 USAGE
 ==============
