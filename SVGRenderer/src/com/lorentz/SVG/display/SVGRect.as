@@ -91,8 +91,8 @@
 			_widthUnits = getViewPortUserUnit(svgWidth, SVGUtil.WIDTH);
 			_heightUnits = getViewPortUserUnit(svgHeight, SVGUtil.HEIGHT);
 			
-			_rxUnits = Number.NaN;
-			_ryUnits = Number.NaN;
+			_rxUnits = 0;
+			_ryUnits = 0;
 			
 			if(svgRx){
 				_rxUnits = getViewPortUserUnit(svgRx, SVGUtil.WIDTH);
@@ -107,7 +107,7 @@
 		}
 
 		override protected function drawToDrawer(drawer:IDrawer):void {
-			if(isNaN(_rxUnits) || isNaN(_ryUnits)){
+			if(_rxUnits == 0 && _ryUnits == 0){
 				drawer.moveTo(_xUnits, _yUnits);
 				drawer.lineTo(_xUnits + _widthUnits, _yUnits);			
 				drawer.lineTo(_xUnits + _widthUnits, _yUnits + _heightUnits);
