@@ -6,7 +6,7 @@ An AS3 SVG Renderer for Flash Player.
 It parses and translates svg elements to Flash display objects. Rendering it and letting you interact with the output.
 
 Requirements:
--Flash Player 10+
+* Flash Player 10+
 
 Features:
 * Supports basic shapes and paths.
