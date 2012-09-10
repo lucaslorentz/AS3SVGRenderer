@@ -9,23 +9,23 @@ Requirements:
 -Flash Player 10+
 
 Features:
--Supports basic shapes and paths.
--Supports texts, right-to-left scripts, subscript, superscript.
--Has 3 text renderers engines (TextField, TLF, FTE), supports CFF and non-CFF fonts.
--Supports coordinates system rules, transformations and units.
--Supports masking and clipping.
--Supports filling, strokes, gradients.
--Supports marker symbols.
--Supports basic document structure (g, defs, symbol, use, image).
--Rendered display objects keeps the svg structure, so you can code mouse/touch interactions with svg elements.
--AS3 only.
--Flex component.
+* Supports basic shapes and paths.
+* Supports texts, right-to-left scripts, subscript, superscript.
+* Has 3 text renderers engines (TextField, TLF, FTE), supports CFF and non-CFF fonts.
+* Supports coordinates system rules, transformations and units.
+* Supports masking and clipping.
+* Supports filling, strokes, gradients.
+* Supports marker symbols.
+* Supports basic document structure (g, defs, symbol, use, image).
+* Rendered display objects keeps the svg structure, so you can code mouse/touch interactions with svg elements.
+* AS3 only.
+* Flex component.
 
 Missing features:
--Text stroke.
--Some filters.
--Scripting.
--Animation.
+* Text stroke.
+* Filters.
+* Scripting.
+* Animation.
 
 INTRODUCTION
 ==============
