@@ -146,7 +146,7 @@
             // find intersection between bezier arms
             var s:Point = MathUtils.intersect2Lines(a, b, c, d);
 			
-			if (s && !isNaN(s.x) && !isNaN(s.y))
+			if (s && !isNaN(s.x) && !isNaN(s.y) && s.length != Infinity)
 			{
 				// find distance between the midpoints
 				var dx:Number = (a.x + d.x + s.x * 4 - (b.x + c.x) * 3) * .125;
@@ -169,8 +169,8 @@
 			var b0:Object = halves.b0;
 			var b1:Object = halves.b1;
 			// recursive call to subdivide curve
-			getQuadBezier(a,     b0.b, b0.c, b0.d);
-			getQuadBezier(b1.a,  b1.b, b1.c, d);
+			GetQuadBez_RP(a,     b0.b, b0.c, b0.d);
+			GetQuadBez_RP(b1.a,  b1.b, b1.c, d);
         }
     }
 }
