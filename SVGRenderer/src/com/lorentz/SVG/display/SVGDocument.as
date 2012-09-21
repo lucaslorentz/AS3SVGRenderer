@@ -12,6 +12,7 @@
 	
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.geom.Rectangle;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -33,6 +34,9 @@
 		private var _firstValidationAfterParse:Boolean = false;
 		
 		private var _defaultBaseUrl:String;
+		
+		private var _availableWidth:Number = 500;
+		private var _availableHeight:Number = 500;
 		
 		/**
 		 *  Computed base URL considering the svg path, is null when the svg was not loaded by the library
@@ -81,6 +85,11 @@
 		 * Object used to draw texts 
 		 */		
 		public var textDrawer:ISVGTextDrawer = new FTESVGTextDrawer();
+		
+		/*
+		* Set to autmaticly align the topLeft of the rendered svg content to the svgDocument origin. 
+		*/
+		public var autoAlign:Boolean = false;
 		
 		public function SVGDocument(){			
 			super("document");
@@ -380,8 +389,20 @@
 			validate();
 		}
 		
-		private var _availableWidth:Number = 500;
-		private var _availableHeight:Number = 500;
+		
+		override protected function onPartialyValidated():void {
+			super.onPartialyValidated();
+			
+			if(autoAlign)
+			{
+				var bounds:Rectangle = content.getBounds(content);
+				content.x = -bounds.left;
+				content.y = -bounds.top;
+			} else {
+				content.x = 0;
+				content.y = 0;
+			}
+		}
 		
 		public function get availableWidth():Number {
 			return _availableWidth;
