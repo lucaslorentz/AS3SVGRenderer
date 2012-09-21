@@ -44,20 +44,22 @@ AS3 only (without flex)
 ----------
 
 1. The first thing you have to do is initialize the ProcessExecutor, that class is responsible to distribute the library processing between frames, that way the application will not get frozen while showing large SVG files. You have to do that only once in the whole application.  
-  Example:  
-    ProcessExecutor.instance.initialize(stage);  
+```AS3
+ProcessExecutor.instance.initialize(stage);  
+```
 
 2. Now you can load any SVG file into the SVGDocument using the load method.  
-  Example:  
-    var svg:SVGDocument = new SVGDocument();  
-    svg.load(urlStringOrUrlRequest);  
-    addChild(svg);  
-
-  Or if you already have the svg content string, use the parse method of SVGDocument class.  
-    var svg:SVGDocument = new SVGDocument();  
-    svg.parse(myLoadedSVGString);  
-    addChild(svg);  
-
+```AS3
+var svg:SVGDocument = new SVGDocument();  
+svg.load(urlStringOrUrlRequest);  
+addChild(svg);  
+```
+Or if you already have the svg content string, use the parse method of SVGDocument class.  
+```AS3  
+var svg:SVGDocument = new SVGDocument();  
+svg.parse(myLoadedSVGString);  
+addChild(svg);   
+```
 You can also pass an XML object to the parse method, but it isn't recommended once when the parse method gets a string it does extra things to better parse the string.
 
 Flex component
@@ -69,7 +71,7 @@ Flex component
   * A string with the content of the SVG file.
   * A XML object with the content of the SVG file (not recommended).
 
-After that, the SVG file will appear on the screen.
+2. Done :-). The SVG file will appear on the screen.
 
 LICENSE
 ==============
