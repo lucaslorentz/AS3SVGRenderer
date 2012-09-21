@@ -162,7 +162,7 @@
 			endASyncValidation("loadImage");
 		}
 		
-		override protected function getViewPortContentBox():Rectangle {
+		override protected function getContentBox():Rectangle {
 			if(_loader == null || _loader.content == null)
 				return null;
 			

@@ -106,7 +106,7 @@
 			return false;
 		}
 		
-		override protected function getViewPortContentBox():Rectangle {
+		override protected function getContentBox():Rectangle {
 			if(_includedElement is ISVGViewBox)
 				return (_includedElement as ISVGViewBox).svgViewBox;
 			

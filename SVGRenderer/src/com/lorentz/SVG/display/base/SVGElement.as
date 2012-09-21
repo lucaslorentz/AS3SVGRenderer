@@ -43,14 +43,19 @@
 		private var _document:SVGDocument;
 		private var _numInvalidElements:int = 0;
 		private var _numRunningAsyncValidations:int = 0;
+		private var _runningAsyncValidations:Object = {};
 		private var _invalidFlag:Boolean = false;
 		private var _invalidStyleFlag:Boolean = false;
 		private var _invalidPropertiesFlag:Boolean = false;
 		private var _invalidTransformFlag:Boolean = false;
-		private var _runningAsyncValidations:Object = {};
 		private var _displayChanged:Boolean = false;
 		private var _opacityChanged:Boolean = false;
 		private var _attributes:Object = {};
+		
+		private var _elementsAttached:Vector.<SVGElement> = new Vector.<SVGElement>();
+		
+		private var _viewPortWidth:Number;
+		private var _viewPortHeight:Number;
 		
 		public function SVGElement(tagName:String){
 			_type = tagName;
@@ -150,7 +155,6 @@
 		/////////////////////////////
 		// Stores a list of elements that are attached to this element
 		/////////////////////////////
-		private var _elementsAttached:Vector.<SVGElement> = new Vector.<SVGElement>();
 		protected function attachElement(element:SVGElement):void {
 			if(_elementsAttached.indexOf(element) == -1){
 				_elementsAttached.push(element);
@@ -242,22 +246,16 @@
 		}
 		protected function set numInvalidElements(value:int):void {
 			var d:int = value - _numInvalidElements;
+			
 			_numInvalidElements = value;
-			if(_parentElement != null)
-				_parentElement.numInvalidElements += d;
 			
 			if(_numInvalidElements == 0 && d != 0){
 				dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
-				if(_numRunningAsyncValidations == 0)
-				{
-					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
-					onValidated();
-				}
+				onPartialyValidated();
 			}
-		}
-		
-		protected function onValidated():void {
 			
+			if(_parentElement != null)
+				_parentElement.numInvalidElements += d;
 		}
 		
 		protected function get numRunningAsyncValidations():int {
@@ -265,15 +263,30 @@
 		}
 		protected function set numRunningAsyncValidations(value:int):void {
 			var d:int = value - _numRunningAsyncValidations;
+			
 			_numRunningAsyncValidations = value;
-			if(_parentElement != null)
-				_parentElement.numRunningAsyncValidations += d;
 			
 			if(_numRunningAsyncValidations == 0 && d != 0) {
 				dispatchEvent(new SVGEvent(SVGEvent.ASYNC_VALIDATED));
-				if(_numInvalidElements == 0)
-					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
+				onPartialyValidated();
 			}
+			
+			if(_parentElement != null)
+				_parentElement.numRunningAsyncValidations += d;
+		}
+		
+		protected function onPartialyValidated():void {
+			if(this is ISVGViewPort)
+				adjustContentToViewPort();
+			
+			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
+			{
+				dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
+				onValidated();
+			}
+		}
+		
+		protected function onValidated():void {
 		}
 		
 		protected function invalidate():void {
@@ -324,9 +337,6 @@
 					element.validate();
 				}
 			}
-			
-			if(this is ISVGViewPort)
-				adjustContentToViewPort();
 		}
 		
 		public function beginASyncValidation(validationId:String):void {
@@ -527,7 +537,12 @@
 			var viewPortWidth:Number = 0;
 			var viewPortHeight:Number = 0;
 			
-			if(viewPortElement != null)
+			if(parentElement == document)
+			{
+				viewPortWidth = document.availableWidth;
+				viewPortHeight = document.availableHeight;
+			}
+			else if(viewPortElement != null)
 			{
 				viewPortWidth = viewPortElement.viewPortWidth;
 				viewPortHeight = viewPortElement.viewPortHeight;
@@ -573,11 +588,10 @@
 		/////////////////////////////////////////////////
 		// ViewPort
 		/////////////////////////////////////////////////
-		private var _viewPortWidth:Number;
 		public function get viewPortWidth():Number {
 			return _viewPortWidth;
 		}
-		private var _viewPortHeight:Number;
+		
 		public function get viewPortHeight():Number {
 			return _viewPortHeight;
 		}
@@ -598,11 +612,7 @@
 					_viewPortHeight = getViewPortUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
 			}
 		}
-		
-		protected function getViewPortContentBox():Rectangle {
-			return null;
-		}
-		
+						
 		protected function adjustContentToViewPort():void {
 			var viewPort:ISVGViewPort = this as ISVGViewPort;
 			
@@ -615,40 +625,66 @@
 			content.x = 0;
 			content.y = 0;
 			
-			var box:Rectangle;
-			if(this is ISVGViewBox)
-				box = (this as ISVGViewBox).svgViewBox;
-			else
-				box = getViewPortContentBox();
+			var viewBoxRect:Rectangle = getViewBoxRect();
+			var viewPortRect:Rectangle = getViewPortRect();
+			var svgPreserveAspectRatio:String = getPreserveAspectRatio();
 			
-			if(box != null && viewPort.svgWidth != null && viewPort.svgHeight != null) {
+			if(viewBoxRect != null && viewPortRect != null) {
+				if(svgPreserveAspectRatio != "none"){
+					var preserveAspectRatio:Object = SVGParserCommon.parsePreserveAspectRatio(svgPreserveAspectRatio || "");
+					
+					var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortRect, viewBoxRect, preserveAspectRatio.align, preserveAspectRatio.meetOrSlice);
+					
+					if(preserveAspectRatio.meetOrSlice == "slice")
+						this.scrollRect = viewPortRect;
+					
+					content.x = viewPortContentMetrics.contentX;
+					content.y = viewPortContentMetrics.contentY;
+					content.scaleX = viewPortContentMetrics.contentScaleX;
+					content.scaleY = viewPortContentMetrics.contentScaleY;
+				} else {
+					content.x = viewPortRect.x;
+					content.y = viewPortRect.y;
+					content.scaleX = viewPortRect.width / content.width;
+					content.scaleY = viewPortRect.height / content.height;
+				}
+			}
+		}
+		
+		private function getViewBoxRect():Rectangle {
+			if(this is ISVGViewBox)
+				return (this as ISVGViewBox).svgViewBox;
+			else
+				return getContentBox();	
+		}
+		
+		protected function getContentBox():Rectangle {
+			return null;
+		}
+		
+		private function getViewPortRect():Rectangle {
+			var viewPort:ISVGViewPort = this as ISVGViewPort;
+			
+			if(viewPort != null && viewPort.svgWidth != null && viewPort.svgHeight != null)
+			{
 				var x:Number = viewPort.svgX ? getViewPortUserUnit(viewPort.svgX, SVGUtil.WIDTH) : 0;
 				var y:Number = viewPort.svgY ? getViewPortUserUnit(viewPort.svgY, SVGUtil.HEIGHT) : 0;				
 				var w:Number = getViewPortUserUnit(viewPort.svgWidth, SVGUtil.WIDTH);
 				var h:Number = getViewPortUserUnit(viewPort.svgHeight, SVGUtil.HEIGHT);
 				
-				if(viewPort.svgPreserveAspectRatio != "none"){
-					var viewPortBox:Rectangle = new Rectangle(x, y, w, h);
-					
-					var preserveAspectRatio:Object = SVGParserCommon.parsePreserveAspectRatio(String(viewPort.svgPreserveAspectRatio || ""));
-					
-					var viewPortContentMetrics:Object = SVGViewPortUtils.getContentMetrics(viewPortBox, box, preserveAspectRatio.align, preserveAspectRatio.meetOrSlice);
-					
-					if(preserveAspectRatio.meetOrSlice == "slice"){
-						this.scrollRect = viewPortBox;
-					}
-					
-					content.scaleX = viewPortContentMetrics.contentScaleX;
-					content.scaleY = viewPortContentMetrics.contentScaleY;
-					content.x = viewPortContentMetrics.contentX;
-					content.y = viewPortContentMetrics.contentY;
-				} else {
-					content.x = x;
-					content.y = y;
-					content.scaleX = w / content.width;
-					content.scaleY = h / content.height;
-				}
+				return new Rectangle(x, y, w, h);
 			}
+			
+			return null;
+		}
+		
+		private function getPreserveAspectRatio():String {
+			var viewPort:ISVGViewPort = this as ISVGViewPort;
+			
+			if(viewPort != null)
+				return viewPort.svgPreserveAspectRatio;
+			
+			return null;
 		}
 		
 		/**

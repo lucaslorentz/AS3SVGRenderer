@@ -85,7 +85,7 @@
 		public function SVGDocument(){			
 			super("document");
 		}
-		
+				
 		public function load(urlOrUrlRequest:Object):void {
 			if(_urlLoader != null){
 				try {
@@ -188,7 +188,7 @@
 			{
 				_firstValidationAfterParse = false;
 				dispatchEvent( new SVGEvent( SVGEvent.RENDERED ) );
-			}	
+			}
 		}
 		
 		public function clear():void {
@@ -378,6 +378,23 @@
 			}
 			
 			validate();
+		}
+		
+		private var _availableWidth:Number = 500;
+		private var _availableHeight:Number = 500;
+		
+		public function get availableWidth():Number {
+			return _availableWidth;
+		}
+		public function set availableWidth(value:Number):void {
+			_availableWidth = value;
+		}
+		
+		public function get availableHeight():Number {
+			return _availableHeight;
+		}
+		public function set availableHeight(value:Number):void {
+			_availableHeight = value;
 		}
 	}
 }

@@ -6,11 +6,7 @@ package com.lorentz.SVG.Flex
 	import com.lorentz.SVG.utils.DisplayUtils;
 	import com.lorentz.processing.ProcessExecutor;
 	
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
 	import flash.geom.Rectangle;
-	import flash.net.URLLoader;
-	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	
 	import mx.core.UIComponent;
@@ -173,14 +169,9 @@ package com.lorentz.SVG.Flex
 		}
 		
 		override protected function measure():void {
-			if(_svgDocument.scrollRect != null){
-				this.measuredWidth = _svgDocument.scrollRect.width;
-				this.measuredHeight = _svgDocument.scrollRect.height;
-			} else {
-				var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
-				this.measuredWidth = bounds.left + _svgDocument.width;
-				this.measuredHeight = bounds.top + _svgDocument.height;
-			}
+			var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
+			this.measuredWidth = bounds.left + _svgDocument.width;
+			this.measuredHeight = bounds.top + _svgDocument.height;
 		}
 	}
 }
