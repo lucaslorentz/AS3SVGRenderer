@@ -177,8 +177,8 @@ package com.lorentz.SVG.Flex
 		
 		override protected function measure():void {
 			var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
-			this.measuredWidth = bounds.left + _svgDocument.width;
-			this.measuredHeight = bounds.top + _svgDocument.height;
+			this.measuredWidth = bounds.left + bounds.width;
+			this.measuredHeight = bounds.top + bounds.height;
 		}
 	}
 }
