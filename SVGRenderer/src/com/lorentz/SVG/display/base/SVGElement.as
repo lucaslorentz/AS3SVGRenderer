@@ -250,7 +250,8 @@
 			_numInvalidElements = value;
 			
 			if(_numInvalidElements == 0 && d != 0){
-				dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
+				if(hasEventListener(SVGEvent.SYNC_VALIDATED))
+					dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
 				onPartialyValidated();
 			}
 			
@@ -267,7 +268,8 @@
 			_numRunningAsyncValidations = value;
 			
 			if(_numRunningAsyncValidations == 0 && d != 0) {
-				dispatchEvent(new SVGEvent(SVGEvent.ASYNC_VALIDATED));
+				if(hasEventListener(SVGEvent.ASYNC_VALIDATED))
+					dispatchEvent(new SVGEvent(SVGEvent.ASYNC_VALIDATED));
 				onPartialyValidated();
 			}
 			
@@ -281,7 +283,8 @@
 			
 			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
 			{
-				dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
+				if(hasEventListener(SVGEvent.VALIDATED))
+					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
 				onValidated();
 			}
 		}
@@ -295,7 +298,8 @@
 				
 				numInvalidElements += 1;
 				
-				dispatchEvent(new SVGEvent(SVGEvent.INVALIDATE));
+				if(hasEventListener(SVGEvent.INVALIDATE))
+					dispatchEvent(new SVGEvent(SVGEvent.INVALIDATE));
 			}
 		}
 		

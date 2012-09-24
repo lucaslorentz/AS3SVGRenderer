@@ -12,6 +12,13 @@ package com.lorentz.SVG.Flex
 	import mx.core.UIComponent;
 	import mx.managers.ISystemManager;
 
+	[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	[Event(name="syncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="rendered", type="com.lorentz.SVG.events.SVGEvent")]
+	
 	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
@@ -36,15 +43,15 @@ package com.lorentz.SVG.Flex
 		private var _sourceInvalid:Boolean = false;
 		
 		private static const CLONED_EVENTS:Vector.<String> = new <String>[
-			SVGEvent.PARSE_START,
-			SVGEvent.PARSE_COMPLETE,
-			SVGEvent.RENDERED,
-			SVGEvent.ELEMENT_ADDED,
-			SVGEvent.ELEMENT_REMOVED,
 			SVGEvent.INVALIDATE,
 			SVGEvent.SYNC_VALIDATED,
 			SVGEvent.ASYNC_VALIDATED,
-			SVGEvent.VALIDATED
+			SVGEvent.VALIDATED,
+			SVGEvent.RENDERED,
+			SVGEvent.PARSE_START,
+			SVGEvent.PARSE_COMPLETE,
+			SVGEvent.ELEMENT_ADDED,
+			SVGEvent.ELEMENT_REMOVED
 		];
 		
 		public function SVG():void {

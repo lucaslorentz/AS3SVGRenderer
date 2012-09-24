@@ -17,9 +17,15 @@
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	
+	[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
+	
+	[Event(name="syncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
+	[Event(name="rendered", type="com.lorentz.SVG.events.SVGEvent")]
+	
 	[Event(name="parseStart", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="parseComplete", type="com.lorentz.SVG.events.SVGEvent")]
-	[Event(name="rendered", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementAdded", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="elementRemoved", type="com.lorentz.SVG.events.SVGEvent")]
 	
@@ -171,7 +177,8 @@
 						
 			_parsing = true;
 			
-			dispatchEvent( new SVGEvent( SVGEvent.PARSE_START ) );
+			if(hasEventListener(SVGEvent.PARSE_START))
+				dispatchEvent( new SVGEvent( SVGEvent.PARSE_START ) );
 			
 			_parser = new AsyncSVGParser(this, svg);
 			_parser.addEventListener(Event.COMPLETE, parser_completeHandler);
@@ -182,7 +189,9 @@
 		protected function parser_completeHandler(e:Event):void {
 			_parsing = false;
 			_parser = null;
-			dispatchEvent( new SVGEvent( SVGEvent.PARSE_COMPLETE ) );
+			
+			if(hasEventListener(SVGEvent.PARSE_COMPLETE))
+				dispatchEvent( new SVGEvent( SVGEvent.PARSE_COMPLETE ) );
 			
 			_firstValidationAfterParse = true;
 			
@@ -196,7 +205,8 @@
 			if(_firstValidationAfterParse)
 			{
 				_firstValidationAfterParse = false;
-				dispatchEvent( new SVGEvent( SVGEvent.RENDERED ) );
+				if(hasEventListener(SVGEvent.RENDERED))
+					dispatchEvent( new SVGEvent( SVGEvent.RENDERED ) );
 			}
 		}
 		
@@ -279,11 +289,13 @@
 		}
 		
 		svg_internal function onElementAdded(element:SVGElement):void {
-			this.dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_ADDED, element ));
+			if(hasEventListener(SVGEvent.ELEMENT_ADDED))
+				dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_ADDED, element ));
 		}
 		
 		svg_internal function onElementRemoved(element:SVGElement):void {
-			this.dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_REMOVED, element ));
+			if(hasEventListener(SVGEvent.ELEMENT_REMOVED))
+				dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_REMOVED, element ));
 		}
 
 		public function resolveURL(url:String):String
