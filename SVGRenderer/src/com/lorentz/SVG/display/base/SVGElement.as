@@ -64,6 +64,7 @@
 		
 		protected function initialize():void {
 			_style = new StyleDeclaration();
+			_style.addEventListener(StyleDeclarationEvent.PROPERTY_CHANGE, style_propertyChangeHandler, false, 0, true);
 			_finalStyle = new StyleDeclaration();
 			_finalStyle.addEventListener(StyleDeclarationEvent.PROPERTY_CHANGE, finalStyle_propertyChangeHandler, false, 0, true);
 			
@@ -389,6 +390,10 @@
 			
 			//Apply new finalStyle
 			newFinalStyle.cloneOn(_finalStyle);
+		}
+		
+		private function style_propertyChangeHandler(e:StyleDeclarationEvent):void {
+			invalidateStyle();
 		}
 		
 		private function finalStyle_propertyChangeHandler(e:StyleDeclarationEvent):void {
