@@ -54,11 +54,22 @@ package com.lorentz.SVG.display.base
 		override protected function setParentElement(value:SVGElement):void {
 			super.setParentElement(value);
 			
-			if(!(this is SVGText)){
-				var element:SVGElement = value;
-				while(!(element is SVGText) && element != null)
-					element = element.parentElement;
-				_textOwner = element as SVGText;
+			if(value is SVGText)
+				setTextOwner(value as SVGText);
+			else if(value is SVGTextContainer)
+				setTextOwner((value as SVGTextContainer).textOwner);
+			else
+				setTextOwner(this as SVGText);
+		}
+		
+		private function setTextOwner(value:SVGText):void {
+			if(_textOwner != value){
+				_textOwner = value;
+				
+				for each(var element:Object in _textElements){
+					if(element is SVGTextContainer)
+						(element as SVGTextContainer).setTextOwner(value);
+				}
 			}
 		}
 		
@@ -258,15 +269,15 @@ package com.lorentz.SVG.display.base
 			return style.getPropertyValue("fill") != null && style.getPropertyValue("fill") != "" && style.getPropertyValue("fill") != "none";
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGTextContainer = super.clone(deep) as SVGTextContainer;
+		override public function clone():Object {
+			var c:SVGTextContainer = super.clone() as SVGTextContainer;
 
 			for(var i:int = 0; i < this.numTextElements; i++){
 				var textElement:Object = this.getTextElementAt(i);
-				if(textElement is String)
-					c.addTextElement(textElement);
-				else if(textElement is SVGElement)
+				if(textElement is SVGElement)
 					c.addTextElement((textElement as SVGElement).clone());
+				else
+					c.addTextElement(textElement);
 			}
 			
 			return c;

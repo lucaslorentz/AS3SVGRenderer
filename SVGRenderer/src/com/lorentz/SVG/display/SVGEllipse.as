@@ -79,8 +79,8 @@
 			return true;
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGEllipse = super.clone(deep) as SVGEllipse;
+		override public function clone():Object {
+			var c:SVGEllipse = super.clone() as SVGEllipse;
 			c.svgCx = svgCx;
 			c.svgCy = svgCy;
 			c.svgRx = svgRx;

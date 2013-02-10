@@ -133,8 +133,8 @@
 			}
 		}
 				
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGTSpan = super.clone(deep) as SVGTSpan;
+		override public function clone():Object {
+			var c:SVGTSpan = super.clone() as SVGTSpan;
 			c.svgX = svgX;
 			c.svgY = svgY;
 			c.svgDx = svgDx;

@@ -6,6 +6,7 @@
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.parser.SVGParserCommon;
 	import com.lorentz.SVG.svg_internal;
+	import com.lorentz.SVG.utils.ICloneable;
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.SVGViewPortUtils;
@@ -22,7 +23,7 @@
 	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="validated", type="com.lorentz.SVG.events.SVGEvent")]
 	
-	public class SVGElement extends Sprite {
+	public class SVGElement extends Sprite implements ICloneable {
 		protected var content:Sprite;
 		private var _mask:SVGElement;
 		
@@ -279,7 +280,7 @@
 		}
 		
 		protected function onPartialyValidated():void {
-			if(this is ISVGViewPort)
+			if(this is ISVGViewPort && document)
 				adjustContentToViewPort();
 			
 			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
@@ -483,10 +484,12 @@
 				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
 					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
 					
-					_mask = document.getElementDefinitionClone(clipPathId);
-					attachElement(_mask);
-					addChild(_mask);
-					content.mask = _mask;
+					_mask = document.getDefinitionClone(clipPathId) as SVGElement;
+					if(_mask != null){
+						attachElement(_mask);
+						addChild(_mask);
+						content.mask = _mask;
+					}
 				}
 			}
 			
@@ -503,12 +506,14 @@
 				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Clip Path
 					var maskId:String = SVGUtil.extractUrlId(svgMask);
 					
-					_mask = document.getElementDefinitionClone(maskId);
-					attachElement(_mask);
-					_mask.cacheAsBitmap = true;
-					content.cacheAsBitmap = true;
-					addChild(_mask);
-					content.mask = _mask;
+					_mask = document.getDefinitionClone(maskId) as SVGElement;
+					if(_mask != null){
+						attachElement(_mask);
+						_mask.cacheAsBitmap = true;
+						content.cacheAsBitmap = true;
+						addChild(_mask);
+						content.mask = _mask;
+					}
 				}
 			}
 			
@@ -560,7 +565,7 @@
 			return SVGUtil.getUserUnit(s, _currentFontSize, viewPortWidth, viewPortHeight, reference);
 		}
 		
-		public function clone(deep:Boolean = true):SVGElement {
+		public function clone():Object {
 			var clazz:Class = Object(this).constructor as Class;
 			
 			var copy:SVGElement = new clazz();

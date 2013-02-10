@@ -29,8 +29,8 @@
 			}
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGPolygon = super.clone(deep) as SVGPolygon;
+		override public function clone():Object {
+			var c:SVGPolygon = super.clone() as SVGPolygon;
 			c.points = points.slice();
 			return c;
 		}

@@ -1,13 +1,14 @@
 package com.lorentz.SVG.data.style
 {
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
+	import com.lorentz.SVG.utils.ICloneable;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.EventDispatcher;
 
 	[Event(name="propertyChange", type="com.lorentz.SVG.events.StyleDeclarationEvent")]
-	public class StyleDeclaration extends EventDispatcher
+	public class StyleDeclaration extends EventDispatcher implements ICloneable
 	{
 		private var _propertiesValues:Object = {};
 		private var _indexedProperties:Array = [];
@@ -112,6 +113,12 @@ package com.lorentz.SVG.data.style
 			var index:int = _indexedProperties.indexOf(propertyName);
 			if(index != -1)
 				_indexedProperties.splice(index, 1);
+		}
+		
+		public function clone():Object {
+			var c:StyleDeclaration = new StyleDeclaration();
+			cloneOn(c);
+			return c;	
 		}
 	}
 }

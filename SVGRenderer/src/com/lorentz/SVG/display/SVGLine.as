@@ -80,8 +80,8 @@
 			drawer.lineTo(_x2Units, _y2Units);
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGLine = super.clone(deep) as SVGLine;
+		override public function clone():Object {
+			var c:SVGLine = super.clone() as SVGLine;
 			c.svgX1 = svgX1;
 			c.svgX2 = svgX2;
 			c.svgY1 = svgY1;

@@ -6,7 +6,7 @@ package com.lorentz.SVG.data.path
 			return "z";
 		}
 		
-		override public function clone():SVGPathCommand {
+		override public function clone():Object {
 			return new SVGClosePathCommand();
 		}
 	}

@@ -68,8 +68,8 @@
 			return true;
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGCircle = super.clone(deep) as SVGCircle;
+		override public function clone():Object {
+			var c:SVGCircle = super.clone() as SVGCircle;
 			c.svgCx = svgCx;
 			c.svgCy = svgCy;
 			c.svgR = svgR;

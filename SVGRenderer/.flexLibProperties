@@ -79,6 +79,7 @@
     <classEntry path="com.lorentz.SVG.drawing.MarkersPlacesCapturerDrawer"/>
     <classEntry path="com.lorentz.SVG.data.MarkerPlace"/>
     <classEntry path="com.lorentz.SVG.data.MarkerType"/>
+    <classEntry path="com.lorentz.SVG.utils.ICloneable"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

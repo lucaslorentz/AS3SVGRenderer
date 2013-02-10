@@ -58,6 +58,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.lorentz.SVG.data.text.SVGTextToDraw;
+			import com.lorentz.SVG.display.SVGDocument;
 			import com.lorentz.SVG.display.base.SVGElement;
 			import com.lorentz.SVG.events.SVGEvent;
 			import com.lorentz.SVG.text.FTESVGTextDrawer;
@@ -112,6 +113,16 @@
 				if(e.target != svg)
 					message += "( Target: "+e.target+" )";
 				log(message);
+				
+				if(e.type == SVGEvent.RENDERED)
+				{
+					while(svg.numChildren > 1)
+						svg.removeChildAt(svg.numChildren - 1);
+					
+					if(testCloningCheckBox.selected){
+						svgClone.svgDocument = svg.svgDocument.clone() as SVGDocument;
+					}
+				}
 			}
 			
 			
@@ -171,6 +182,7 @@
 				var svgContent:String = fileReference.data.readUTFBytes(fileReference.data.length);
 				fileReference = null;
 				svg.source = svgContent;
+				svgClone.svgDocument = null;
 				_startTime = getTimer();
 			}
 			
@@ -179,6 +191,7 @@
 				clear();
 				svg.source = null;
 				svg.source = sampleList.selectedItem;
+				svgClone.svgDocument = null;
 				_startTime = getTimer();
 			}
 			
@@ -287,6 +300,11 @@
 					selected="true"
 					change="updateRender()"/>
 		
+		<s:CheckBox id="testCloningCheckBox"
+					label="Test cloning"
+					selected="false"
+					change="updateRender()"/>
+		
 		<s:DropDownList id="textDrawerDropDownList"
 						width="300"
 						selectedIndex="0"
@@ -309,6 +327,8 @@
 								  textDrawer="{textDrawerDropDownList.selectedItem.textDrawer}"
 								  useEmbeddedFonts="{useEmbeddedFontsCheckBox.selected}"
 								  textDrawingInterceptor="{textDrawingInterceptor}"/>
+						<Flex:SVG id="svgClone"
+								  x="{svg.width}" visible="{testCloningCheckBox.enabled}" />
 						<s:Rect width="{svg.width}" height="{svg.height}"
 								visible="{showSVGBoundsCheckBox.selected}">
 							<s:stroke>

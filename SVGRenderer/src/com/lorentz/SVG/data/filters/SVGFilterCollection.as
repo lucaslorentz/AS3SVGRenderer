@@ -1,8 +1,10 @@
 package com.lorentz.SVG.data.filters
 {
+	import com.lorentz.SVG.utils.ICloneable;
+	
 	import flash.filters.BitmapFilter;
 
-	public class SVGFilterCollection
+	public class SVGFilterCollection implements ICloneable
 	{
 		public var svgFilters:Vector.<ISVGFilter> = new Vector.<ISVGFilter>();
 		
@@ -14,6 +16,15 @@ package com.lorentz.SVG.data.filters
 					flashFilters.push(flashFilter);
 			}
 			return flashFilters;
+		}
+		
+		public function clone():Object
+		{
+			var c:SVGFilterCollection = new SVGFilterCollection();
+			for(var i:int = 0; i < svgFilters.length; i++){
+				c.svgFilters.push(svgFilters[i].clone());
+			}
+			return c;
 		}
 	}
 }

@@ -61,8 +61,8 @@
 			_pathRenderer.render(drawer);
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGPath = super.clone(deep) as SVGPath;
+		override public function clone():Object {
+			var c:SVGPath = super.clone() as SVGPath;
 
 			var pathCopy:Vector.<SVGPathCommand> = new Vector.<SVGPathCommand>();
 			for each(var command:SVGPathCommand in path){

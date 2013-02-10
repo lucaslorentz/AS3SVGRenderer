@@ -17,7 +17,7 @@ package com.lorentz.SVG.data.path
 			return absolute ? "H" : "h";
 		}
 		
-		override public function clone():SVGPathCommand {
+		override public function clone():Object {
 			var copy:SVGLineToHorizontalCommand = new SVGLineToHorizontalCommand(absolute);
 			copy.x = x;
 			return copy;

@@ -14,5 +14,12 @@ package com.lorentz.SVG.data.filters
 			return new BlurFilter(stdDeviationX, stdDeviationY, BitmapFilterQuality.HIGH);
 		}
 		
+		public function clone():Object
+		{
+			var c:SVGGaussianBlur = new SVGGaussianBlur();
+			c.stdDeviationX = stdDeviationX;
+			c.stdDeviationY = stdDeviationY;
+			return c;
+		}
 	}
 }

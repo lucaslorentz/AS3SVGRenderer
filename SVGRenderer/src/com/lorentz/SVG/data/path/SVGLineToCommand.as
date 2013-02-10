@@ -19,7 +19,7 @@ package com.lorentz.SVG.data.path
 			return absolute ? "L" : "l";
 		}
 		
-		override public function clone():SVGPathCommand {
+		override public function clone():Object {
 			var copy:SVGLineToCommand = new SVGLineToCommand(absolute);
 			copy.x = x;
 			copy.y = y;

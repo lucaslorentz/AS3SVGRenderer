@@ -55,21 +55,36 @@ package com.lorentz.SVG.Flex
 		];
 		
 		public function SVG():void {
-			_svgDocument = new SVGDocument();
-			_svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);
-			
-			for each (var eventType:String in CLONED_EVENTS)
-			{
-				_svgDocument.addEventListener(eventType, cloneAndRedispatchEvent);
-			}
-			
-			this.addChild(_svgDocument);
-			
+			svgDocument = new SVGDocument();
 			super();
 		}
 		
 		public function get svgDocument():SVGDocument {
 			return _svgDocument;
+		}
+		
+		public function set svgDocument(value:SVGDocument):void {
+			var eventType:String;
+			
+			if(_svgDocument){
+				_svgDocument.removeEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false);
+				
+				for each (eventType in CLONED_EVENTS)
+					_svgDocument.removeEventListener(eventType, cloneAndRedispatchEvent);
+				
+				removeChild(_svgDocument);
+			}
+			
+			_svgDocument = value;
+			
+			if(_svgDocument){
+				_svgDocument.addEventListener(SVGEvent.VALIDATED, svgDocument_validatedHandler, false, 0, true);			
+
+				for each (eventType in CLONED_EVENTS)
+					_svgDocument.addEventListener(eventType, cloneAndRedispatchEvent);
+					
+				addChild(_svgDocument);
+			}
 		}
 		
 		private var _source:Object;

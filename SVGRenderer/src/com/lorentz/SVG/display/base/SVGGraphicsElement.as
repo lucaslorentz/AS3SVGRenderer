@@ -137,7 +137,7 @@ package com.lorentz.SVG.display.base
 						return;
 					}
 					
-					var pattern:SVGPattern = document.getElementDefinitionClone(id) as SVGPattern;
+					var pattern:SVGPattern = document.getDefinitionClone(id) as SVGPattern;
 					if(pattern){
 						attachElement(pattern);
 						

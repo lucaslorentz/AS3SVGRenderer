@@ -1,11 +1,12 @@
 package com.lorentz.SVG.data.gradients
 {
-	import flash.display.SpreadMethod;
+	import com.lorentz.SVG.utils.ICloneable;
+	
 	import flash.geom.Matrix;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 
-	public class SVGGradient
+	public class SVGGradient implements ICloneable
 	{
 		public function SVGGradient(type:String){
 			_type = type;
@@ -24,7 +25,7 @@ package com.lorentz.SVG.data.gradients
 		public var alphas:Array;
 		public var ratios:Array;
 		
-		public final function clone():SVGGradient {
+		public function clone():Object {
 			var clazz:Class = getDefinitionByName(getQualifiedClassName(this)) as Class;
 			var copy:SVGGradient = new clazz();
 			copyTo(copy);

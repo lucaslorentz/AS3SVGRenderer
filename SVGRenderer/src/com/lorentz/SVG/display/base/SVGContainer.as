@@ -66,12 +66,10 @@ package com.lorentz.SVG.display.base
 			}
 		}
 		
-		override public function clone(deep:Boolean=true):SVGElement {
-			var c:SVGContainer = super.clone(deep) as SVGContainer;
-			if(deep){
-				for(var i:int = 0; i < numElements; i++){
-					c.addElement(getElementAt(i).clone(true));
-				}
+		override public function clone():Object {
+			var c:SVGContainer = super.clone() as SVGContainer;
+			for(var i:int = 0; i < numElements; i++){
+				c.addElement(getElementAt(i).clone() as SVGElement);
 			}
 			return c;
 		}

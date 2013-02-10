@@ -80,9 +80,11 @@
 				}
 					
 				if(svgHref){
-					_includedElement = document.getElementDefinitionClone(StringUtil.ltrim(svgHref, "#"));
-					attachElement(_includedElement);
-					content.addChild(_includedElement);
+					_includedElement = document.getDefinitionClone(StringUtil.ltrim(svgHref, "#")) as SVGElement;
+					if(_includedElement != null){
+						attachElement(_includedElement);
+						content.addChild(_includedElement);
+					}
 				}
 			}
 			
@@ -113,8 +115,8 @@
 			return null;
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGUse = super.clone(deep) as SVGUse;
+		override public function clone():Object {
+			var c:SVGUse = super.clone() as SVGUse;
 			c.svgHref = svgHref;
 			return c;
 		}

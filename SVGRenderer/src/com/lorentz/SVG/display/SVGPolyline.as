@@ -31,8 +31,8 @@
 			}
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGPolyline = super.clone(deep) as SVGPolyline;
+		override public function clone():Object {
+			var c:SVGPolyline = super.clone() as SVGPolyline;
 			c.points = points.slice();
 			return c;
 		}

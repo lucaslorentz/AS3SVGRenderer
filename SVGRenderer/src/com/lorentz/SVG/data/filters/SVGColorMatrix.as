@@ -15,5 +15,12 @@ package com.lorentz.SVG.data.filters
 			return new ColorMatrixFilter(values);
 		}
 		
+		public function clone():Object
+		{
+			var c:SVGColorMatrix = new SVGColorMatrix();
+			c.type = type;
+			c.values = values.slice();
+			return c;
+		}
 	}
 }

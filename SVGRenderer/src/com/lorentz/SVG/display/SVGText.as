@@ -114,8 +114,8 @@
 			return content.getBounds(this);
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGText = super.clone(deep) as SVGText;
+		override public function clone():Object {
+			var c:SVGText = super.clone() as SVGText;
 			c.svgX = svgX;
 			c.svgY = svgY;
 			

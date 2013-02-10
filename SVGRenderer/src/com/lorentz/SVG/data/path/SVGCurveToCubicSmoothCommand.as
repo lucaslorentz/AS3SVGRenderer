@@ -23,7 +23,7 @@ package com.lorentz.SVG.data.path
 			return absolute ? "S" : "s";
 		}
 		
-		override public function clone():SVGPathCommand {
+		override public function clone():Object {
 			var copy:SVGCurveToCubicSmoothCommand = new SVGCurveToCubicSmoothCommand(absolute);
 			copy.x2 = x2;
 			copy.y2 = y2;

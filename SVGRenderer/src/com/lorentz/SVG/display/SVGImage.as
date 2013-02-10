@@ -151,14 +151,12 @@
 			if(_loader.content is Bitmap)
 				(_loader.content as Bitmap).smoothing = true;
 				
-			adjustContentToViewPort();
 			endASyncValidation("loadImage");
 		}
 		
 		private function loadError(e:IOErrorEvent):void {
 			trace("Failed to load image" + e.text);
 			
-			adjustContentToViewPort();
 			endASyncValidation("loadImage");
 		}
 		
@@ -169,8 +167,8 @@
 			return new Rectangle(0, 0, _loader.content.width, _loader.content.height);
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGImage = super.clone(deep) as SVGImage;
+		override public function clone():Object {
+			var c:SVGImage = super.clone() as SVGImage;
 			c.svgHref = svgHref;
 			return c;
 		}

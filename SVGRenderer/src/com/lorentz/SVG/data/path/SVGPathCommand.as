@@ -1,6 +1,8 @@
 package com.lorentz.SVG.data.path
 {
-	public class SVGPathCommand
+	import com.lorentz.SVG.utils.ICloneable;
+
+	public class SVGPathCommand implements ICloneable
 	{
 		public function SVGPathCommand()
 		{
@@ -10,7 +12,7 @@ package com.lorentz.SVG.data.path
 			return "";
 		}
 		
-		public function clone():SVGPathCommand {
+		public function clone():Object {
 			return null;
 		}
 	}

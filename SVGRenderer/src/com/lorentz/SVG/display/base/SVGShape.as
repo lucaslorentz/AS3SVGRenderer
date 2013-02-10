@@ -128,7 +128,7 @@
 					if(!markerId)
 						continue;
 					
-					var marker:SVGMarker = document.getElementDefinitionClone(markerId) as SVGMarker;
+					var marker:SVGMarker = document.getDefinitionClone(markerId) as SVGMarker;
 					
 					if(!marker)
 						continue;

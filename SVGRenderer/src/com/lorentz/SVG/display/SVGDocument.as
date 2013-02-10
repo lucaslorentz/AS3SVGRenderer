@@ -7,6 +7,7 @@
 	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.text.FTESVGTextDrawer;
 	import com.lorentz.SVG.text.ISVGTextDrawer;
+	import com.lorentz.SVG.utils.ICloneable;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
@@ -276,11 +277,13 @@
 			return _definitions[id];
 		}
 		
-		public function getElementDefinitionClone(id:String):SVGElement {
-			if(!hasDefinition(id))
-				return null;
+		public function getDefinitionClone(id:String):Object {
+			var object:Object = _definitions[id];
 			
-			return (getDefinition(id) as SVGElement).clone(true);
+			if(object is ICloneable)
+				return (object as ICloneable).clone();
+
+			return object;
 		}
 		
 		public function removeDefinition(id:String):void {
@@ -428,6 +431,33 @@
 		}
 		public function set availableHeight(value:Number):void {
 			_availableHeight = value;
+		}
+		
+		override public function clone():Object {
+			var c:SVGDocument = super.clone() as SVGDocument;
+			c.availableWidth = availableWidth;
+			c.availableHeight = availableHeight;
+			c._defaultBaseUrl = _defaultBaseUrl;
+			c.baseURL = baseURL;
+			c.validateWhileParsing = validateWhileParsing;
+			c.validateAfterParse = validateAfterParse;
+			c.defaultFontName = defaultFontName;
+			c.useEmbeddedFonts = useEmbeddedFonts;
+			c.textDrawingInterceptor = textDrawingInterceptor;
+			c.textDrawer = textDrawer;
+			
+			for each(var id:String in listDefinitions()){
+				var object:Object = getDefinition(id);
+				if(object is ICloneable)
+					c.addDefinition(id, (object as ICloneable).clone());
+			}
+			
+			for each(var selector:String in listStyleDeclarations()){
+				var style:StyleDeclaration = getStyleDeclaration(selector);
+				c.addStyleDeclaration(selector, style.clone() as StyleDeclaration);
+			}
+			
+			return c;
 		}
 	}
 }

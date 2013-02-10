@@ -165,8 +165,8 @@ package com.lorentz.SVG.display
 			}
 		}
 		
-		override public function clone(deep:Boolean = true):SVGElement {
-			var c:SVGMarker = super.clone(deep) as SVGMarker;
+		override public function clone():Object {
+			var c:SVGMarker = super.clone() as SVGMarker;
 			c.svgRefX = svgRefX;
 			c.svgRefY = svgRefY;
 			c.svgMarkerWidth = svgMarkerWidth;
