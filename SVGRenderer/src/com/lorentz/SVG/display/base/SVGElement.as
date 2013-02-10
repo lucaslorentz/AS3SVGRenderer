@@ -1,6 +1,7 @@
 ﻿package com.lorentz.SVG.display.base {
 	import com.lorentz.SVG.data.filters.SVGFilterCollection;
 	import com.lorentz.SVG.data.style.StyleDeclaration;
+	import com.lorentz.SVG.display.SVGClipPath;
 	import com.lorentz.SVG.display.SVGDocument;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
@@ -181,6 +182,16 @@
 			return _finalStyle;
 		}
 		///////////////////////////////////////
+		
+		public function isInClipPath():Boolean {
+			if(this is SVGClipPath)
+				return true;
+			
+			if(parentElement == null)
+				return false;
+			
+			return parentElement.isInClipPath();
+		}
 		
 		public function get parentElement():SVGElement {
 			return _parentElement;
@@ -489,6 +500,7 @@
 						attachElement(_mask);
 						addChild(_mask);
 						content.mask = _mask;
+						_mask.visible = true;
 					}
 				}
 			}
@@ -503,7 +515,7 @@
 					_mask = null;
 				}
 				
-				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Clip Path
+				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Mask
 					var maskId:String = SVGUtil.extractUrlId(svgMask);
 					
 					_mask = document.getDefinitionClone(maskId) as SVGElement;

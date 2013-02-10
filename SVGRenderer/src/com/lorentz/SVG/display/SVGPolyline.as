@@ -1,7 +1,7 @@
 ﻿package com.lorentz.SVG.display {
+	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGShape;
 	import com.lorentz.SVG.drawing.IDrawer;
-	import com.lorentz.SVG.display.base.SVGElement;
 	
 	public class SVGPolyline extends SVGShape {	
 		public function SVGPolyline(){
@@ -16,9 +16,9 @@
 			_points = value;
 			invalidateRender();
 		}
-		
+			
 		override protected function get hasFill():Boolean {
-			return false;
+			return isInClipPath();
 		}
 				
 		override protected function drawToDrawer(drawer:IDrawer):void {

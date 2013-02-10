@@ -5,6 +5,7 @@
 		public function SVGClipPath(){
 			super();
 			style.setProperty("fill", "black");
+			visible = false;
 		}
 	}
 }
