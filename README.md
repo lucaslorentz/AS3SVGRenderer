@@ -23,7 +23,7 @@ Features:
 
 Missing features:
 * Text stroke.
-* Filters.
+* Some filters.
 * Scripting.
 * Animation.
 
