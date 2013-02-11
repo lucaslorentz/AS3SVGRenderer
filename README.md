@@ -17,6 +17,7 @@ Features:
 * Supports filling, strokes, gradients.
 * Supports marker symbols.
 * Supports basic document structure (g, defs, symbol, use, image).
+* Supported filters: ColorMatrix, GaussianBlur.
 * Rendered display objects keeps the svg structure, so you can code mouse/touch interactions with svg elements.
 * AS3 only.
 * Flex component.
