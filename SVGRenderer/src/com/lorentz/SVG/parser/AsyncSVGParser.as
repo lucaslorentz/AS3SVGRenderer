@@ -428,9 +428,11 @@ package com.lorentz.SVG.parser
 		}
 				
 		private function parseGradients(svg:XML):void {
-			var nodes:XMLList = svg..*::*.(localName().toLowerCase() == "lineargradient" || localName().toLowerCase() == "radialgradient");
+			var nodes:XMLList = svg..*::*;
 			for each(var node:XML in nodes){
-				parseGradient(node.@id, svg);
+				if(node && (String(node.localName()).toLowerCase()=="lineargradient"||String(node.localName()).toLowerCase()=="radialgradient")){
+					parseGradient(node.@id, svg);
+				}
 			}
 		}
 		
