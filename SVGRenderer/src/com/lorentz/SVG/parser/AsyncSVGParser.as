@@ -578,9 +578,11 @@ package com.lorentz.SVG.parser
 		
 		private function parseFilters(svg:XML):void
 		{
-			var nodes:XMLList = svg..*::*.(localName().toLowerCase() == "filter");
+			var nodes:XMLList = svg..*::*;
 			for each(var node:XML in nodes){
-				parseFilterCollection(node);
+				if(node && (String(node.localName()).toLowerCase()=="filter")){
+					parseFilterCollection(node);
+				}
 			}
 		}
 		
