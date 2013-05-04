@@ -117,7 +117,7 @@
 								mat.concat(new Matrix(Number(args[0]), Number(args[1]), Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5])));
 								break;
 							case "translate" :
-								mat.translate(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
+								mat.translate(Number(args[0]), args.length > 1 ? Number(args[1]) : 0);
 								break;
 							case "scale" :
 								mat.scale(Number(args[0]), args.length > 1 ? Number(args[1]) : Number(args[0]));
