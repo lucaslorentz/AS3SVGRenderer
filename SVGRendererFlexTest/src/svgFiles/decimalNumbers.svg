@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	<g transform="scale(400,400)">
+		<path d="M.1,.1L.5 .1L.5 .5L.1,.5Z"
+		style="fill:white;stroke:red;stroke-width:0.1"/>
+	</g>
+</svg>

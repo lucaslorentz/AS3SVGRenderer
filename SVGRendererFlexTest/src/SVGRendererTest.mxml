@@ -226,6 +226,7 @@
 			<fx:String>svgFiles/maskedText.svg</fx:String>
 			<fx:String>svgFiles/dashedPath.svg</fx:String>
 			<fx:String>svgFiles/dashedRect.svg</fx:String>
+			<fx:String>svgFiles/decimalNumbers.svg</fx:String>
 			<fx:String>svgFiles/marker.svg</fx:String>
 			<fx:String>svgFiles/markerOnCurves.svg</fx:String>
 			<fx:String>svgFiles/markerOnCurvesFixedAngle.svg</fx:String>

@@ -87,7 +87,7 @@
 		public static function splitNumericArgs(input:String):Vector.<String> {
 			var returnData:Vector.<String> = new Vector.<String>();
 						
-			var matchedNumbers:Array = input.match(/(?:\+|-)?\d+(?:\.\d+)?(?:e(?:\+|-)?\d+)?/g);
+			var matchedNumbers:Array = input.match(/(?:\+|-)?(?:(?:\d*\.\d+)|(?:\d+))(?:e(?:\+|-)?\d+)?/g);
 			for each(var numberString:String in matchedNumbers){
 				returnData.push(numberString);
 			}
