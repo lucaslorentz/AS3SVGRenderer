@@ -148,6 +148,10 @@
 		}
 				
 		private function curveToQuadraticSmooth(command:SVGCurveToQuadraticSmoothCommand):void {
+			if(!lastControlPoint){
+				lastControlPoint = new Point(_drawer.penX, _drawer.penY);
+			}
+			
 			var x1:Number = _drawer.penX + (_drawer.penX - lastControlPoint.x);
 			var y1:Number = _drawer.penY + (_drawer.penY - lastControlPoint.y);
 			
@@ -185,6 +189,10 @@
 		}
 		
 		private function curveToCubicSmooth(command:SVGCurveToCubicSmoothCommand):void {
+			if(!lastControlPoint){
+				lastControlPoint = new Point(_drawer.penX, _drawer.penY);
+			}
+			
 			var x1:Number = _drawer.penX + (_drawer.penX - lastControlPoint.x);
 			var y1:Number = _drawer.penY + (_drawer.penY - lastControlPoint.y);
 			

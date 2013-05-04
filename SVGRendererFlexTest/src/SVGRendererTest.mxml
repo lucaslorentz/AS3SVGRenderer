@@ -254,6 +254,7 @@
 			<fx:String>svgFiles/lion.svg</fx:String>
 			<fx:String>svgFiles/path1.svg</fx:String>
 			<fx:String>svgFiles/path2.svg</fx:String>
+			<fx:String>svgFiles/path3.svg</fx:String>
 			<fx:String>svgFiles/paths1.svg</fx:String>
 			<fx:String>svgFiles/paths2.svg</fx:String>
 			<fx:String>svgFiles/paths3.svg</fx:String>
