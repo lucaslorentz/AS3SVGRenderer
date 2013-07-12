@@ -70,7 +70,7 @@
 			if(w == 0 || h == 0)
 				return null;
 				
-			var bd:BitmapData = new BitmapData(w, h);
+			var bd:BitmapData = new BitmapData(w, h, true, 0);
 			bd.draw(this, null, null, null, null, true);
 			return bd;
 		}
