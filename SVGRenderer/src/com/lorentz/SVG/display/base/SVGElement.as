@@ -497,6 +497,8 @@
 					content.mask = null;
 					content.cacheAsBitmap = false;
 					removeChild(_mask);
+					if (_mask is SVGElement)
+						detachElement(_mask as SVGElement);
 					_mask.graphics.clear();
 					_mask = null;
 				}
@@ -513,6 +515,12 @@
 					{
 						if (mask)
 						{
+							if (clip)
+							{
+								mask.mask = clip;
+								clip.cacheAsBitmap = false;
+							}
+								
 							var maskRc:Rectangle = mask.getBounds(mask);
 							if (maskRc.width > 0 && maskRc.height > 0)
 							{
@@ -539,8 +547,20 @@
 							}
 							
 							detachElement(mask);
+							if (clip)
+							{
+								detachElement(clip);
+								mask.mask = null;
+							}
 						}
-						
+						else if (clip /*&& !mask*/)
+						{
+							_mask = clip;
+							_mask.cacheAsBitmap = false;
+							content.cacheAsBitmap = false;
+							addChild(_mask);
+							content.mask = _mask;
+						}
 					}
 				}
 				
