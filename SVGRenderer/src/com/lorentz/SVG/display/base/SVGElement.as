@@ -11,6 +11,9 @@
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.SVGViewPortUtils;
+	import flash.display.BitmapData;
+	import flash.display.BlendMode;
+	import flash.filters.ColorMatrixFilter;
 	
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
@@ -26,7 +29,9 @@
 	
 	public class SVGElement extends Sprite implements ICloneable {
 		protected var content:Sprite;
-		private var _mask:SVGElement;
+
+		private var _mask:Sprite;
+		private static const _maskRgbToLuminanceFilter:ColorMatrixFilter = new ColorMatrixFilter([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2125, 0.7154, 0.0721, 0, 0,]);
 		
 		private var _currentFontSize:Number = Number.NaN;
 		
@@ -482,49 +487,88 @@
 				transform.matrix = computeTransformMatrix();
 			}
 			
-			if(_svgClipPathChanged){
+			if (_svgClipPathChanged || _svgMaskChanged)
+			{
 				_svgClipPathChanged = false;
-				if(_mask != null) { //Clear mask
+				_svgMaskChanged = false;
+				
+				if (_mask != null) //Clear mask
+				{ 
 					content.mask = null;
 					content.cacheAsBitmap = false;
 					removeChild(_mask);
-					detachElement(_mask);
+					_mask.graphics.clear();
 					_mask = null;
 				}
 				
-				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
-					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
+				var mask:SVGElement = null;
+				var clip:SVGElement = null;
+				var validateN:int = 0;
+				
+				var onClipOrMaskValidated:Function = function(e:SVGEvent):void
+				{
+					--validateN;
 					
-					_mask = document.getDefinitionClone(clipPathId) as SVGElement;
-					if(_mask != null){
-						attachElement(_mask);
-						addChild(_mask);
-						content.mask = _mask;
-						_mask.visible = true;
+					if (validateN == 0)
+					{
+						if (mask)
+						{
+							var maskRc:Rectangle = mask.getBounds(mask);
+							if (maskRc.width > 0 && maskRc.height > 0)
+							{
+								var matrix:Matrix = new Matrix();
+								matrix.translate( -maskRc.left, -maskRc.top);
+								
+								var bmd:BitmapData = new BitmapData(maskRc.width, maskRc.height, true, 0);
+								bmd.draw(mask, matrix, null, null, null, true);
+								
+								mask.filters = [_maskRgbToLuminanceFilter];
+								bmd.draw(mask, matrix, null, BlendMode.ALPHA, null, true);
+								
+								_mask = new Sprite;
+								matrix.identity();
+								matrix.translate(maskRc.left, maskRc.top);
+								_mask.graphics.beginBitmapFill(bmd, matrix, true, true);
+								_mask.graphics.drawRect(maskRc.x, maskRc.y, maskRc.width, maskRc.height);
+								_mask.graphics.endFill();
+								
+								addChild(_mask);
+								_mask.cacheAsBitmap = true;
+								content.cacheAsBitmap = true;
+								content.mask = _mask;
+							}
+							
+							detachElement(mask);
+						}
+						
 					}
 				}
-			}
-			
-			if(_svgMaskChanged){
-				_svgMaskChanged = false;
-				if(_mask != null) { //Clear mask
-					content.mask = null;
-					content.cacheAsBitmap = false;
-					removeChild(_mask);
-					detachElement(_mask);
-					_mask = null;
+				
+				if (svgMask != null && svgMask != "" && svgMask != "none") // mask
+				{ 
+					var maskId:String = SVGUtil.extractUrlId(svgMask);
+
+					mask = document.getDefinitionClone(maskId) as SVGElement;
+					
+					if (mask != null)
+					{
+						attachElement(mask);
+						mask.addEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
+						validateN++;
+					}
 				}
 				
-				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Mask
-					var maskId:String = SVGUtil.extractUrlId(svgMask);
+				if (svgClipPath != null && svgClipPath != "" && svgClipPath != "none") // clip-path
+				{ 
+					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
 					
-					_mask = document.getDefinitionClone(maskId) as SVGElement;
-					if(_mask != null){
-						attachElement(_mask);
-						_mask.cacheAsBitmap = true;
-						content.cacheAsBitmap = true;
-						addChild(_mask);
-						content.mask = _mask;
+					clip = document.getDefinitionClone(clipPathId) as SVGElement;
+					
+					if (clip != null) 
+					{
+						attachElement(clip);
+						clip.addEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
+						validateN++;
 					}
 				}
 			}
