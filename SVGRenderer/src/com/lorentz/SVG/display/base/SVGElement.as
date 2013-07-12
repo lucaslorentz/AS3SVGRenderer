@@ -549,6 +549,8 @@
 								_mask.cacheAsBitmap = true;
 								content.cacheAsBitmap = true;
 								content.mask = _mask;
+								
+								//bmd.dispose();
 							}
 							
 							detachElement(mask);
