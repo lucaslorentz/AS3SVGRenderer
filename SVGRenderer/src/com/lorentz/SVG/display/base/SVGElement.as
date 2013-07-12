@@ -11,8 +11,10 @@
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.SVGViewPortUtils;
+	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.BlendMode;
+	import flash.display.DisplayObject;
 	import flash.filters.ColorMatrixFilter;
 	
 	import flash.display.Sprite;
@@ -30,7 +32,7 @@
 	public class SVGElement extends Sprite implements ICloneable {
 		protected var content:Sprite;
 
-		private var _mask:Sprite;
+		private var _mask:DisplayObject;
 		private static const _maskRgbToLuminanceFilter:ColorMatrixFilter = new ColorMatrixFilter([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2125, 0.7154, 0.0721, 0, 0,]);
 		
 		private var _currentFontSize:Number = Number.NaN;
@@ -499,7 +501,11 @@
 					removeChild(_mask);
 					if (_mask is SVGElement)
 						detachElement(_mask as SVGElement);
-					_mask.graphics.clear();
+					else if (_mask is Bitmap)
+					{
+						(_mask as Bitmap).bitmapData.dispose();
+						(_mask as Bitmap).bitmapData = null;
+					}
 					_mask = null;
 				}
 				
@@ -533,17 +539,16 @@
 								mask.filters = [_maskRgbToLuminanceFilter];
 								bmd.draw(mask, matrix, null, BlendMode.ALPHA, null, true);
 								
-								_mask = new Sprite;
-								matrix.identity();
-								matrix.translate(maskRc.left, maskRc.top);
-								_mask.graphics.beginBitmapFill(bmd, matrix, true, true);
-								_mask.graphics.drawRect(maskRc.x, maskRc.y, maskRc.width, maskRc.height);
-								_mask.graphics.endFill();
+								_mask = new Bitmap(bmd);
+								_mask.x = maskRc.left;
+								_mask.y = maskRc.top;
 								
 								addChild(_mask);
 								_mask.cacheAsBitmap = true;
 								content.cacheAsBitmap = true;
 								content.mask = _mask;
+								
+								//bmd.dispose();
 							}
 							
 							detachElement(mask);
