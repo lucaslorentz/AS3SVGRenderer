@@ -160,12 +160,25 @@ package com.lorentz.SVG.parser
 								
 				if(element is SVGContainer){
 					var container:SVGContainer = element as SVGContainer;
+					
+					if (element is SVGPattern)
+					{
+						var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
+						var link:String = elt.@xlink::href;
+						if (link != "")
+						{
+							(element as SVGPattern).originalPatternHref = link;
+							container.addElement(visitUse(elt));
+						}
+					}
+					
 					for each(var childElt:XML in elt.elements()) {
 						childVisits.push(new VisitDefinition(childElt, function(child:SVGElement):void{
 							if(child){
 								container.addElement(child);
 							}					
 						}));
+						
 					}
 				}
 			}

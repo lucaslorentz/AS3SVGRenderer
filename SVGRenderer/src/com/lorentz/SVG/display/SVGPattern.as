@@ -2,6 +2,7 @@
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.SVGContainer;
 	import com.lorentz.SVG.display.base.SVGElement;
+	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.SVG.utils.SVGUtil;
 	
 	import flash.display.BitmapData;
@@ -13,6 +14,8 @@
 		public var svgWidth:String;
 		public var svgHeight:String;
 		public var patternTransform:String;
+		
+		public var originalPatternHref:String;
 		
 		public function SVGPattern(){
 			super("pattern");
@@ -27,6 +30,23 @@
 			
 		public function getBitmap():BitmapData {			
 			content.scaleX = content.scaleY = 1;
+			
+			
+			if (originalPatternHref)
+			{
+				var originalPattern:SVGPattern = this;
+				
+				while (originalPattern.originalPatternHref)
+					originalPattern = document.getDefinition(StringUtil.ltrim(originalPattern.originalPatternHref, "#")) as SVGPattern;
+				
+				if (originalPattern)
+				{
+					svgX = originalPattern.svgX;
+					svgY = originalPattern.svgY;
+					svgWidth = originalPattern.svgWidth;
+					svgHeight = originalPattern.svgHeight;
+				}
+			}
 			
 			var _x:Number = 0;
 			if(svgX)
@@ -44,8 +64,8 @@
 			if(svgHeight)
 				h = getViewPortUserUnit(svgHeight, SVGUtil.HEIGHT);
 			
-			content.scaleX = w/content.width;
-			content.scaleY = h/content.height;
+			content.scaleX = w / content.width;
+			content.scaleY = h / content.height;
 			
 			if(w == 0 || h == 0)
 				return null;
@@ -62,6 +82,7 @@
 			c.svgWidth = svgWidth;
 			c.svgHeight = svgHeight;
 			c.patternTransform = patternTransform;
+			c.originalPatternHref = originalPatternHref;
 			return c;
 		}
 	}
