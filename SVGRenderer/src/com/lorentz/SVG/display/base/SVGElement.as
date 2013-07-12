@@ -515,6 +515,8 @@
 				
 				var onClipOrMaskValidated:Function = function(e:SVGEvent):void
 				{
+					e.target.removeEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
+					
 					--validateN;
 					
 					if (validateN == 0)
