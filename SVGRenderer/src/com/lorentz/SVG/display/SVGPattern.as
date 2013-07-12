@@ -36,7 +36,7 @@
 			{
 				var originalPattern:SVGPattern = this;
 				
-				while (originalPattern.originalPatternHref)
+				while (originalPattern && originalPattern.originalPatternHref)
 					originalPattern = document.getDefinition(StringUtil.ltrim(originalPattern.originalPatternHref, "#")) as SVGPattern;
 				
 				if (originalPattern)
