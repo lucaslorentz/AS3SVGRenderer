@@ -168,7 +168,9 @@ package com.lorentz.SVG.parser
 						if (link != "")
 						{
 							(element as SVGPattern).originalPatternHref = link;
-							container.addElement(visitUse(elt));
+							
+							if(elt.elements().length() == 0)
+								container.addElement(visitUse(elt));
 						}
 					}
 					
