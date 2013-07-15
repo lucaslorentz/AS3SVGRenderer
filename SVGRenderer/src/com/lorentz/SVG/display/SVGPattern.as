@@ -7,6 +7,7 @@
 	import com.lorentz.SVG.utils.SVGUtil;
 	import flash.display.Graphics;
 	import flash.geom.Matrix;
+	import flash.geom.Point;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
@@ -32,7 +33,7 @@
 		}
 			
 		public function beginFill(graphics:Graphics):void {			
-			content.scaleX = content.scaleY = 1;
+			content.transform.matrix = new Matrix();
 			
 			var finalSvgX:String = svgX;
 			var finalSvgY:String = svgY;
@@ -60,13 +61,13 @@
 				
 			}
 			
-			var _x:Number = 0;
+			var x:Number = 0;
 			if(finalSvgX)
-				_x = getViewPortUserUnit(finalSvgX, SVGUtil.WIDTH);
+				x = getViewPortUserUnit(finalSvgX, SVGUtil.WIDTH);
 			
-			var _y:Number = 0;
+			var y:Number = 0;
 			if(finalSvgY)
-				_y = getViewPortUserUnit(finalSvgY, SVGUtil.HEIGHT);
+				y = getViewPortUserUnit(finalSvgY, SVGUtil.HEIGHT);
 			
 			var w:Number = 0;
 			if(finalSvgWidth)
@@ -76,27 +77,32 @@
 			if(finalSvgHeight)
 				h = getViewPortUserUnit(finalSvgHeight, SVGUtil.HEIGHT);
 			
-			if (content.width > 0 && content.height > 0)
-			{
-				content.scaleX = w / content.width;
-				content.scaleY = h / content.height;
-			}
-			
-			if(w == 0 || h == 0)
-				return;
-				
-			var rc:Rectangle = content.getBounds(content);
-			content.x = -rc.x;
-			content.y = -rc.y;
-				
-			var transformMatrix:Matrix = null;
+			var patternMat:Matrix = new Matrix();
+			patternMat.translate(x, y);
 			if (finalPatternTransform)
-				transformMatrix = SVGParserCommon.parseTransformation(finalPatternTransform);
-
-			var bd:BitmapData = new BitmapData(w, h, true, 0);
-			bd.draw(this, null, null, null, null, true);
+				patternMat.concat(SVGParserCommon.parseTransformation(finalPatternTransform));
 			
-			graphics.beginBitmapFill(bd, transformMatrix, true, true);
+			var patScaleX:Number = Math.sqrt(patternMat.a * patternMat.a + patternMat.c * patternMat.c);
+			var patScaleY:Number = Math.sqrt(patternMat.b * patternMat.b + patternMat.d * patternMat.d);
+			var patScale:Number = Math.max(patScaleX, patScaleY);
+			
+			var bitmapW:int = Math.round(w * patScale);
+			var bitmapH:int = Math.round(h * patScale);
+			
+			if (bitmapW == 0 || bitmapH == 0)
+				return;
+			
+			var bd:BitmapData = new BitmapData(bitmapW, bitmapH, true, 0);
+			
+			var drawMatrix:Matrix = new Matrix();
+			drawMatrix.scale(patScale, patScale);
+			
+			bd.draw(content, drawMatrix, null, null, null, true);
+
+			drawMatrix.invert();
+			drawMatrix.concat(patternMat);
+			
+			graphics.beginBitmapFill(bd, drawMatrix, true, true);
 		}
 		
 		override public function clone():Object {
