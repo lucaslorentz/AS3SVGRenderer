@@ -85,14 +85,17 @@
 			if(w == 0 || h == 0)
 				return;
 				
-			var bd:BitmapData = new BitmapData(w, h, true, 0);
-			bd.draw(this, null, null, null, null, true);
-			
-			
+			var rc:Rectangle = content.getBounds(content);
+			content.x = -rc.x;
+			content.y = -rc.y;
+				
 			var transformMatrix:Matrix = null;
 			if (finalPatternTransform)
 				transformMatrix = SVGParserCommon.parseTransformation(finalPatternTransform);
 
+			var bd:BitmapData = new BitmapData(w, h, true, 0);
+			bd.draw(this, null, null, null, null, true);
+			
 			graphics.beginBitmapFill(bd, transformMatrix, true, true);
 		}
 		
