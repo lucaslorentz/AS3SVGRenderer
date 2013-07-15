@@ -6,6 +6,7 @@
 	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import flash.display.Graphics;
+	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	
@@ -94,15 +95,35 @@
 			
 			var bd:BitmapData = new BitmapData(bitmapW, bitmapH, true, 0);
 			
-			var drawMatrix:Matrix = new Matrix();
-			drawMatrix.scale(patScale, patScale);
+			var spriteToRender:Sprite = new Sprite;
+			var contentParent:Sprite = new Sprite;
+			spriteToRender.addChild(contentParent);
+			contentParent.addChild(content);
 			
-			bd.draw(content, drawMatrix, null, null, null, true);
+			contentParent.scaleX = contentParent.scaleY = patScale;
+			
+			var bounds:Rectangle = content.getBounds(content);
+			var x0:Number = Math.floor(bounds.left / w) * w;
+			var x1:Number = Math.floor(bounds.right / w) * w;
+			var y0:Number = Math.floor(bounds.top / h) * h;
+			var y1:Number = Math.floor(bounds.bottom / h) * h;
 
-			drawMatrix.invert();
-			drawMatrix.concat(patternMat);
+			for (var drawY:int = -y1; drawY <= -y0; drawY += h)
+				for (var drawX:int = -x1; drawX <= -x0; drawX += w)
+				{
+					content.x = drawX;
+					content.y = drawY;
+					bd.draw(spriteToRender, null, null, null, null, true);
+				}
+
+			var mat:Matrix = contentParent.transform.matrix.clone();
+			mat.invert();
+			mat.concat(patternMat);
 			
-			graphics.beginBitmapFill(bd, drawMatrix, true, true);
+			graphics.beginBitmapFill(bd, mat, true, true);
+			
+			content.transform.matrix = new Matrix();
+			addChild(content);
 		}
 		
 		override public function clone():Object {
