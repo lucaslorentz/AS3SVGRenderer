@@ -2,8 +2,11 @@
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.SVGContainer;
 	import com.lorentz.SVG.display.base.SVGElement;
+	import com.lorentz.SVG.parser.SVGParserCommon;
 	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.SVG.utils.SVGUtil;
+	import flash.display.Graphics;
+	import flash.geom.Matrix;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
@@ -28,51 +31,69 @@
 			setAttribute("viewBox", value);
 		}
 			
-		public function getBitmap():BitmapData {			
+		public function beginFill(graphics:Graphics):void {			
 			content.scaleX = content.scaleY = 1;
 			
+			var finalSvgX:String = svgX;
+			var finalSvgY:String = svgY;
+			var finalSvgWidth:String = svgWidth;
+			var finalSvgHeight:String = svgHeight;
+			var finalPatternTransform:String = patternTransform;
 			
 			if (originalPatternHref)
 			{
 				var originalPattern:SVGPattern = this;
 				
-				while (originalPattern && originalPattern.originalPatternHref)
-					originalPattern = document.getDefinition(StringUtil.ltrim(originalPattern.originalPatternHref, "#")) as SVGPattern;
-				
-				if (originalPattern)
+				while (originalPattern.originalPatternHref)
 				{
-					svgX = originalPattern.svgX;
-					svgY = originalPattern.svgY;
-					svgWidth = originalPattern.svgWidth;
-					svgHeight = originalPattern.svgHeight;
+					originalPattern = document.getDefinition(StringUtil.ltrim(originalPattern.originalPatternHref, "#")) as SVGPattern;
+					
+					if (!originalPattern)
+						break;
+					
+					if (!finalSvgX) finalSvgX = originalPattern.svgX;
+					if (!finalSvgY) finalSvgY = originalPattern.svgY;
+					if (!finalSvgWidth) finalSvgWidth = originalPattern.svgWidth;
+					if (!finalSvgHeight) finalSvgHeight = originalPattern.svgHeight;
+					if (!finalPatternTransform) finalPatternTransform = originalPattern.patternTransform;
 				}
+				
 			}
 			
 			var _x:Number = 0;
-			if(svgX)
-				_x = getViewPortUserUnit(svgX, SVGUtil.WIDTH);
+			if(finalSvgX)
+				_x = getViewPortUserUnit(finalSvgX, SVGUtil.WIDTH);
 			
 			var _y:Number = 0;
-			if(svgY)
-				_y = getViewPortUserUnit(svgY, SVGUtil.HEIGHT);
+			if(finalSvgY)
+				_y = getViewPortUserUnit(finalSvgY, SVGUtil.HEIGHT);
 			
 			var w:Number = 0;
-			if(svgWidth)
-				w = getViewPortUserUnit(svgWidth, SVGUtil.WIDTH);
+			if(finalSvgWidth)
+				w = getViewPortUserUnit(finalSvgWidth, SVGUtil.WIDTH);
 			
 			var h:Number = 0;
-			if(svgHeight)
-				h = getViewPortUserUnit(svgHeight, SVGUtil.HEIGHT);
+			if(finalSvgHeight)
+				h = getViewPortUserUnit(finalSvgHeight, SVGUtil.HEIGHT);
 			
-			content.scaleX = w / content.width;
-			content.scaleY = h / content.height;
+			if (content.width > 0 && content.height > 0)
+			{
+				content.scaleX = w / content.width;
+				content.scaleY = h / content.height;
+			}
 			
 			if(w == 0 || h == 0)
-				return null;
+				return;
 				
 			var bd:BitmapData = new BitmapData(w, h, true, 0);
 			bd.draw(this, null, null, null, null, true);
-			return bd;
+			
+			
+			var transformMatrix:Matrix = null;
+			if (finalPatternTransform)
+				transformMatrix = SVGParserCommon.parseTransformation(finalPatternTransform);
+
+			graphics.beginBitmapFill(bd, transformMatrix, true, true);
 		}
 		
 		override public function clone():Object {
