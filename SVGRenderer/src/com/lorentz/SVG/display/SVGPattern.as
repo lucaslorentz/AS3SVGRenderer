@@ -108,8 +108,8 @@
 			var y0:Number = Math.floor(bounds.top / h) * h;
 			var y1:Number = Math.floor(bounds.bottom / h) * h;
 
-			for (var drawY:int = -y1; drawY <= -y0; drawY += h)
-				for (var drawX:int = -x1; drawX <= -x0; drawX += w)
+			for (var drawY:Number = -y1; drawY <= -y0; drawY += h)
+				for (var drawX:Number = -x1; drawX <= -x0; drawX += w)
 				{
 					content.x = drawX;
 					content.y = drawY;
