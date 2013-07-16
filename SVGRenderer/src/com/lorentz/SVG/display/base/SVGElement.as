@@ -262,14 +262,14 @@
 			
 			_numInvalidElements = value;
 			
+			if(_parentElement != null)
+				_parentElement.numInvalidElements += d;
+				
 			if(_numInvalidElements == 0 && d != 0){
 				if(hasEventListener(SVGEvent.SYNC_VALIDATED))
 					dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
 				onPartialyValidated();
 			}
-			
-			if(_parentElement != null)
-				_parentElement.numInvalidElements += d;
 		}
 		
 		protected function get numRunningAsyncValidations():int {
