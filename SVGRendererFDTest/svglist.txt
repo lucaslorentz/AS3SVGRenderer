@@ -1,0 +1,5 @@
+clip-path-with-linestyle.svg
+MaskClip.svg
+opacity-inheritance.svg
+patterns.svg
+patterns2.svg

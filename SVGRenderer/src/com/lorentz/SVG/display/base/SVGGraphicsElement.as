@@ -144,15 +144,8 @@ package com.lorentz.SVG.display.base
 						var patternValidated:Function = function(e:Event):void {
 							pattern.removeEventListener(SVGEvent.VALIDATED, patternValidated);
 							
-							var bitmap:BitmapData = pattern.getBitmap();
-							if(bitmap)
-							{
-								var transformMatrix:Matrix = new Matrix();
-								if(pattern.patternTransform)
-									transformMatrix = SVGParserCommon.parseTransformation(pattern.patternTransform);
-								
-								g.beginBitmapFill(bitmap, transformMatrix);
-							}
+							pattern.beginFill(g);
+							
 							detachElement(pattern);
 							if(callBack != null)
 								callBack();
