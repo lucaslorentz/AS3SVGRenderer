@@ -3,6 +3,7 @@
 	import com.lorentz.SVG.data.style.StyleDeclaration;
 	import com.lorentz.SVG.display.SVGClipPath;
 	import com.lorentz.SVG.display.SVGDocument;
+	import com.lorentz.SVG.display.SVGPattern;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.parser.SVGParserCommon;
@@ -262,14 +263,14 @@
 			
 			_numInvalidElements = value;
 			
+			if(_parentElement != null)
+				_parentElement.numInvalidElements += d;
+				
 			if(_numInvalidElements == 0 && d != 0){
 				if(hasEventListener(SVGEvent.SYNC_VALIDATED))
 					dispatchEvent(new SVGEvent(SVGEvent.SYNC_VALIDATED));
 				onPartialyValidated();
 			}
-			
-			if(_parentElement != null)
-				_parentElement.numInvalidElements += d;
 		}
 		
 		protected function get numRunningAsyncValidations():int {
@@ -371,6 +372,9 @@
 		}
 		
 		protected function getElementToInheritStyles():SVGElement {
+			if (this is SVGPattern)
+				return null;
+				
 			return parentElement;
 		}
 		
