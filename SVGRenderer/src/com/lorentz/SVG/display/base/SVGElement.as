@@ -534,10 +534,9 @@
 				}
 			}
 			
-			if(true || _displayChanged){
+			if(_displayChanged){
 				_displayChanged = false;
 				visible = finalStyle.getPropertyValue("display") != "none" && finalStyle.getPropertyValue("visibility") != "hidden";
-				trace(id, visible);
 			}
 			
 			
