@@ -12,6 +12,7 @@
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.SVGViewPortUtils;
+	import flash.display.BlendMode;
 	
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
@@ -385,7 +386,7 @@
 			
 			var inheritFrom:SVGElement = getElementToInheritStyles();
 			if(inheritFrom){
-				inheritFrom.finalStyle.copyStyles(newFinalStyle);
+				inheritFrom.finalStyle.copyStyles(newFinalStyle, true);
 			}
 			
 			var typeStyle:StyleDeclaration = document.getStyleDeclaration(_type);
@@ -540,7 +541,13 @@
 			
 			if(_opacityChanged){
 				_opacityChanged = false;
+				
 				content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
+				
+				if (content.alpha != 1 && this is SVGContainer)
+					content.blendMode = BlendMode.LAYER;
+				else
+					content.blendMode = BlendMode.NORMAL;
 			}
 			
 			if(_svgFilterChanged){
