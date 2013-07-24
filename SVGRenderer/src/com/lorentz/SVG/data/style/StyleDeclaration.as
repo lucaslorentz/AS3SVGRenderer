@@ -83,7 +83,7 @@ package com.lorentz.SVG.data.style
 				removeProperty(item(0));
 		}
 		
-		private static const nonInheritableProperties:Array = ["opacity"];
+		private static const nonInheritableProperties:Array = ["opacity", "display"];
 		public function copyStyles(target:StyleDeclaration, onlyInheritable:Boolean = false):void {
 			for each(var propertyName:String in _indexedProperties) {
 				if (!onlyInheritable || nonInheritableProperties.indexOf(propertyName) == -1)

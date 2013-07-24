@@ -534,10 +534,12 @@
 				}
 			}
 			
-			if(_displayChanged){
+			if(true || _displayChanged){
 				_displayChanged = false;
 				visible = finalStyle.getPropertyValue("display") != "none" && finalStyle.getPropertyValue("visibility") != "hidden";
+				trace(id, visible);
 			}
+			
 			
 			if(_opacityChanged){
 				_opacityChanged = false;
@@ -597,6 +599,8 @@
 			copy.svgClipPath = svgClipPath;
 			copy.svgMask = svgMask;
 			_style.cloneOn(copy.style);
+			
+			copy.id = "????  Clone of \"" + id + "\"";
 			
 			copy.svgTransform = svgTransform;
 			
