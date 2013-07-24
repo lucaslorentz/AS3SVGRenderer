@@ -1,3 +1,4 @@
+blur.svg
 clip-path-with-linestyle.svg
 inheritance.svg
 MaskClip.svg
