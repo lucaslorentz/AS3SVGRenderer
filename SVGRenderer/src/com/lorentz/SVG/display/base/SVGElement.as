@@ -256,6 +256,11 @@
 			return this is ISVGViewPort ? this as ISVGViewPort : _viewPortElement;
 		}
 		
+		public function get validationInProgress():Boolean
+		{
+			return numInvalidElements != 0 || numRunningAsyncValidations != 0;
+		}
+		
 		protected function get numInvalidElements():int {
 			return _numInvalidElements;
 		}
@@ -296,7 +301,7 @@
 			if(this is ISVGViewPort && document)
 				adjustContentToViewPort();
 			
-			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
+			if(!validationInProgress)
 			{
 				if(hasEventListener(SVGEvent.VALIDATED))
 					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
