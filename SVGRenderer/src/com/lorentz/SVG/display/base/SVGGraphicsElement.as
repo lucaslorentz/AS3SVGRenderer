@@ -72,7 +72,7 @@ package com.lorentz.SVG.display.base
 		
 		protected function get hasFill():Boolean {
 			var fill:String = finalStyle.getPropertyValue("fill"); 
-			return fill != "" && fill != "none"; 
+			return fill != "" && fill != "none" || isInClipPath(); 
 		}
 		
 		protected function get hasStroke():Boolean {
