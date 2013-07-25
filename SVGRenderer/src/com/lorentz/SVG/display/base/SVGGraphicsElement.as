@@ -77,7 +77,7 @@ package com.lorentz.SVG.display.base
 		
 		protected function get hasStroke():Boolean {
 			var stroke:String = finalStyle.getPropertyValue("stroke");
-			return stroke != null && stroke != "" && stroke != "none";
+			return stroke != null && stroke != "" && stroke != "none" && !isInClipPath();
 		}
 		
 		protected function get hasDashedStroke():Boolean {
