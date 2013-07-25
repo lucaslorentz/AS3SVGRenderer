@@ -196,6 +196,8 @@ package com.lorentz.SVG.display.base
 					}
 				}
 				
+				var strokeMiterlimit:Number = Number(finalStyle.getPropertyValue("stroke-miterlimit") || 4);
+				
 				var stroke:String = finalStyle.getPropertyValue("stroke");
 				
 				if(stroke.indexOf("url") > -1){
@@ -212,7 +214,7 @@ package com.lorentz.SVG.display.base
 							case GradientType.RADIAL: {
 								var rgrad:SVGRadialGradient = grad as SVGRadialGradient;
 								if(rgrad.r == "0")
-									g.lineStyle(strokeWidth, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin);
+									g.lineStyle(strokeWidth, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
 								else
 									doRadialGradient(rgrad, g, false);
 								break;
@@ -221,7 +223,7 @@ package com.lorentz.SVG.display.base
 					}
 				} else {
 					var color:uint = SVGColorUtils.parseToUint(stroke);
-					g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin);
+					g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
 				}
 			} else {
 				g.lineStyle();
