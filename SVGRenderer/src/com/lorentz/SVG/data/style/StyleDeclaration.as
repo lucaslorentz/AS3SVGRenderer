@@ -87,7 +87,8 @@ package com.lorentz.SVG.data.style
 			"display", 
 			"opacity",
 			"clip",
-			"filter"
+			"filter",
+			"overflow",
 		];
 		public function copyStyles(target:StyleDeclaration, onlyInheritable:Boolean = false):void {
 			for each(var propertyName:String in _indexedProperties) {
