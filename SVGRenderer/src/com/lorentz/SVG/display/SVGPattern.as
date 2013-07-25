@@ -14,16 +14,66 @@
 	import flash.geom.Rectangle;
 	
 	public class SVGPattern extends SVGContainer implements ISVGViewBox {		
-		public var svgX:String;
-		public var svgY:String;
-		public var svgWidth:String;
-		public var svgHeight:String;
-		public var patternTransform:String;
+		private var _finalSvgX:String;
+		private var _finalSvgY:String;
+		private var _finalSvgWidth:String;
+		private var _finalSvgHeight:String;
+		private var _finalPatternTransform:String;
+		private var _svgHrefChanged:Boolean = false;
+		private var _svgHref:String;
+		private var _patternWithChildren:SVGPattern;
 		
-		public var originalPatternHref:String;
+		public function get svgHref():String {
+			return _svgHref;
+		}
+		public function set svgHref(value:String):void {			
+			_svgHref = value;
+			_svgHrefChanged = true;
+			invalidateProperties();
+		}
 		
 		public function SVGPattern(){
 			super("pattern");
+		}
+		
+		public function get svgX():String {
+			return getAttribute("x") as String;
+		}
+		public function set svgX(value:String):void {
+			setAttribute("x", value);
+			invalidateProperties();
+		}
+		
+		public function get svgY():String {
+			return getAttribute("y") as String;
+		}
+		public function set svgY(value:String):void {
+			setAttribute("y", value);
+			invalidateProperties();
+		}
+		
+		public function get svgWidth():String {
+			return getAttribute("width") as String;
+		}
+		public function set svgWidth(value:String):void {
+			setAttribute("width", value);
+			invalidateProperties();
+		}
+		
+		public function get svgHeight():String {
+			return getAttribute("height") as String;
+		}
+		public function set svgHeight(value:String):void {
+			setAttribute("height", value);
+			invalidateProperties();
+		}
+
+		public function get patternTransform():String {
+			return getAttribute("patternTransform") as String;
+		}
+		public function set patternTransform(value:String):void {
+			setAttribute("patternTransform", value);
+			invalidateProperties();
 		}
 		
 		public function get svgViewBox():Rectangle {
@@ -31,57 +81,74 @@
 		}
 		public function set svgViewBox(value:Rectangle):void {
 			setAttribute("viewBox", value);
+			invalidateProperties();
 		}
+		
+		override protected function commitProperties():void {
+			super.commitProperties();
 			
-		public function beginFill(graphics:Graphics):void {			
-			content.transform.matrix = new Matrix();
-			
-			var finalSvgX:String = svgX;
-			var finalSvgY:String = svgY;
-			var finalSvgWidth:String = svgWidth;
-			var finalSvgHeight:String = svgHeight;
-			var finalPatternTransform:String = patternTransform;
-			
-			if (originalPatternHref)
+			if (_patternWithChildren && _patternWithChildren != this)
 			{
-				var originalPattern:SVGPattern = this;
-				
-				while (originalPattern.originalPatternHref)
-				{
-					originalPattern = document.getDefinition(StringUtil.ltrim(originalPattern.originalPatternHref, "#")) as SVGPattern;
-					
-					if (!originalPattern)
-						break;
-					
-					if (!finalSvgX) finalSvgX = originalPattern.svgX;
-					if (!finalSvgY) finalSvgY = originalPattern.svgY;
-					if (!finalSvgWidth) finalSvgWidth = originalPattern.svgWidth;
-					if (!finalSvgHeight) finalSvgHeight = originalPattern.svgHeight;
-					if (!finalPatternTransform) finalPatternTransform = originalPattern.patternTransform;
-				}
-				
+				detachElement(_patternWithChildren);
+				_patternWithChildren = null;
 			}
 			
+			_finalSvgX = svgX;
+			_finalSvgY = svgY;
+			_finalSvgWidth = svgWidth;
+			_finalSvgHeight = svgHeight;
+			_finalPatternTransform = patternTransform;
+			_patternWithChildren = this;
+			
+			if (svgHref)
+			{
+				var refPattern:SVGPattern = this;
+				
+				while (refPattern.svgHref)
+				{
+					refPattern = document.getDefinition(StringUtil.ltrim(refPattern.svgHref, "#")) as SVGPattern;
+					
+					if (!refPattern)
+						break;
+					
+					if (_patternWithChildren.numElements == 0)
+						_patternWithChildren = refPattern;
+					if (!_finalSvgX) _finalSvgX = refPattern.svgX;
+					if (!_finalSvgY) _finalSvgY = refPattern.svgY;
+					if (!_finalSvgWidth) _finalSvgWidth = refPattern.svgWidth;
+					if (!_finalSvgHeight) _finalSvgHeight = refPattern.svgHeight;
+					if (!_finalPatternTransform) _finalPatternTransform = refPattern.patternTransform;
+				}
+			}
+			
+			if (_patternWithChildren && _patternWithChildren != this)
+			{
+				_patternWithChildren = _patternWithChildren.clone() as SVGPattern;
+				attachElement(_patternWithChildren);
+			}
+		}
+		
+		public function beginFill(graphics:Graphics):void {			
 			var x:Number = 0;
-			if(finalSvgX)
-				x = getViewPortUserUnit(finalSvgX, SVGUtil.WIDTH);
+			if(_finalSvgX)
+				x = getViewPortUserUnit(_finalSvgX, SVGUtil.WIDTH);
 			
 			var y:Number = 0;
-			if(finalSvgY)
-				y = getViewPortUserUnit(finalSvgY, SVGUtil.HEIGHT);
+			if(_finalSvgY)
+				y = getViewPortUserUnit(_finalSvgY, SVGUtil.HEIGHT);
 			
 			var w:Number = 0;
-			if(finalSvgWidth)
-				w = getViewPortUserUnit(finalSvgWidth, SVGUtil.WIDTH);
+			if(_finalSvgWidth)
+				w = getViewPortUserUnit(_finalSvgWidth, SVGUtil.WIDTH);
 			
 			var h:Number = 0;
-			if(finalSvgHeight)
-				h = getViewPortUserUnit(finalSvgHeight, SVGUtil.HEIGHT);
+			if(_finalSvgHeight)
+				h = getViewPortUserUnit(_finalSvgHeight, SVGUtil.HEIGHT);
 			
 			var patternMat:Matrix = new Matrix();
 			patternMat.translate(x, y);
-			if (finalPatternTransform)
-				patternMat.concat(SVGParserCommon.parseTransformation(finalPatternTransform));
+			if (_finalPatternTransform)
+				patternMat.concat(SVGParserCommon.parseTransformation(_finalPatternTransform));
 			
 			var patScaleX:Number = Math.sqrt(patternMat.a * patternMat.a + patternMat.c * patternMat.c);
 			var patScaleY:Number = Math.sqrt(patternMat.b * patternMat.b + patternMat.d * patternMat.d);
@@ -97,8 +164,12 @@
 			
 			var spriteToRender:Sprite = new Sprite;
 			var contentParent:Sprite = new Sprite;
+			var content:Sprite = _patternWithChildren.content;
+
 			spriteToRender.addChild(contentParent);
 			contentParent.addChild(content);
+			
+			content.transform.matrix = new Matrix();
 			
 			contentParent.scaleX = contentParent.scaleY = patScale;
 			
@@ -122,8 +193,7 @@
 			
 			graphics.beginBitmapFill(bd, mat, true, true);
 			
-			content.transform.matrix = new Matrix();
-			addChild(content);
+			_patternWithChildren.addChild(content);
 		}
 		
 		override public function clone():Object {
@@ -133,7 +203,7 @@
 			c.svgWidth = svgWidth;
 			c.svgHeight = svgHeight;
 			c.patternTransform = patternTransform;
-			c.originalPatternHref = originalPatternHref;
+			c.svgHref = svgHref;
 			return c;
 		}
 	}

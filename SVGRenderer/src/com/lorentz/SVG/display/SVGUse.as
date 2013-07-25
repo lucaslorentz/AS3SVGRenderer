@@ -72,20 +72,6 @@
 		override protected function commitProperties():void {
 			super.commitProperties();
 
-			if (document && document.parseInProgress)
-			{
-				var thisdoc:SVGDocument = document;
-				
-				var onDocParseComplete:Function = function(e:Event):void
-				{
-					thisdoc.removeEventListener(SVGEvent.PARSE_COMPLETE, onDocParseComplete);
-					commitProperties();
-				}
-				
-				thisdoc.addEventListener(SVGEvent.PARSE_COMPLETE, onDocParseComplete);
-				return;
-			}
-			
 			if(_svgHrefChanged){
 				_svgHrefChanged = false;
 				
