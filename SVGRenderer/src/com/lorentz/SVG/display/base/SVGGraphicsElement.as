@@ -200,6 +200,9 @@ package com.lorentz.SVG.display.base
 				
 				var stroke:String = finalStyle.getPropertyValue("stroke");
 				
+				var color:uint = SVGColorUtils.parseToUint(stroke);
+				g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
+				
 				if(stroke.indexOf("url") > -1){
 					var id:String = SVGUtil.extractUrlId(stroke);
 					
@@ -208,7 +211,6 @@ package com.lorentz.SVG.display.base
 					if(grad != null){
 						switch(grad.type){
 							case GradientType.LINEAR: {
-								g.lineStyle(strokeWidth);
 								doLinearGradient(grad as SVGLinearGradient, g, false);
 								break;
 							}
@@ -217,18 +219,12 @@ package com.lorentz.SVG.display.base
 								if(rgrad.r == "0")
 									g.lineStyle(strokeWidth, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
 								else
-								{
-									g.lineStyle(strokeWidth);
 									doRadialGradient(rgrad, g, false);
-								}
 								break;
 							}
 						}
 					}
-				} else {
-					var color:uint = SVGColorUtils.parseToUint(stroke);
-					g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
-				}
+				} 
 			} else {
 				g.lineStyle();
 			}
