@@ -630,7 +630,7 @@ package com.lorentz.SVG.parser
 			
 			if(("@stdDeviation" in node))
 			{	
-				var parts:Array = String(node.@stdDeviation).split(/\s,/);
+				var parts:Array = String(node.@stdDeviation).split(/[\s,]+/);
 				obj.stdDeviationX = Number(parts[0]);
 				obj.stdDeviationY = parts.length > 1 ? Number(parts[1]) : Number(parts[0]);
 			}

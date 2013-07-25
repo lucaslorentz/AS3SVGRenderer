@@ -162,6 +162,27 @@
          stdDeviation="30"
          id="feGaussianBlur3991" />
     </filter>
+    <filter
+       id="filter3039"
+       inkscape:label="filter13">
+      <feGaussianBlur
+         stdDeviation="10 0.01"
+         id="feGaussianBlur3041" />
+    </filter>
+    <filter
+       id="filter3043"
+       inkscape:label="filter14">
+      <feGaussianBlur
+         stdDeviation="0.01 10.009"
+         id="feGaussianBlur3045" />
+    </filter>
+    <filter
+       id="filter3047"
+       inkscape:label="filter15">
+      <feGaussianBlur
+         stdDeviation="10 20"
+         id="feGaussianBlur3049" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -195,7 +216,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -387,5 +408,34 @@
        sodipodi:ry="30"
        d="m 240,60 a 30,30 0 1 1 -60,0 30,30 0 1 1 60,0 z"
        transform="translate(535,140.5)" />
+    <path
+       sodipodi:type="arc"
+       style="color:#000000;fill:#ffff00;fill-opacity:1;fill-rule:nonzero;stroke:#808000;stroke-width:5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter3047)"
+       id="path3033"
+       sodipodi:cx="70"
+       sodipodi:cy="340"
+       sodipodi:rx="40"
+       sodipodi:ry="40"
+       d="m 110,340 a 40,40 0 1 1 -80,0 40,40 0 1 1 80,0 z" />
+    <path
+       d="m 110,340 a 40,40 0 1 1 -80,0 40,40 0 1 1 80,0 z"
+       sodipodi:ry="40"
+       sodipodi:rx="40"
+       sodipodi:cy="340"
+       sodipodi:cx="70"
+       id="path3035"
+       style="color:#000000;fill:#ffff00;fill-opacity:1;fill-rule:nonzero;stroke:#808000;stroke-width:5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter3039)"
+       sodipodi:type="arc"
+       transform="translate(109,1)" />
+    <path
+       transform="translate(222,-1)"
+       sodipodi:type="arc"
+       style="color:#000000;fill:#ffff00;fill-opacity:1;fill-rule:nonzero;stroke:#808000;stroke-width:5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter3043)"
+       id="path3037"
+       sodipodi:cx="70"
+       sodipodi:cy="340"
+       sodipodi:rx="40"
+       sodipodi:ry="40"
+       d="m 110,340 a 40,40 0 1 1 -80,0 40,40 0 1 1 80,0 z" />
   </g>
 </svg>
