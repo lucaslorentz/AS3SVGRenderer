@@ -262,6 +262,11 @@
 			return this is ISVGViewPort ? this as ISVGViewPort : _viewPortElement;
 		}
 		
+		public function get validationInProgress():Boolean
+		{
+			return numInvalidElements != 0 || numRunningAsyncValidations != 0;
+		}
+		
 		protected function get numInvalidElements():int {
 			return _numInvalidElements;
 		}
@@ -302,7 +307,7 @@
 			if(this is ISVGViewPort && document)
 				adjustContentToViewPort();
 			
-			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
+			if(!validationInProgress)
 			{
 				if(hasEventListener(SVGEvent.VALIDATED))
 					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
@@ -392,7 +397,7 @@
 			
 			var inheritFrom:SVGElement = getElementToInheritStyles();
 			if(inheritFrom){
-				inheritFrom.finalStyle.copyStyles(newFinalStyle);
+				inheritFrom.finalStyle.copyStyles(newFinalStyle, true);
 			}
 			
 			var typeStyle:StyleDeclaration = document.getStyleDeclaration(_type);
@@ -607,9 +612,16 @@
 				visible = finalStyle.getPropertyValue("display") != "none" && finalStyle.getPropertyValue("visibility") != "hidden";
 			}
 			
+			
 			if(_opacityChanged){
 				_opacityChanged = false;
+				
 				content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
+				
+				if (content.alpha != 1 && this is SVGContainer)
+					content.blendMode = BlendMode.LAYER;
+				else
+					content.blendMode = BlendMode.NORMAL;
 			}
 			
 			if(_svgFilterChanged){
@@ -659,6 +671,8 @@
 			copy.svgClipPath = svgClipPath;
 			copy.svgMask = svgMask;
 			_style.cloneOn(copy.style);
+			
+			copy.id = "????  Clone of \"" + id + "\"";
 			
 			copy.svgTransform = svgTransform;
 			

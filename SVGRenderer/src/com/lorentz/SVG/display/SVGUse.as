@@ -2,8 +2,10 @@
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.ISVGViewPort;
 	import com.lorentz.SVG.display.base.SVGElement;
+	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
+	import flash.events.Event;
 	
 	import flash.geom.Rectangle;
 	
@@ -70,6 +72,20 @@
 		override protected function commitProperties():void {
 			super.commitProperties();
 
+			if (document && document.parseInProgress)
+			{
+				var thisdoc:SVGDocument = document;
+				
+				var onDocParseComplete:Function = function(e:Event):void
+				{
+					thisdoc.removeEventListener(SVGEvent.PARSE_COMPLETE, onDocParseComplete);
+					commitProperties();
+				}
+				
+				thisdoc.addEventListener(SVGEvent.PARSE_COMPLETE, onDocParseComplete);
+				return;
+			}
+			
 			if(_svgHrefChanged){
 				_svgHrefChanged = false;
 				
