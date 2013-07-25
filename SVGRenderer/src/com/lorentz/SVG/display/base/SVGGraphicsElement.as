@@ -72,12 +72,12 @@ package com.lorentz.SVG.display.base
 		
 		protected function get hasFill():Boolean {
 			var fill:String = finalStyle.getPropertyValue("fill"); 
-			return fill != "" && fill != "none"; 
+			return fill != "" && fill != "none" || isInClipPath(); 
 		}
 		
 		protected function get hasStroke():Boolean {
 			var stroke:String = finalStyle.getPropertyValue("stroke");
-			return stroke != null && stroke != "" && stroke != "none";
+			return stroke != null && stroke != "" && stroke != "none" && !isInClipPath();
 		}
 		
 		protected function get hasDashedStroke():Boolean {
