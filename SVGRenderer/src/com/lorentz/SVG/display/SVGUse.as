@@ -2,10 +2,8 @@
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.ISVGViewPort;
 	import com.lorentz.SVG.display.base.SVGElement;
-	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
-	import flash.events.Event;
 	
 	import flash.geom.Rectangle;
 	

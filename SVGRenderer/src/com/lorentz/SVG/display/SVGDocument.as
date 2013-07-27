@@ -150,11 +150,6 @@
 			parseInternal(xmlOrXmlString);
 		}
 		
-		public function get parseInProgress():Boolean
-		{
-			return _parsing;
-		}
-		
 		private function parseInternal(xmlOrXmlString:Object):void {
 			var xml:XML;
 			
