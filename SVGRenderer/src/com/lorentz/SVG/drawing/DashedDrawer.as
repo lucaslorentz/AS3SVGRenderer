@@ -150,7 +150,7 @@ package com.lorentz.SVG.drawing
 				var dx:Number = x-penX
 				var dy:Number = y-penY;
 				
-				var lineLength:Number = lineLength(dx, dy);
+				var lineLength:Number = this.lineLength(dx, dy);
 				
 				var lengthToDraw:Number = Math.min(lineLength, getDashLength() - _dashDrawnLength);
 				
