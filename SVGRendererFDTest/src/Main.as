@@ -16,6 +16,7 @@ package
 		private var radioSvg:RadioButton;
 		private var radioPng:RadioButton;
 		private var radioDifference:RadioButton;
+		private var reloadOnSelect:CheckBox;
 		private var svgParent:Sprite;
 		private var pngParent:Sprite;
 		private var cookie:SharedObject = SharedObject.getLocal("cookie");
@@ -51,11 +52,14 @@ package
 			radioSvg.groupName = radioPng.groupName = radioDifference.groupName = "viewWhat";
 			
 			
+			reloadOnSelect = new CheckBox(vbox, 0, 0, "Reload SVG on select", onSmthChanged);
+			reloadOnSelect.selected = cookie.data.reloadOnSelect;
+			
 			new Label(vbox, 0, 0, "Svg file:");
 			list = new List(vbox);
 			vbox.width = list.width = 160;
 			
-			list.addEventListener(Event.SELECT, onSmthChanged);
+			list.addEventListener(Event.SELECT, onListSelect);
 			stage.addEventListener(Event.RESIZE, onStageResize);
 			
 			svgParent = new Sprite;
@@ -72,13 +76,30 @@ package
 			onSmthChanged(null);
 		}
 		
-		private function onSmthChanged(e:Event):void 
+		private function onListSelect(e:Event):void 
 		{
 			while (pngParent.numChildren > 0)
 				pngParent.removeChildAt(0);
 			while (svgParent.numChildren > 0)
 				svgParent.removeChildAt(0);
+			
+			
+			var item:FileListItem = list.selectedItem as FileListItem;
+			if (item)
+			{
+				cookie.data.selectedFile = item.label;
 				
+				item.load(reloadOnSelect.selected);
+				
+				pngParent.addChild(item.png);
+				svgParent.addChild(item.svg);
+			}
+			
+			onSmthChanged(null);
+		}
+		
+		private function onSmthChanged(e:Event):void 
+		{
 			svgParent.graphics.clear();
 			pngParent.graphics.clear();
 			pngParent.graphics.beginFill(0xFFFFFF)
@@ -86,16 +107,7 @@ package
 			svgParent.graphics.beginFill(0xFFFFFF)
 			svgParent.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
 			
-			var item:FileListItem = list.selectedItem as FileListItem;
-			if (item)
-			{
-				cookie.data.selectedFile = item.label;
-				
-				item.load();
-				
-				pngParent.addChild(item.png);
-				svgParent.addChild(item.svg);
-			}
+			cookie.data.reloadOnSelect = reloadOnSelect.selected;
 			
 			if (radioSvg.selected)
 			{
@@ -168,8 +180,14 @@ class FileListItem
 		label = fname;
 	}
 	
-	public function load():void 
+	public function load(reload:Boolean):void 
 	{
+		if (reload && svg)
+		{
+			svg.clear();
+			svg = null;
+		}
+		
 		if (!svg)
 		{
 			svg = new SVGDocument();

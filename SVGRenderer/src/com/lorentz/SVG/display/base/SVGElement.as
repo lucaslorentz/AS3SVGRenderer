@@ -12,6 +12,11 @@
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.SVGViewPortUtils;
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.BlendMode;
+	import flash.display.DisplayObject;
+	import flash.filters.ColorMatrixFilter;
 	
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
@@ -27,7 +32,9 @@
 	
 	public class SVGElement extends Sprite implements ICloneable {
 		protected var content:Sprite;
-		private var _mask:SVGElement;
+
+		private var _mask:DisplayObject;
+		private static const _maskRgbToLuminanceFilter:ColorMatrixFilter = new ColorMatrixFilter([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2125, 0.7154, 0.0721, 0, 0,]);
 		
 		private var _currentFontSize:Number = Number.NaN;
 		
@@ -255,6 +262,11 @@
 			return this is ISVGViewPort ? this as ISVGViewPort : _viewPortElement;
 		}
 		
+		public function get validationInProgress():Boolean
+		{
+			return numInvalidElements != 0 || numRunningAsyncValidations != 0;
+		}
+		
 		protected function get numInvalidElements():int {
 			return _numInvalidElements;
 		}
@@ -295,7 +307,7 @@
 			if(this is ISVGViewPort && document)
 				adjustContentToViewPort();
 			
-			if(_numRunningAsyncValidations == 0 && _numInvalidElements == 0)
+			if(!validationInProgress)
 			{
 				if(hasEventListener(SVGEvent.VALIDATED))
 					dispatchEvent(new SVGEvent(SVGEvent.VALIDATED));
@@ -385,7 +397,7 @@
 			
 			var inheritFrom:SVGElement = getElementToInheritStyles();
 			if(inheritFrom){
-				inheritFrom.finalStyle.copyStyles(newFinalStyle);
+				inheritFrom.finalStyle.copyStyles(newFinalStyle, true);
 			}
 			
 			var typeStyle:StyleDeclaration = document.getStyleDeclaration(_type);
@@ -486,49 +498,111 @@
 				transform.matrix = computeTransformMatrix();
 			}
 			
-			if(_svgClipPathChanged){
+			if (_svgClipPathChanged || _svgMaskChanged)
+			{
 				_svgClipPathChanged = false;
-				if(_mask != null) { //Clear mask
+				_svgMaskChanged = false;
+				
+				if (_mask != null) //Clear mask
+				{ 
 					content.mask = null;
 					content.cacheAsBitmap = false;
 					removeChild(_mask);
-					detachElement(_mask);
+					if (_mask is SVGElement)
+						detachElement(_mask as SVGElement);
+					else if (_mask is Bitmap)
+					{
+						(_mask as Bitmap).bitmapData.dispose();
+						(_mask as Bitmap).bitmapData = null;
+					}
 					_mask = null;
 				}
 				
-				if(svgClipPath != null && svgClipPath != "" && svgClipPath != "none"){ //Apply Clip Path
-					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
+				var mask:SVGElement = null;
+				var clip:SVGElement = null;
+				var validateN:int = 0;
+				
+				var onClipOrMaskValidated:Function = function(e:SVGEvent):void
+				{
+					e.target.removeEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
 					
-					_mask = document.getDefinitionClone(clipPathId) as SVGElement;
-					if(_mask != null){
-						attachElement(_mask);
-						addChild(_mask);
-						content.mask = _mask;
-						_mask.visible = true;
+					--validateN;
+					
+					if (validateN == 0)
+					{
+						if (mask)
+						{
+							if (clip)
+							{
+								mask.mask = clip;
+								clip.cacheAsBitmap = false;
+							}
+								
+							var maskRc:Rectangle = mask.getBounds(mask);
+							if (maskRc.width > 0 && maskRc.height > 0)
+							{
+								var matrix:Matrix = new Matrix();
+								matrix.translate( -maskRc.left, -maskRc.top);
+								
+								var bmd:BitmapData = new BitmapData(maskRc.width, maskRc.height, true, 0);
+								bmd.draw(mask, matrix, null, null, null, true);
+								
+								mask.filters = [_maskRgbToLuminanceFilter];
+								bmd.draw(mask, matrix, null, BlendMode.ALPHA, null, true);
+								
+								_mask = new Bitmap(bmd);
+								_mask.x = maskRc.left;
+								_mask.y = maskRc.top;
+								
+								addChild(_mask);
+								_mask.cacheAsBitmap = true;
+								content.cacheAsBitmap = true;
+								content.mask = _mask;
+							}
+							
+							detachElement(mask);
+							if (clip)
+							{
+								detachElement(clip);
+								mask.mask = null;
+							}
+						}
+						else if (clip /*&& !mask*/)
+						{
+							_mask = clip;
+							_mask.cacheAsBitmap = false;
+							content.cacheAsBitmap = false;
+							addChild(_mask);
+							content.mask = _mask;
+						}
 					}
 				}
-			}
-			
-			if(_svgMaskChanged){
-				_svgMaskChanged = false;
-				if(_mask != null) { //Clear mask
-					content.mask = null;
-					content.cacheAsBitmap = false;
-					removeChild(_mask);
-					detachElement(_mask);
-					_mask = null;
+				
+				if (svgMask != null && svgMask != "" && svgMask != "none") // mask
+				{ 
+					var maskId:String = SVGUtil.extractUrlId(svgMask);
+
+					mask = document.getDefinitionClone(maskId) as SVGElement;
+					
+					if (mask != null)
+					{
+						attachElement(mask);
+						mask.addEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
+						validateN++;
+					}
 				}
 				
-				if(svgMask != null && svgMask!="" && svgMask!="none"){ //Apply Mask
-					var maskId:String = SVGUtil.extractUrlId(svgMask);
+				if (svgClipPath != null && svgClipPath != "" && svgClipPath != "none") // clip-path
+				{ 
+					var clipPathId:String = SVGUtil.extractUrlId(svgClipPath);
 					
-					_mask = document.getDefinitionClone(maskId) as SVGElement;
-					if(_mask != null){
-						attachElement(_mask);
-						_mask.cacheAsBitmap = true;
-						content.cacheAsBitmap = true;
-						addChild(_mask);
-						content.mask = _mask;
+					clip = document.getDefinitionClone(clipPathId) as SVGElement;
+					
+					if (clip != null) 
+					{
+						attachElement(clip);
+						clip.addEventListener(SVGEvent.VALIDATED, onClipOrMaskValidated);
+						validateN++;
 					}
 				}
 			}
@@ -538,9 +612,16 @@
 				visible = finalStyle.getPropertyValue("display") != "none" && finalStyle.getPropertyValue("visibility") != "hidden";
 			}
 			
+			
 			if(_opacityChanged){
 				_opacityChanged = false;
+				
 				content.alpha = Number(finalStyle.getPropertyValue("opacity") || 1);
+				
+				if (content.alpha != 1 && this is SVGContainer)
+					content.blendMode = BlendMode.LAYER;
+				else
+					content.blendMode = BlendMode.NORMAL;
 			}
 			
 			if(_svgFilterChanged){
@@ -590,6 +671,8 @@
 			copy.svgClipPath = svgClipPath;
 			copy.svgMask = svgMask;
 			_style.cloneOn(copy.style);
+			
+			copy.id = "????  Clone of \"" + id + "\"";
 			
 			copy.svgTransform = svgTransform;
 			
