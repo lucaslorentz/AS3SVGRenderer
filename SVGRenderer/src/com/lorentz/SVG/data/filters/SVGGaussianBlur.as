@@ -11,7 +11,7 @@ package com.lorentz.SVG.data.filters
 		
 		public function getFlashFilter():BitmapFilter
 		{
-			return new BlurFilter(stdDeviationX, stdDeviationY, BitmapFilterQuality.HIGH);
+			return new BlurFilter(stdDeviationX * 2, stdDeviationY * 2, BitmapFilterQuality.HIGH);
 		}
 		
 		public function clone():Object

@@ -72,12 +72,12 @@ package com.lorentz.SVG.display.base
 		
 		protected function get hasFill():Boolean {
 			var fill:String = finalStyle.getPropertyValue("fill"); 
-			return fill != "" && fill != "none"; 
+			return fill != "" && fill != "none" || isInClipPath(); 
 		}
 		
 		protected function get hasStroke():Boolean {
 			var stroke:String = finalStyle.getPropertyValue("stroke");
-			return stroke != null && stroke != "" && stroke != "none";
+			return stroke != null && stroke != "" && stroke != "none" && !isInClipPath();
 		}
 		
 		protected function get hasDashedStroke():Boolean {
@@ -196,7 +196,12 @@ package com.lorentz.SVG.display.base
 					}
 				}
 				
+				var strokeMiterlimit:Number = Number(finalStyle.getPropertyValue("stroke-miterlimit") || 4);
+				
 				var stroke:String = finalStyle.getPropertyValue("stroke");
+				
+				var color:uint = SVGColorUtils.parseToUint(stroke);
+				g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
 				
 				if(stroke.indexOf("url") > -1){
 					var id:String = SVGUtil.extractUrlId(stroke);
@@ -212,17 +217,14 @@ package com.lorentz.SVG.display.base
 							case GradientType.RADIAL: {
 								var rgrad:SVGRadialGradient = grad as SVGRadialGradient;
 								if(rgrad.r == "0")
-									g.lineStyle(strokeWidth, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin);
+									g.lineStyle(strokeWidth, grad.colors[grad.colors.length-1], grad.alphas[grad.alphas.length-1], true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin, strokeMiterlimit);
 								else
 									doRadialGradient(rgrad, g, false);
 								break;
 							}
 						}
 					}
-				} else {
-					var color:uint = SVGColorUtils.parseToUint(stroke);
-					g.lineStyle(strokeWidth, color, strokeOpacity, true, LineScaleMode.NORMAL, strokeLineCap, strokeLineJoin);
-				}
+				} 
 			} else {
 				g.lineStyle();
 			}

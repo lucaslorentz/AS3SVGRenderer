@@ -161,19 +161,6 @@ package com.lorentz.SVG.parser
 				if(element is SVGContainer){
 					var container:SVGContainer = element as SVGContainer;
 					
-					if (element is SVGPattern)
-					{
-						var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");
-						var link:String = elt.@xlink::href;
-						if (link != "")
-						{
-							(element as SVGPattern).originalPatternHref = link;
-							
-							if(elt.elements().length() == 0)
-								container.addElement(visitUse(elt));
-						}
-					}
-					
 					for each(var childElt:XML in elt.elements()) {
 						childVisits.push(new VisitDefinition(childElt, function(child:SVGElement):void{
 							if(child){
@@ -410,6 +397,9 @@ package com.lorentz.SVG.parser
 			obj.svgWidth = ("@width" in elt) ? elt.@width : null;
 			obj.svgHeight = ("@height" in elt) ? elt.@height : null;
 			obj.patternTransform = ("@patternTransform" in elt) ? elt.@patternTransform : null;
+			var xlink:Namespace = new Namespace("http://www.w3.org/1999/xlink");			
+			var href:String = elt.@xlink::href;
+			obj.svgHref = StringUtil.trim(href);
 			return obj;
 		}
 		
@@ -630,7 +620,7 @@ package com.lorentz.SVG.parser
 			
 			if(("@stdDeviation" in node))
 			{	
-				var parts:Array = String(node.@stdDeviation).split(/\s,/);
+				var parts:Array = String(node.@stdDeviation).split(/[\s,]+/);
 				obj.stdDeviationX = Number(parts[0]);
 				obj.stdDeviationY = parts.length > 1 ? Number(parts[1]) : Number(parts[0]);
 			}
