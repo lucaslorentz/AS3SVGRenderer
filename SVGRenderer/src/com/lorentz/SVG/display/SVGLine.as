@@ -3,9 +3,6 @@
 	import com.lorentz.SVG.drawing.IDrawer;
 	import com.lorentz.SVG.utils.SVGUtil;
 	
-	import flash.display.Graphics;
-	import com.lorentz.SVG.display.base.SVGElement;
-	
 	public class SVGLine extends SVGShape {
 		private var _x1Units:Number;
 		private var _y1Units:Number;

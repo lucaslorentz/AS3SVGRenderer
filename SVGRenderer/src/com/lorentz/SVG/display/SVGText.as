@@ -1,8 +1,6 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGTextContainer;
-	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.DisplayUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	

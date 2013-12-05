@@ -2,7 +2,7 @@
 */
 
 package com.lorentz.SVG.utils{
-	import com.lorentz.SVG.parser.SVGParserCommon;
+	
 
 	public class SVGColorUtils {
 		private static  var colors:Object = {};

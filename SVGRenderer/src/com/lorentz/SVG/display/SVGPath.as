@@ -1,6 +1,5 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.data.path.SVGPathCommand;
-	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGShape;
 	import com.lorentz.SVG.drawing.IDrawer;
 	import com.lorentz.SVG.drawing.SVGPathRenderer;

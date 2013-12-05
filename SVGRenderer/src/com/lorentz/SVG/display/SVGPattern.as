@@ -1,16 +1,14 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.display.base.ISVGViewBox;
 	import com.lorentz.SVG.display.base.SVGContainer;
-	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.parser.SVGParserCommon;
-	import com.lorentz.SVG.utils.StringUtil;
 	import com.lorentz.SVG.utils.SVGUtil;
+	import com.lorentz.SVG.utils.StringUtil;
+	
+	import flash.display.BitmapData;
 	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.geom.Matrix;
-	import flash.geom.Point;
-	
-	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
 	
 	public class SVGPattern extends SVGContainer implements ISVGViewBox {		

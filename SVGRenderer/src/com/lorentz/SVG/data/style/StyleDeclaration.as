@@ -2,7 +2,6 @@ package com.lorentz.SVG.data.style
 {
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.utils.ICloneable;
-	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
 	import flash.events.EventDispatcher;

@@ -11,7 +11,6 @@ package com.lorentz.SVG.display.base
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.StringUtil;
 	
-	import flash.display.BitmapData;
 	import flash.display.CapsStyle;
 	import flash.display.GradientType;
 	import flash.display.Graphics;
