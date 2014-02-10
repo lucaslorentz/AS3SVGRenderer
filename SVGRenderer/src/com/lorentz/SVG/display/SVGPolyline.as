@@ -16,10 +16,6 @@
 			_points = value;
 			invalidateRender();
 		}
-			
-		override protected function get hasFill():Boolean {
-			return isInClipPath();
-		}
 				
 		override protected function drawToDrawer(drawer:IDrawer):void {
 			if(points.length>2){
