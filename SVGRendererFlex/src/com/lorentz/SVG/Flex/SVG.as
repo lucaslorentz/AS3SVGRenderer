@@ -118,6 +118,17 @@ package com.lorentz.SVG.Flex
 		}
 		
 		[Bindable]
+		/**
+		 * @default true
+		 **/
+		public function get forceSynchronousParse():Boolean {
+			return _svgDocument.forceSynchronousParse;
+		}
+		public function set forceSynchronousParse(value:Boolean):void {
+			_svgDocument.forceSynchronousParse = value;
+		}
+		
+		[Bindable]
 		public function get textDrawer():ISVGTextDrawer {
 			return _svgDocument.textDrawer;
 		}

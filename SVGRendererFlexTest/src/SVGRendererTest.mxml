@@ -297,6 +297,10 @@
 					label="Validate while parsing"
 					selected="true"/>
 		
+		<s:CheckBox id="forceSynchronousParseCheckBox"
+					label="Force synchronous parse"
+					selected="false"/>
+		
 		<s:CheckBox id="useEmbeddedFontsCheckBox"
 					label="Use embedded fonts"
 					selected="true"
@@ -325,6 +329,7 @@
 							 mouseEnabledWhereTransparent="true">
 						<Flex:SVG id="svg"
 								  validateWhileParsing="{validateWhileParsingCheckBox.selected}"
+								  forceSynchronousParse="{forceSynchronousParseCheckBox.selected}"
 								  defaultFontName="{textDrawerDropDownList.selectedItem.fontName}"
 								  textDrawer="{textDrawerDropDownList.selectedItem.textDrawer}"
 								  useEmbeddedFonts="{useEmbeddedFontsCheckBox.selected}"

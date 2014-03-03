@@ -53,6 +53,16 @@ package com.lorentz.processing
 			ProcessExecutor.instance.addProcess(this);
 		}
 		
+		public function execute(): void {
+			if(startFunction != null)
+				startFunction();
+			
+			while(loopFunction() != COMPLETE)
+			{}
+			
+			complete();
+		}
+		
 		public function stop():void {
 			_isRunning = false;
 			ProcessExecutor.instance.removeProcess(this);

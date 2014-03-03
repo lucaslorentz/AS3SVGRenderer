@@ -59,7 +59,7 @@ package com.lorentz.SVG.parser
 			_svg = svg;
 		}
 		
-		public function parse():void {
+		public function parse(synchronous: Boolean = false):void {
 			parseStyles(_svg);
 			parseGradients(_svg);
 			parseFilters(_svg);
@@ -70,7 +70,10 @@ package com.lorentz.SVG.parser
 			}));
 			
 			_process = new Process(null, executeLoop, parseComplete);
-			_process.start();
+			if(synchronous)
+				_process.execute();
+			else
+				_process.start();
 		}
 		
 		public function cancel():void {
