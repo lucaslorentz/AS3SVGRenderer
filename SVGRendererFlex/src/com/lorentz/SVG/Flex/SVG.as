@@ -202,9 +202,15 @@ package com.lorentz.SVG.Flex
 		}
 		
 		override protected function measure():void {
-			var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
-			this.measuredWidth = bounds.left + bounds.width;
-			this.measuredHeight = bounds.top + bounds.height;
+			if(_svgDocument != null)
+			{				
+				var bounds:Rectangle = DisplayUtils.safeGetBounds(_svgDocument, this);
+				this.measuredWidth = bounds.left + bounds.width;
+				this.measuredHeight = bounds.top + bounds.height;
+			} else {
+				this.measuredWidth = 0;
+				this.measuredHeight = 0;
+			}
 		}
 	}
 }
