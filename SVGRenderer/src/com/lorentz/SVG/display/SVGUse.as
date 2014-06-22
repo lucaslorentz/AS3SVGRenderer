@@ -89,6 +89,10 @@
 			}
 			
 			if(_includedElement){
+				if(svgTransform) {
+					svgX = svgY = null;
+					svgWidth = svgHeight = null;
+				}
 				_includedElement.x = svgX ? getViewPortUserUnit(svgX, SVGUtil.WIDTH) : 0;
 				_includedElement.y = svgY ? getViewPortUserUnit(svgY, SVGUtil.HEIGHT) : 0;
 				_includedElement.svgTransform += " " + svgTransform;
