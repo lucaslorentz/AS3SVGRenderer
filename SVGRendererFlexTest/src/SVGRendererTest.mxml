@@ -249,6 +249,8 @@
 			<fx:String>svgFiles/clip-path-2.svg</fx:String>
 			<fx:String>svgFiles/ellipse1.svg</fx:String>
 			<fx:String>svgFiles/ellipse2.svg</fx:String>
+			<fx:String>svgFiles/fillrule-evenodd.svg</fx:String>
+			<fx:String>svgFiles/fillrule-nonzero.svg</fx:String>
 			<fx:String>svgFiles/gradiente.svg</fx:String>
 			<fx:String>svgFiles/gradiente_linear.svg</fx:String>
 			<fx:String>svgFiles/gradients1.svg</fx:String>

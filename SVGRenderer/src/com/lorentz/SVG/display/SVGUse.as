@@ -68,6 +68,9 @@
 		}
 				
 		override protected function commitProperties():void {
+			x = svgX ? getViewPortUserUnit(svgX, SVGUtil.WIDTH) : 0;
+			y = svgY ? getViewPortUserUnit(svgY, SVGUtil.HEIGHT) : 0;
+			
 			super.commitProperties();
 
 			if(_svgHrefChanged){
@@ -88,10 +91,7 @@
 				}
 			}
 			
-			x = svgX ? getViewPortUserUnit(svgX, SVGUtil.WIDTH) : 0;
-			y = svgY ? getViewPortUserUnit(svgY, SVGUtil.HEIGHT) : 0;
-			
-			if(_includedElement){				
+			if(_includedElement){
 				if(_includedElement is SVG)
 				{
 					var includedSVG:SVG = _includedElement as SVG;
