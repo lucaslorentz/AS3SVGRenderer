@@ -89,6 +89,7 @@ package com.lorentz.SVG.data.style
 			"clip",
 			"filter",
 			"overflow",
+			"clip-path"
 		];
 		public function copyStyles(target:StyleDeclaration, onlyInheritable:Boolean = false):void {
 			for each(var propertyName:String in _indexedProperties) {

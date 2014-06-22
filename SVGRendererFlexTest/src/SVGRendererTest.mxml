@@ -245,6 +245,8 @@
 			<fx:String>svgFiles/arcs02.svg</fx:String>
 			<fx:String>svgFiles/butterfly.svg</fx:String>
 			<fx:String>svgFiles/circles1.svg</fx:String>
+			<fx:String>svgFiles/clip-path-1.svg</fx:String>
+			<fx:String>svgFiles/clip-path-2.svg</fx:String>
 			<fx:String>svgFiles/ellipse1.svg</fx:String>
 			<fx:String>svgFiles/ellipse2.svg</fx:String>
 			<fx:String>svgFiles/gradiente.svg</fx:String>
