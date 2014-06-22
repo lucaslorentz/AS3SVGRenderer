@@ -1,8 +1,7 @@
 package com.lorentz.SVG.text
 {
-	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.display.base.SVGTextContainer;
+	import com.lorentz.SVG.data.text.SVGTextToDraw;
 
 	public interface ISVGTextDrawer
 	{

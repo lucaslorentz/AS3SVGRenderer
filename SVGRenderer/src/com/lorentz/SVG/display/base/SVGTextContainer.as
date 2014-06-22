@@ -3,15 +3,12 @@ package com.lorentz.SVG.display.base
 	import com.lorentz.SVG.data.text.SVGDrawnText;
 	import com.lorentz.SVG.data.text.SVGTextToDraw;
 	import com.lorentz.SVG.display.SVGText;
-	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.SVGColorUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	import com.lorentz.SVG.utils.TextUtils;
 	
 	import flash.display.DisplayObject;
-
-	use namespace svg_internal;
 
 	public class SVGTextContainer extends SVGGraphicsElement
 	{

@@ -1,7 +1,5 @@
 package com.lorentz.processing
 {
-	import flash.display.DisplayObject;
-	import flash.display.Shape;
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.utils.getTimer;

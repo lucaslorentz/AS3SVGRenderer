@@ -4,7 +4,6 @@
 	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.parser.AsyncSVGParser;
-	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.text.FTESVGTextDrawer;
 	import com.lorentz.SVG.text.ISVGTextDrawer;
 	import com.lorentz.SVG.utils.ICloneable;
@@ -296,12 +295,12 @@
 				_definitions[id] = null;
 		}
 		
-		svg_internal function onElementAdded(element:SVGElement):void {
+		public function onElementAdded(element:SVGElement):void {
 			if(hasEventListener(SVGEvent.ELEMENT_ADDED))
 				dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_ADDED, element ));
 		}
 		
-		svg_internal function onElementRemoved(element:SVGElement):void {
+		public function onElementRemoved(element:SVGElement):void {
 			if(hasEventListener(SVGEvent.ELEMENT_REMOVED))
 				dispatchEvent( new SVGEvent( SVGEvent.ELEMENT_REMOVED, element ));
 		}

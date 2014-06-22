@@ -1,8 +1,6 @@
 package com.lorentz.SVG.data.filters
 {
 	import flash.filters.BitmapFilter;
-	import flash.filters.BitmapFilterQuality;
-	import flash.filters.BlurFilter;
 	import flash.filters.ColorMatrixFilter;
 
 	public class SVGColorMatrix implements ISVGFilter

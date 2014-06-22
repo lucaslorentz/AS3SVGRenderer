@@ -1,16 +1,12 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.data.text.SVGDrawnText;
-	import com.lorentz.SVG.display.base.SVGElement;
 	import com.lorentz.SVG.display.base.SVGTextContainer;
-	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.DisplayUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
 	
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.geom.Rectangle;
-	
-	use namespace svg_internal;
 	
 	public class SVGTSpan extends SVGTextContainer {		
 		private var _svgDx:String;

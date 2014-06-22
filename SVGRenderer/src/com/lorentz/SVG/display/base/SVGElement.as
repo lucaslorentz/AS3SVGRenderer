@@ -7,7 +7,6 @@
 	import com.lorentz.SVG.events.SVGEvent;
 	import com.lorentz.SVG.events.StyleDeclarationEvent;
 	import com.lorentz.SVG.parser.SVGParserCommon;
-	import com.lorentz.SVG.svg_internal;
 	import com.lorentz.SVG.utils.ICloneable;
 	import com.lorentz.SVG.utils.MathUtils;
 	import com.lorentz.SVG.utils.SVGUtil;
@@ -21,8 +20,6 @@
 	import flash.filters.ColorMatrixFilter;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	
-	use namespace svg_internal;
 	
 	[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
 	

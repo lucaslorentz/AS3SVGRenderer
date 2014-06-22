@@ -9,12 +9,7 @@
 	import com.lorentz.SVG.data.path.SVGLineToVerticalCommand;
 	import com.lorentz.SVG.data.path.SVGMoveToCommand;
 	import com.lorentz.SVG.data.path.SVGPathCommand;
-	import com.lorentz.SVG.utils.Bezier;
 	
-	import flash.display.GraphicsPath;
-	import flash.display.GraphicsPathCommand;
-	import flash.display.GraphicsPathWinding;
-	import flash.display.Sprite;
 	import flash.geom.Point;
 
 	public class SVGPathRenderer {

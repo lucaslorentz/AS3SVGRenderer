@@ -1,16 +1,10 @@
 ﻿package com.lorentz.SVG.utils
 {
-	import com.lorentz.processing.IProcess;
 	import com.lorentz.processing.Process;
-	import com.lorentz.processing.ProcessExecutor;
 	
-	import flash.display.DisplayObject;
-	import flash.display.Shape;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.sampler.startSampling;
 	import flash.utils.ByteArray;
-	import flash.utils.getTimer;
 	
 	/**
 	 * A utility class to decode a Base64 encoded String to a ByteArray.

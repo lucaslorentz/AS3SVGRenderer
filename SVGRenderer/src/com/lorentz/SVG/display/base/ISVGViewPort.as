@@ -1,6 +1,5 @@
-﻿package com.lorentz.SVG.display.base {
-	import flash.geom.Rectangle;
-	
+﻿package com.lorentz.SVG.display.base
+{
 	public interface ISVGViewPort extends ISVGPreserveAspectRatio {
 		function get svgX():String;
 		function set svgX(value:String):void;

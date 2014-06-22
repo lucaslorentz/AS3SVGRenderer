@@ -1,6 +1,5 @@
 ﻿package com.lorentz.SVG.display {
 	import com.lorentz.SVG.display.base.SVGContainer;
-	import com.lorentz.SVG.display.base.SVGElement;
 	
 	import flash.events.MouseEvent;
 	import flash.net.URLRequest;
