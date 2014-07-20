@@ -12,7 +12,9 @@ package com.lorentz.SVG.Flex
 	import mx.core.UIComponent;
 	import mx.managers.ISystemManager;
 
-	[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
+import spark.core.IContentLoader;
+
+[Event(name="invalidate", type="com.lorentz.SVG.events.SVGEvent")]
 	
 	[Event(name="syncValidated", type="com.lorentz.SVG.events.SVGEvent")]
 	[Event(name="asyncValidated", type="com.lorentz.SVG.events.SVGEvent")]
@@ -27,8 +29,7 @@ package com.lorentz.SVG.Flex
 	[Mixin]
 	public class SVG extends UIComponent
 	{
-		public static function init(systemManager:ISystemManager):void
-		{
+		public static function init(systemManager:ISystemManager):void {
 			ProcessExecutor.instance.initialize(systemManager.stage);
 		}
 		
@@ -169,26 +170,64 @@ package com.lorentz.SVG.Flex
 		public function set useEmbeddedFonts(value:Boolean):void {
 			_svgDocument.useEmbeddedFonts = value;
 		}
+
+
+        //----------------------------------
+        //  contentLoader
+        //----------------------------------
+
+        private var _contentLoader:IContentLoader;
+        private var _contentLoaderInvalid:Boolean;
+
+        /**
+         *  Optional custom image loader (e.g. image cache or queue) to
+         *  associate with content loader client.
+         *
+         *  @default null
+         *
+         *  @langversion 3.0
+         *  @playerversion Flash 10
+         *  @playerversion AIR 1.5
+         *  @productversion Flex 4.5
+         */
+        public function get contentLoader():IContentLoader {
+            return _contentLoader;
+        }
+
+        /**
+         *  @private
+         */
+        public function set contentLoader(value:IContentLoader):void {
+            if (value != _contentLoader)
+            {
+                _contentLoader = value;
+                _contentLoaderInvalid = true;
+                invalidateProperties();
+            }
+        }
+
 		
 		override protected function commitProperties():void {
 			super.commitProperties();
 						
-			if(_sourceInvalid){
+			if(_sourceInvalid || _contentLoaderInvalid){
+                applySource();
+
 				_sourceInvalid = false;
-				
-				if((_source is String && !isXML(String(_source))) || _source is URLRequest)
-				{
-					_svgDocument.load(_source);
-				}
-				else if(_source is String || _source is XML)
-				{
-					_svgDocument.parse(_source);
-				}
+                _contentLoaderInvalid = false;
 			}
 		}
+
+        private function applySource():void {
+            if ((_source is String && !isXML(String(_source))) || _source is URLRequest) {
+                _svgDocument.load(_source);
+            }
+            else if (_source is String || _source is XML) {
+                _svgDocument.parse(_source);
+            }
+        }
 		
-		private function cloneAndRedispatchEvent(e:SVGEvent):void
-		{
+		private function cloneAndRedispatchEvent(e:SVGEvent):void {
 			dispatchEvent(e.clone());
 		}
 		
