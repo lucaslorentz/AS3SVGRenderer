@@ -59,7 +59,7 @@ var svg:SVGDocument = new SVGDocument();
 svg.parse(myLoadedSVGString);  
 addChild(svg);   
 ```
-You can also pass an XML object to the parse method, but it isn't recommended once when the parse method gets a string it does extra things to better parse the string.
+You can also pass an XML object to the parse method, but it isn't recommended since when the parse method gets a string it does extra things to better parse the string.
 
 Flex component
 ----------
